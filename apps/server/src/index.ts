@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { traceMiddleware } from './middleware/traceLogger.js'
+import { traceMiddleware } from './middleware/traceLogger'
 
 const app = new Hono()
 
