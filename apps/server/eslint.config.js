@@ -1,10 +1,8 @@
 import { config } from '@hono-vite-admin/eslint-config/base'
 
-export default [
-  ...config,
-  {
-    rules: {
-      'no-console': 'off',
-    },
+export default config.append({
+  rules: {
+    'no-console': 'off',
+    'n/prefer-global/process': 'off',
   },
-]
+})

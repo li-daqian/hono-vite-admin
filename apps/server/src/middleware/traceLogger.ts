@@ -36,7 +36,7 @@ export async function traceMiddleware(c: Context, next: Next): Promise<void> {
       method: c.req.method,
       path: c.req.path,
       status: c.res.status,
-      duration: duration + 'ms',
+      duration: `${duration}ms`,
     },
     'Request completed',
   )
