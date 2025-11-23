@@ -1,10 +1,8 @@
-import antfu from "@antfu/eslint-config";
+import antfu from '@antfu/eslint-config'
 
 /**
  * A custom ESLint configuration for libraries that use React.
- *
- * @type {import("eslint").Linter.Config}
- * */
-export const nextJsConfig = antfu({
+ */
+export const reactInternalConfig = antfu({
   react: true,
-});
+})

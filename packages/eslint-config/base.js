@@ -1,12 +1,10 @@
-import antfu from "@antfu/eslint-config";
+import antfu from '@antfu/eslint-config'
 
 /**
  * A shared ESLint configuration for the repository.
- *
- * @type {import("eslint").Linter.Config}
- * */
+ */
 export const config = antfu({
-  ignores: ["dist/**"],
+  ignores: ['dist/**'],
 
   typescript: true,
-});
+})
