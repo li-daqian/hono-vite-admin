@@ -1,7 +1,7 @@
 {
   "name": "@hono-vite-admin/server",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
     "dev": "bun run --hot src/index.ts",
