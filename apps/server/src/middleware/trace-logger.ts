@@ -46,7 +46,10 @@ export async function traceLogger(c: Context, next: Next): Promise<void> {
   )
 }
 
-// 新增：获取当前请求的 logger，无需传入 Context
+/**
+ * 获取当前请求的 logger
+ * @returns 当前请求的 logger，如果不存在则返回 undefined
+ */
 export function getCurrentLogger(): RequestLogger | undefined {
   return als.getStore()
 }
