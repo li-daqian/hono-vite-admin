@@ -1,14 +1,16 @@
 import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
+import type { ContentfulStatusCode } from 'hono/utils/http-status'
+import { errorResponse } from '../dto/response.dto'
 import { getCurrentLogger } from './trace-logger'
 
 /**
  * 基类异常，包含状态码和异常消息
  */
 export class HttpStatusException extends Error {
-  public statusCode: number
+  public statusCode: ContentfulStatusCode
 
-  constructor(statusCode: number, message: string) {
+  constructor(statusCode: ContentfulStatusCode, message: string) {
     super(message)
     this.statusCode = statusCode
     this.name = this.constructor.name
@@ -54,10 +56,10 @@ export function onErrorHandler(err: Error | HTTPResponseError, c: Context): Resp
 
   getCurrentLogger()?.error(err, 'Unhandled error')
   if (err instanceof HttpStatusException) {
-    return c.json({ message: err.message, ok: false }, err.statusCode as any)
+    return c.json(errorResponse(err.message), err.statusCode)
   }
   else {
-    return c.json({ message: 'Internal Server Error', ok: false }, 500)
+    return c.json(errorResponse('Internal Server Error'), 500)
   }
 }
 
