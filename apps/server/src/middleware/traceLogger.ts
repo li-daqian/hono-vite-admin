@@ -18,7 +18,7 @@ const baseLogger = pino(
 export type RequestLogger = ReturnType<typeof pino>
 
 export async function traceMiddleware(c: Context, next: Next): Promise<void> {
-  const traceId = crypto.randomUUID()
+  const traceId = crypto.randomUUID().replace(/-/g, '')
   c.set('traceId', traceId)
 
   // 为当前请求创建带 traceId 的 child logger
