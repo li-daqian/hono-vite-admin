@@ -1,11 +1,13 @@
 import { Hono } from 'hono'
-import { traceMiddleware } from './middleware/trace-logger'
+import { requestId } from 'hono/request-id'
+import { traceLogger } from './middleware/trace-logger'
 
 const app = new Hono()
 
-app.use('*', traceMiddleware)
+app.use('*', requestId())
+app.use('*', traceLogger)
 
-app.get('/', (c) => {
+app.get('/', async (c) => {
   return c.text('Hello Hono!')
 })
 
