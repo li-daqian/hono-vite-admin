@@ -1,8 +1,8 @@
 import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
-import { errorResponse } from '../dto/response.dto'
-import { getCurrentLogger } from './trace-logger'
+import { errorResponse } from '@server/src/dto/response.dto'
+import { getCurrentLogger } from '@server/src/middleware/trace-logger'
 
 /**
  * 基类异常，包含状态码和异常消息

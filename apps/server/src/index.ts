@@ -1,8 +1,8 @@
+import { errorResponse } from '@server/src/dto/response.dto'
+import { onErrorHandler } from '@server/src/middleware/expcetion-handler'
+import { traceLogger } from '@server/src/middleware/trace-logger'
 import { Hono } from 'hono'
 import { requestId } from 'hono/request-id'
-import { errorResponse } from './dto/response.dto'
-import { onErrorHandler } from './middleware/expcetion-handler'
-import { traceLogger } from './middleware/trace-logger'
 
 const app = new Hono()
 
