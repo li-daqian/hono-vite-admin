@@ -3,10 +3,10 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import pino from 'pino'
 import pretty from 'pino-pretty'
 
-// 创建 AsyncLocalStorage 来存储当前请求的 logger
+// Create an AsyncLocalStorage instance to store the logger for the current request
 const als = new AsyncLocalStorage<RequestLogger>()
 
-// 创建基础 logger 实例
+// Create the base logger instance
 const baseLogger = pino(
   {
     level: process.env.LOG_LEVEL || 'info',
@@ -22,14 +22,14 @@ const baseLogger = pino(
 export type RequestLogger = pino.Logger
 
 export async function traceLogger(c: Context, next: Next): Promise<void> {
-  // 为当前请求创建带 traceId 的 child logger
+  // Create a child logger for the request using the requestId
   const logger = baseLogger.child({ requestId: c.get('requestId') })
   c.set('logger', logger)
 
   logger.debug({ method: c.req.method, path: c.req.path }, 'Incoming request')
 
   const start = Date.now()
-  // 使用 AsyncLocalStorage 运行 next，这样在异步操作中可以获取 logger
+  // Run the downstream handler inside AsyncLocalStorage so the logger is available in async operations
   await als.run(logger, async () => {
     await next()
   })
@@ -47,8 +47,8 @@ export async function traceLogger(c: Context, next: Next): Promise<void> {
 }
 
 /**
- * 获取当前请求的 logger
- * @returns 当前请求的 logger，如果不存在则返回 undefined
+ * Get the logger for the current request
+ * @returns The logger for the current request, or undefined if not available
  */
 export function getCurrentLogger(): RequestLogger | undefined {
   return als.getStore()

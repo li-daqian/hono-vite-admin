@@ -5,7 +5,7 @@ import { errorResponse } from '@server/src/dto/response.dto'
 import { getCurrentLogger } from '@server/src/middleware/trace-logger'
 
 /**
- * 基类异常，包含状态码和异常消息
+ * Base exception class that includes a status code and a message
  */
 export class HttpStatusException extends Error {
   public statusCode: ContentfulStatusCode
@@ -18,7 +18,7 @@ export class HttpStatusException extends Error {
 }
 
 /**
- * 400 Bad Request 异常
+ * 400 Bad Request exception
  */
 export class BadRequestException extends HttpStatusException {
   constructor(message: string = 'Bad Request') {
@@ -27,7 +27,7 @@ export class BadRequestException extends HttpStatusException {
 }
 
 /**
- * 401 Unauthorized 异常
+ * 401 Unauthorized exception
  */
 export class UnauthorizedException extends HttpStatusException {
   constructor(message: string = 'Unauthorized') {
@@ -36,7 +36,7 @@ export class UnauthorizedException extends HttpStatusException {
 }
 
 /**
- * 500 Internal Server Error 异常
+ * 500 Internal Server Error exception
  */
 export class InternalServerErrorException extends HttpStatusException {
   constructor(message: string = 'Internal Server Error') {
@@ -45,8 +45,8 @@ export class InternalServerErrorException extends HttpStatusException {
 }
 
 /**
- * Hono `app.onError` style handler function.
- * 可以直接传给 `app.onError(onErrorHandler)` 或者在其他地方复用。
+ * Hono `app.onError`-style handler function.
+ * Can be passed directly to `app.onError(onErrorHandler)` or reused elsewhere.
  */
 export function onErrorHandler(err: Error | HTTPResponseError, c: Context): Response | Promise<Response> {
   if (isHTTPResponseError(err)) {
