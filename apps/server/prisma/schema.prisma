@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider     = "postgresql"
+  relationMode = "prisma"
+}
+
+model User {
+  id          String     @id @default(ulid())
+  username    String     @unique
+  password    String
+  salt        String
+  email       String?
+  phone       String?
+  displayName String?    @map("display_name")
+  roles       UserRole[]
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("user")
+}
+
+model Role {
+  id          String           @id @default(ulid())
+  name        String           @unique
+  description String?
+  userRoles   UserRole[]
+  permissions RolePermission[]
+
+  @@map("role")
+}
+
+model Permission {
+  id              String           @id @default(ulid())
+  type            PermissionType
+  targetId        String           @map("target_id")
+  rolePermissions RolePermission[]
+
+  @@unique([type, targetId])
+  @@map("permission")
+}
+
+model UserRole {
+  userId String @map("user_id")
+  roleId String @map("role_id")
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_role")
+}
+
+model RolePermission {
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permission")
+}
+
+model Menu {
+  id         String   @id @default(ulid())
+  parentId   String?  @map("parent_id")
+  parentPath String?  @map("parent_path")
+  type       MenuType
+  name       String
+  path       String
+  icon       String?
+  order      Int
+
+  @@map("menu")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum PermissionType {
+  MENU
+}
+
+enum MenuType {
+  DIRECTORY
+  MENU
+}

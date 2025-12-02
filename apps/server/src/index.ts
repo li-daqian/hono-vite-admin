@@ -1,19 +1,22 @@
 import { errorResponse } from '@server/src/dto/response.dto'
 import { onErrorHandler } from '@server/src/middleware/expcetion-handler'
 import { traceLogger } from '@server/src/middleware/trace-logger'
+import { api } from '@server/src/openai'
 import { Hono } from 'hono'
 import { requestId } from 'hono/request-id'
 
+// Initialize main app
 const app = new Hono()
 
+// Global middlewares
 app.use('*', requestId())
 app.use('*', traceLogger)
 
+// Error handling
 app.notFound(c => c.json(errorResponse('Not Found'), 404))
 app.onError(onErrorHandler)
 
-app.get('/', async (c) => {
-  return c.text('Hello Hono!')
-})
+// Main API routes
+app.route('/', api)
 
 export default app

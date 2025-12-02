@@ -1,13 +1,23 @@
 {
   "extends": "@hono-vite-admin/typescript-config/base.json",
   "compilerOptions": {
+    "target": "ES2023",
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "paths": {
-      "@server/*": ["./*"]
+      "@server/*": [
+        "./*"
+      ]
     },
-    "types": ["bun"],
-    "strict": true
+    "types": [
+      "bun"
+    ],
+    "strict": true,
+    "esModuleInterop": true
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ]
 }
