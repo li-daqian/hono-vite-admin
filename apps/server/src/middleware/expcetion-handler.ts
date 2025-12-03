@@ -3,7 +3,7 @@ import type { HTTPResponseError } from 'hono/types'
 import { BusinessErrorEnum } from '@server/src/common/constant'
 import { BusinessError } from '@server/src/common/exception'
 import { errorResponse } from '@server/src/common/response'
-import { log } from '@server/src/middleware/trace-logger'
+import { logger } from '@server/src/middleware/trace-logger'
 
 /**
  * Hono `app.onError`-style handler function.
@@ -11,11 +11,11 @@ import { log } from '@server/src/middleware/trace-logger'
  */
 export function onErrorHandler(err: Error | HTTPResponseError, c: Context): Response | Promise<Response> {
   if (isHTTPResponseError(err)) {
-    log()?.error(err, 'HTTPResponseError occurred')
+    logger().error(err, 'HTTPResponseError occurred')
     return err.getResponse()
   }
 
-  log()?.error(err, 'Unhandled exception occurred')
+  logger().error(err, 'Unhandled exception occurred')
   if (err instanceof BusinessError) {
     return c.json(errorResponse(err))
   }
