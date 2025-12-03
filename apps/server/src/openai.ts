@@ -12,7 +12,6 @@ api.doc('/openapi.json', {
     version: '1.0.0',
   },
 })
-
 // Swagger UI
 api.get('/docs', swaggerUI({ url: '/openapi.json' }))
 
