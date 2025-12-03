@@ -1,4 +1,5 @@
-import { errorResponse } from '@server/src/dto/response.dto'
+import { BusinessErrorEnum } from '@server/src/common/constant'
+import { errorResponse } from '@server/src/common/response'
 import { onErrorHandler } from '@server/src/middleware/expcetion-handler'
 import { traceLogger } from '@server/src/middleware/trace-logger'
 import { api } from '@server/src/openai'
@@ -13,7 +14,7 @@ app.use('*', requestId())
 app.use('*', traceLogger)
 
 // Error handling
-app.notFound(c => c.json(errorResponse('Not Found'), 404))
+app.notFound(c => c.json(errorResponse(BusinessErrorEnum.NOT_FOUND), 404))
 app.onError(onErrorHandler)
 
 // Main API routes

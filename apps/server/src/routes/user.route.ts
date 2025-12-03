@@ -1,6 +1,7 @@
 import type { OpenAPIHono, RouteConfig } from '@hono/zod-openapi'
 import type { UserCreateRequest } from '@server/src/schemas/user.schema'
 import { createRoute } from '@hono/zod-openapi'
+import { okResponse } from '@server/src/common/response'
 import { UserCreateRequestSchema, UserCreateResponseSchema } from '@server/src/schemas/user.schema'
 import { userService } from '@server/src/service/user.service'
 
@@ -34,7 +35,7 @@ export function registerUserRoute(api: OpenAPIHono) {
     const body = await c.req.json<UserCreateRequest>()
     const createdUser = await userService.createUser(body)
     return c.json(
-      createdUser,
+      okResponse(createdUser),
       201,
     )
   })
