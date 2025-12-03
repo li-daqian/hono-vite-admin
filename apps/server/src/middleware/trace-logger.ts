@@ -50,6 +50,6 @@ export async function traceLogger(c: Context, next: Next): Promise<void> {
  * Get the logger for the current request
  * @returns The logger for the current request, or undefined if not available
  */
-export function getCurrentLogger(): RequestLogger | undefined {
+export function log(): RequestLogger | undefined {
   return als.getStore()
 }

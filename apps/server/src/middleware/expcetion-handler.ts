@@ -2,7 +2,7 @@ import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { errorResponse } from '@server/src/dto/response.dto'
-import { getCurrentLogger } from '@server/src/middleware/trace-logger'
+import { log } from '@server/src/middleware/trace-logger'
 
 /**
  * Base exception class that includes a status code and a message
@@ -50,11 +50,11 @@ export class InternalServerErrorException extends HttpStatusException {
  */
 export function onErrorHandler(err: Error | HTTPResponseError, c: Context): Response | Promise<Response> {
   if (isHTTPResponseError(err)) {
-    getCurrentLogger()?.error(err, 'HTTPResponseError occurred')
+    log()?.error(err, 'HTTPResponseError occurred')
     return err.getResponse()
   }
 
-  getCurrentLogger()?.error(err, 'Unhandled error')
+  log()?.error(err, 'Unhandled error')
   if (err instanceof HttpStatusException) {
     return c.json(errorResponse(err.message), err.statusCode)
   }
