@@ -1,4 +1,5 @@
 import { UserStatus } from '@server/generated/prisma/enums'
+import { envConfig } from '@server/src/common/config'
 import { prisma } from '@server/src/lib/prisma'
 import bcrypt from 'bcryptjs'
 
@@ -9,25 +10,27 @@ async function main() {
 }
 
 async function upsertAdminRole() {
+  const adminRoleName = envConfig.admin.roleName
   return await prisma.role.upsert({
-    where: { name: 'Admin' },
+    where: { name: adminRoleName },
     update: {},
     create: {
-      name: 'Admin',
+      name: adminRoleName,
       description: 'Administrator role with full permissions',
     },
   })
 }
 
 async function upsertAdminUser(adminRoleId: string) {
+  const adminUsername = envConfig.admin.username
   const salt = await bcrypt.genSalt(10)
-  const hashedPassword = await bcrypt.hash('admin@123!', salt)
+  const hashedPassword = await bcrypt.hash(envConfig.admin.password, salt)
 
   return await prisma.user.upsert({
-    where: { username: 'Admin' },
+    where: { username: adminUsername },
     update: {},
     create: {
-      username: 'Admin',
+      username: adminUsername,
       password: hashedPassword,
       salt,
       displayName: 'Administrator',
