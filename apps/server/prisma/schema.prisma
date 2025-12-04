@@ -87,6 +87,13 @@ model Menu {
   @@map("menu")
 }
 
+model SysConfig {
+  key   String @id
+  value String
+
+  @@map("sys_config")
+}
+
 enum UserStatus {
   ACTIVE
   DISABLED
