@@ -1,4 +1,4 @@
-import { BusinessErrorEnum } from '@server/src/common/constant'
+import { NotFoundError } from '@server/src/common/exception'
 import { errorResponse } from '@server/src/common/response'
 import { onErrorHandler } from '@server/src/middleware/expcetion-handler'
 import { traceLogger } from '@server/src/middleware/trace-logger'
@@ -14,7 +14,7 @@ app.use('*', requestId())
 app.use('*', traceLogger)
 
 // Error handling
-app.notFound(c => c.json(errorResponse(BusinessErrorEnum.NOT_FOUND), 404))
+app.notFound(c => c.json(errorResponse(new NotFoundError()), 404))
 app.onError(onErrorHandler)
 
 // Main API routes

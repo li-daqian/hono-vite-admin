@@ -1,10 +1,10 @@
-import type { BusinessErrorEnumType } from '@server/src/common/constant'
-import { BusinessError } from '@server/src/common/exception'
+import type { ContentfulStatusCode } from 'hono/utils/http-status'
+import { HttpStatusError } from '@server/src/common/exception'
 import { requestId } from '@server/src/middleware/trace-logger'
 
 export interface Response<T = any> {
   requestId: string
-  code: number
+  code: ContentfulStatusCode
   ok: boolean
   message: string
   data?: T
@@ -14,11 +14,11 @@ export function okResponse<T = any>(data?: T): Response<T> {
   return { requestId: requestId(), code: 200, ok: true, message: 'OK', data }
 }
 
-export function errorResponse<T = any>(businessError: BusinessError<T> | BusinessErrorEnumType): Response<T> {
-  if (businessError instanceof BusinessError) {
-    return { requestId: requestId(), code: businessError.code, ok: false, message: businessError.message, data: businessError.data }
+export function errorResponse<T = any>(error: Error): Response<T> {
+  if (error instanceof HttpStatusError) {
+    return { requestId: requestId(), code: error.status, ok: false, message: error.message }
   }
   else {
-    return { requestId: requestId(), code: businessError.code, ok: false, message: businessError.message }
+    return { requestId: requestId(), code: 500, ok: false, message: 'Internal Server Error' }
   }
 }

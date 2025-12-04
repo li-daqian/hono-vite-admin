@@ -1,7 +1,5 @@
 import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
-import { BusinessErrorEnum } from '@server/src/common/constant'
-import { BusinessError } from '@server/src/common/exception'
 import { errorResponse } from '@server/src/common/response'
 import { logger } from '@server/src/middleware/trace-logger'
 
@@ -10,18 +8,14 @@ import { logger } from '@server/src/middleware/trace-logger'
  * Can be passed directly to `app.onError(onErrorHandler)` or reused elsewhere.
  */
 export function onErrorHandler(err: Error | HTTPResponseError, c: Context): Response | Promise<Response> {
+  logger().error(err, err.message)
+
   if (isHTTPResponseError(err)) {
-    logger().error(err, 'HTTPResponseError occurred')
     return err.getResponse()
   }
 
-  logger().error(err, 'Unhandled exception occurred')
-  if (err instanceof BusinessError) {
-    return c.json(errorResponse(err))
-  }
-  else {
-    return c.json(errorResponse(BusinessErrorEnum.INTERNAL_SERVER_ERROR), 500)
-  }
+  const response = errorResponse(err)
+  return c.json(response, response.code)
 }
 
 function isHTTPResponseError(e: unknown): e is HTTPResponseError {

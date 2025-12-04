@@ -1,27 +1,50 @@
-import type { BusinessErrorEnumType } from '@server/src/common/constant'
+import type { ContentfulStatusCode } from 'hono/utils/http-status'
 
-export class BusinessError<T> extends Error {
-  private _code: number
-  private _message: string
-  private _data?: T
+export abstract class HttpStatusError extends Error {
+  private httpStatus: ContentfulStatusCode
 
-  constructor(type: BusinessErrorEnumType | number, message?: string, data?: T) {
+  constructor(message: string, httpStatus: ContentfulStatusCode) {
     super(message)
-    this._code = typeof type === 'number' ? type : type.code
-    this._message = message || (typeof type === 'number' ? '' : type.message)
-    this._data = data
-    this.name = 'BusinessError'
+    this.httpStatus = httpStatus
+    this.name = 'HttpStatusError'
   }
 
-  get code(): number {
-    return this._code
+  public get status(): ContentfulStatusCode {
+    return this.httpStatus
   }
+}
 
-  get message(): string {
-    return this._message
+export class NotFoundError extends HttpStatusError {
+  constructor(message: string = 'Not Found') {
+    super(message, 404)
+    this.name = 'NotFoundError'
   }
+}
 
-  get data(): T | undefined {
-    return this._data
+export class UnauthorizedError extends HttpStatusError {
+  constructor(message: string = 'Unauthorized') {
+    super(message, 401)
+    this.name = 'UnauthorizedError'
+  }
+}
+
+export class ForbiddenError extends HttpStatusError {
+  constructor(message: string = 'Forbidden') {
+    super(message, 403)
+    this.name = 'ForbiddenError'
+  }
+}
+
+export class BadRequestError extends HttpStatusError {
+  constructor(message: string = 'Bad Request') {
+    super(message, 400)
+    this.name = 'BadRequestError'
+  }
+}
+
+export class InternalServerError extends HttpStatusError {
+  constructor(message: string = 'Internal Server Error') {
+    super(message, 500)
+    this.name = 'InternalServerError'
   }
 }

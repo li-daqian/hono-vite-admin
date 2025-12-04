@@ -1,12 +1,12 @@
 import { swaggerUI } from '@hono/swagger-ui'
 import { OpenAPIHono } from '@hono/zod-openapi'
-import { BusinessError } from '@server/src/common/exception'
+import { BadRequestError } from '@server/src/common/exception'
 import { registerUserRoute } from '@server/src/routes/user.route'
 
 export const api = new OpenAPIHono({
   defaultHook: (result, c) => {
     if (!result.success) {
-      throw new BusinessError(400, result.error.message)
+      throw new BadRequestError(result.error.message)
     }
   },
 })
