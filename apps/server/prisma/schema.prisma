@@ -75,14 +75,12 @@ model RolePermission {
 }
 
 model Menu {
-  id         String   @id @default(ulid())
-  parentId   String?  @map("parent_id")
-  parentPath String?  @map("parent_path")
-  type       MenuType
-  name       String
-  path       String
-  icon       String?
-  order      Int
+  id       String  @id @default(ulid())
+  parentId String? @map("parent_id")
+  name     String
+  path     String
+  icon     String?
+  order    Int
 
   @@map("menu")
 }
@@ -97,13 +95,12 @@ model SysConfig {
 enum UserStatus {
   ACTIVE
   DISABLED
+
+  @@map("user_status")
 }
 
 enum PermissionType {
   MENU
-}
 
-enum MenuType {
-  DIRECTORY
-  MENU
+  @@map("permission_type")
 }
