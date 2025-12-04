@@ -1,12 +1,13 @@
 import type { Context, Next } from 'hono'
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { envConfig } from '@server/src/common/config'
 import pino from 'pino'
 import pretty from 'pino-pretty'
 
 // Create the base logger instance
 const baseLogger = pino(
   {
-    level: process.env.LOG_LEVEL || 'info',
+    level: envConfig.log.level,
   },
   pretty({
     colorize: true,
