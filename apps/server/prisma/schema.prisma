@@ -102,6 +102,7 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@map("refresh_token")
 }
 
 enum UserStatus {
