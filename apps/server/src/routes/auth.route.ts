@@ -26,19 +26,13 @@ export function authRoute(api: OpenAPIHono) {
   api.openapi(authLoginRoute, async (c) => {
     const body = await c.req.json<AuthLoginRequest>()
     const loginResult = await authService.login(body)
-    return c.json(
-      okResponse(loginResult),
-      200,
-    )
+    return c.json(okResponse(loginResult))
   })
 
   // Refresh access token using refresh token
   api.openapi(authRefreshRoute, async (c) => {
     const body = await c.req.json<AuthRefreshRequest>()
     const refreshResult = await authService.refresh(body)
-    return c.json(
-      okResponse(refreshResult),
-      200,
-    )
+    return c.json(okResponse(refreshResult))
   })
 }
