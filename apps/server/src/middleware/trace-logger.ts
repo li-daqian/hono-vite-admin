@@ -11,7 +11,7 @@ const baseLogger = pino(
   },
   pretty({
     colorize: true,
-    translateTime: 'HH:MM:ss.l',
+    translateTime: 'SYS:standard',
     ignore: 'pid,hostname',
     messageFormat: '{msg}',
   }),
