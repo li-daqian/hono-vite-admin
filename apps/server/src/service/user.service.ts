@@ -29,6 +29,8 @@ class UserService {
     const { password, salt: userSalt, ...safeUser } = user
     return {
       ...safeUser,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
     }
   }
 
