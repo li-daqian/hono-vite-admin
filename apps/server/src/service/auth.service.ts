@@ -1,7 +1,7 @@
-import type { AuthLoginRequest, AuthLoginResponse } from '@server/src/schemas/auth.schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
 import { randomUUID } from 'node:crypto'
 import { envConfig } from '@server/src/common/config'
-import { BadRequestError } from '@server/src/common/exception'
+import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
 import { generateAccessToken, storeAcessToken } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
 import { getContext } from '@server/src/middleware/context-holder'
@@ -39,6 +39,39 @@ class AuthService {
     })
 
     return { refreshToken: refreshToken.token }
+  }
+
+  async refresh(request: AuthRefreshRequest): Promise<AuthRefreshResponse> {
+    const existingToken = await prisma.refreshToken.findUnique({
+      where: { token: request.refreshToken },
+    })
+
+    if (!existingToken) {
+      throw new UnauthorizedError('Invalid refresh token')
+    }
+
+    if (existingToken.expiresAt <= new Date()) {
+      await prisma.refreshToken.delete({ where: { token: existingToken.token } })
+      throw new UnauthorizedError('Refresh token expired')
+    }
+
+    const accessToken = await generateAccessToken(existingToken.userId)
+    storeAcessToken(getContext()!, accessToken)
+
+    const newRefreshToken = await prisma.$transaction(async (tx) => {
+      const created = await tx.refreshToken.create({
+        data: {
+          userId: existingToken.userId,
+          token: randomUUID(),
+          expiresAt: parseTimeDuration(envConfig.auth.refreshTokenExpiry),
+        },
+      })
+
+      await tx.refreshToken.delete({ where: { token: existingToken.token } })
+      return created
+    })
+
+    return { refreshToken: newRefreshToken.token }
   }
 }
 
