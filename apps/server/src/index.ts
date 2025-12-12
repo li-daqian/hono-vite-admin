@@ -1,5 +1,7 @@
 import { NotFoundError } from '@server/src/common/exception'
 import { errorResponse } from '@server/src/common/response'
+import { authMiddleware } from '@server/src/middleware/auth'
+import { holdContext } from '@server/src/middleware/context-holder'
 import { onErrorHandler } from '@server/src/middleware/expcetion-handler'
 import { traceLogger } from '@server/src/middleware/trace-logger'
 import { api } from '@server/src/openai'
@@ -10,8 +12,10 @@ import { requestId } from 'hono/request-id'
 const app = new Hono()
 
 // Global middlewares
-app.use('*', requestId())
-app.use('*', traceLogger)
+app.use('api/*', holdContext)
+app.use('api/*', requestId())
+app.use('api/*', traceLogger)
+app.use('api/*', authMiddleware)
 
 // Error handling
 app.notFound(c => c.json(errorResponse(new NotFoundError()), 404))

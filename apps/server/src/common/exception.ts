@@ -40,6 +40,14 @@ export class BadRequestError extends HttpStatusError {
     super(message, 400)
     this.name = 'BadRequestError'
   }
+
+  static UserOrPasswordIncorrect() {
+    return new BadRequestError('User or password is incorrect')
+  }
+
+  static UsernameAlreadyExists() {
+    return new BadRequestError('Username already exists')
+  }
 }
 
 export class InternalServerError extends HttpStatusError {

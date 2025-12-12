@@ -15,17 +15,18 @@ datasource db {
 }
 
 model User {
-  id          String     @id @default(ulid())
-  username    String     @unique
-  password    String
-  salt        String
-  email       String?
-  phone       String?
-  displayName String?    @map("display_name")
-  roles       UserRole[]
-  status      UserStatus @default(ACTIVE)
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  id            String         @id @default(ulid())
+  username      String         @unique
+  password      String
+  salt          String
+  email         String?
+  phone         String?
+  displayName   String?        @map("display_name")
+  status        UserStatus     @default(ACTIVE)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  roles         UserRole[]
+  refreshTokens RefreshToken[]
 
   @@map("user")
 }
@@ -90,6 +91,17 @@ model SysConfig {
   value String
 
   @@map("sys_config")
+}
+
+model RefreshToken {
+  id        String   @id @default(ulid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 enum UserStatus {

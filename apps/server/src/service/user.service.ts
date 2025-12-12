@@ -1,22 +1,27 @@
 import type { UserCreateRequest, UserCreateResponse } from '@server/src/schemas/user.schema'
+import { BadRequestError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import bcrypt from 'bcryptjs'
 
 class UserService {
-  async createUser(data: UserCreateRequest): Promise<UserCreateResponse> {
+  async createUser(request: UserCreateRequest): Promise<UserCreateResponse> {
+    if (!(await this.isUsernameUnique(request.username))) {
+      throw BadRequestError.UsernameAlreadyExists()
+    }
+
     // Generate salt and hash password
     const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(data.password, salt)
+    const hashedPassword = await bcrypt.hash(request.password, salt)
 
     // Create user in DB
     const user = await prisma.user.create({
       data: {
-        username: data.username,
+        username: request.username,
         password: hashedPassword,
         salt,
-        email: data.email,
-        phone: data.phone,
-        displayName: data.displayName,
+        email: request.email,
+        phone: request.phone,
+        displayName: request.displayName,
       },
     })
 
@@ -25,6 +30,13 @@ class UserService {
     return {
       ...safeUser,
     }
+  }
+
+  async isUsernameUnique(username: string): Promise<boolean> {
+    const existingUser = await prisma.user.findUnique({
+      where: { username },
+    })
+    return existingUser === null
   }
 }
 
