@@ -10,7 +10,7 @@
     "start": "bun run dist/index.js",
     "lint": "eslint src",
     "check-types": "tsc --noEmit",
-    "dev:prisma:reset": "prisma generate && prisma migrate reset && prisma db push && prisma db seed"
+    "prisma:reset": "prisma generate && prisma migrate reset && prisma db push && prisma db seed"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.1.5",
