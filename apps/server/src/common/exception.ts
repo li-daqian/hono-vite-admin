@@ -1,58 +1,50 @@
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 
 export abstract class HttpStatusError extends Error {
-  private httpStatus: ContentfulStatusCode
+  private _httpStatus: ContentfulStatusCode
+  private _code: string
 
-  constructor(message: string, httpStatus: ContentfulStatusCode) {
+  constructor(errorCode: string, message: string, httpStatus: ContentfulStatusCode) {
     super(message)
-    this.httpStatus = httpStatus
+    this._httpStatus = httpStatus
+    this._code = errorCode
     this.name = 'HttpStatusError'
   }
 
-  public get status(): ContentfulStatusCode {
-    return this.httpStatus
+  public get httpStatus(): ContentfulStatusCode {
+    return this._httpStatus
   }
-}
 
-export class NotFoundError extends HttpStatusError {
-  constructor(message: string = 'Not Found') {
-    super(message, 404)
-    this.name = 'NotFoundError'
+  public get code(): string {
+    return this._code
   }
 }
 
 export class UnauthorizedError extends HttpStatusError {
-  constructor(message: string = 'Unauthorized') {
-    super(message, 401)
+  constructor(errorCode: string = 'UNAUTHORIZED', message: string = 'Unauthorized') {
+    super(errorCode, message, 401)
     this.name = 'UnauthorizedError'
   }
 }
 
 export class ForbiddenError extends HttpStatusError {
-  constructor(message: string = 'Forbidden') {
-    super(message, 403)
+  constructor(errorCode: string = 'FORBIDDEN', message: string = 'Forbidden') {
+    super(errorCode, message, 403)
     this.name = 'ForbiddenError'
   }
 }
 
 export class BadRequestError extends HttpStatusError {
-  constructor(message: string = 'Bad Request') {
-    super(message, 400)
+  constructor(errorCode: string = 'BAD_REQUEST', message: string = 'Bad Request') {
+    super(errorCode, message, 400)
     this.name = 'BadRequestError'
   }
 
   static UserOrPasswordIncorrect() {
-    return new BadRequestError('User or password is incorrect')
+    return new BadRequestError('USER_OR_PASSWORD_INCORRECT', 'User or password is incorrect')
   }
 
   static UsernameAlreadyExists() {
-    return new BadRequestError('Username already exists')
-  }
-}
-
-export class InternalServerError extends HttpStatusError {
-  constructor(message: string = 'Internal Server Error') {
-    super(message, 500)
-    this.name = 'InternalServerError'
+    return new BadRequestError('USERNAME_ALREADY_EXISTS', 'Username already exists')
   }
 }

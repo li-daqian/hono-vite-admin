@@ -1,5 +1,5 @@
 import { NotFoundError } from '@server/src/common/exception'
-import { errorResponse } from '@server/src/common/response'
+import { errorResponse, notFoundErrorResponse } from '@server/src/common/response'
 import { authMiddleware } from '@server/src/middleware/auth'
 import { holdContext } from '@server/src/middleware/context-holder'
 import { corsMiddleware } from '@server/src/middleware/cors'
@@ -20,7 +20,7 @@ app.use('api/*', traceLogger)
 app.use('api/*', authMiddleware)
 
 // Error handling
-app.notFound(c => c.json(errorResponse(new NotFoundError()), 404))
+app.notFound(c => notFoundErrorResponse(c))
 app.onError(onErrorHandler)
 
 // Main API routes

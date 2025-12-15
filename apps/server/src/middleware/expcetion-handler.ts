@@ -1,21 +1,26 @@
 import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
-import { errorResponse } from '@server/src/common/response'
+import { HttpStatusError } from '@server/src/common/exception'
+import { errorResponse, internalServerErrorResponse } from '@server/src/common/response'
 import { logger } from '@server/src/middleware/trace-logger'
 
 /**
  * Hono `app.onError`-style handler function.
  * Can be passed directly to `app.onError(onErrorHandler)` or reused elsewhere.
  */
-export function onErrorHandler(err: Error | HTTPResponseError, c: Context): Response | Promise<Response> {
-  logger().error(err, err.message)
+export function onErrorHandler(error: Error | HTTPResponseError, c: Context): Response | Promise<Response> {
+  logger().error(error, error.message)
 
-  if (isHTTPResponseError(err)) {
-    return err.getResponse()
+  if (isHTTPResponseError(error)) {
+    return error.getResponse()
   }
 
-  const response = errorResponse(err)
-  return c.json(response, response.code)
+  if (error instanceof HttpStatusError) {
+    return c.json(errorResponse(error), error.httpStatus)
+  }
+  else {
+    return internalServerErrorResponse(c)
+  }
 }
 
 function isHTTPResponseError(e: unknown): e is HTTPResponseError {

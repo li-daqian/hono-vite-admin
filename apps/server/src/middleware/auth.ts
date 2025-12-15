@@ -18,20 +18,20 @@ export async function authMiddleware(c: Context, next: Next): Promise<void | Res
   const token = getAccessToken(c)
 
   if (!token) {
-    throw new UnauthorizedError('Access token not found')
+    throw new UnauthorizedError()
   }
 
   const authContext = await getAuthContext(token)
 
   if (!authContext?.userId) {
-    throw new UnauthorizedError('Invalid token payload')
+    throw new UnauthorizedError()
   }
 
   try {
     const authContext = await getAuthContext(token)
 
     if (!authContext?.userId) {
-      throw new UnauthorizedError('Invalid token payload')
+      throw new UnauthorizedError()
     }
 
     c.set(authContextKey, authContext)
@@ -41,7 +41,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<void | Res
     if (error instanceof UnauthorizedError) {
       throw error
     }
-    throw new UnauthorizedError('Invalid or expired token')
+    throw new UnauthorizedError()
   }
 }
 
