@@ -1,5 +1,4 @@
-import { NotFoundError } from '@server/src/common/exception'
-import { errorResponse, notFoundErrorResponse } from '@server/src/common/response'
+import { notFoundErrorResponse } from '@server/src/common/response'
 import { authMiddleware } from '@server/src/middleware/auth'
 import { holdContext } from '@server/src/middleware/context-holder'
 import { corsMiddleware } from '@server/src/middleware/cors'
