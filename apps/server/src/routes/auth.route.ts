@@ -3,6 +3,7 @@ import type { AuthLoginRequest, AuthLogoutRequest, AuthRefreshRequest } from '@s
 import { createRoute } from '@hono/zod-openapi'
 import { okResponse } from '@server/src/common/response'
 import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthLogoutRequestSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/schemas/auth.schema'
+import { BaseResponseSchema } from '@server/src/schemas/base.schema'
 import { authService } from '@server/src/service/auth.service'
 
 export const authLoginRoute: RouteConfig = createRoute({
@@ -25,7 +26,7 @@ export const authLogoutRoute: RouteConfig = createRoute({
   method: 'post',
   path: '/api/v1/auth/logout',
   request: { body: { content: { 'application/json': { schema: AuthLogoutRequestSchema } } } },
-  responses: { 200: { description: 'User logged out successfully', content: { 'application/json': { schema: AuthLoginResponseSchema.pick({ refreshToken: true }) } } } },
+  responses: { 200: { description: 'User logged out successfully', content: { 'application/json': { schema: BaseResponseSchema } } } },
   tags: ['Auth'],
 })
 
