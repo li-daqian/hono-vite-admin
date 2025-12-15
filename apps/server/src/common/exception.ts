@@ -40,6 +40,10 @@ export class BadRequestError extends HttpStatusError {
     this.name = 'BadRequestError'
   }
 
+  static Message(message: string) {
+    return new BadRequestError('BAD_REQUEST', message)
+  }
+
   static UserOrPasswordIncorrect() {
     return new BadRequestError('USER_OR_PASSWORD_INCORRECT', 'User or password is incorrect')
   }

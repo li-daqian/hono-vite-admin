@@ -29,18 +29,26 @@ export async function getAuthContext(token: string): Promise<UserAuthContext | u
 }
 
 const accessTokenCookieName = 'access_token'
+const accessTokenCookieOptions = {
+  httpOnly: true,
+  secure: envConfig.isProduction,
+  sameSite: 'Lax' as const,
+  domain: envConfig.domain,
+  path: '/',
+}
 
 export function storeAcessToken(c: Context, accessToken: string): void {
-  setCookie(c, accessTokenCookieName, accessToken, {
-    httpOnly: true,
-    secure: envConfig.isProduction,
-    sameSite: 'Lax',
-    domain: envConfig.domain,
-    path: '/',
-  })
+  setCookie(c, accessTokenCookieName, accessToken, accessTokenCookieOptions)
 }
 
 export function getAccessToken(c: Context): string | undefined {
   const token = getCookie(c, accessTokenCookieName)
   return token
+}
+
+export function clearAccessToken(c: Context): void {
+  setCookie(c, accessTokenCookieName, '', {
+    ...accessTokenCookieOptions,
+    maxAge: 0,
+  })
 }

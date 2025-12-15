@@ -1,9 +1,10 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthLogoutRequest, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
 import { randomUUID } from 'node:crypto'
 import { envConfig } from '@server/src/common/config'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
-import { generateAccessToken, storeAcessToken } from '@server/src/lib/jwt'
+import { clearAccessToken, generateAccessToken, getAuthContext, storeAcessToken } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
+import { getLoginUser } from '@server/src/middleware/auth'
 import { getContext } from '@server/src/middleware/context-holder'
 import { parseTimeDuration } from '@server/src/utils/date'
 import bcrypt from 'bcryptjs'
@@ -72,6 +73,18 @@ class AuthService {
     })
 
     return { refreshToken: newRefreshToken.token }
+  }
+
+  async logout(request: AuthLogoutRequest): Promise<void> {
+    const existingToken = await prisma.refreshToken.findUnique({ where: { token: request.refreshToken } })
+    if (existingToken?.userId !== getLoginUser()!.userId) {
+      throw BadRequestError.Message('Refresh token does not belong to the logged-in user')
+    }
+    // Remove refresh token if exists
+    await prisma.refreshToken.delete({ where: { token: request.refreshToken } })
+
+    // Clear access token cookie
+    clearAccessToken(getContext()!)
   }
 }
 
