@@ -27,4 +27,6 @@ export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>
 export const AuthLogoutRequestSchema = z.object({
   refreshToken: z.string().openapi({ description: 'Refresh token to logout', example: 'f8b0c6ac-2f21-4e56-9f47-1b2a3c4d5e6f' }),
 })
+export const AuthLogoutResponseSchema = BaseResponseSchema
 export type AuthLogoutRequest = z.infer<typeof AuthLogoutRequestSchema>
+export type AuthLogoutResponse = z.infer<typeof AuthLogoutResponseSchema>
