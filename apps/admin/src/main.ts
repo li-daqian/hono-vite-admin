@@ -1,5 +1,13 @@
+import Antd from 'ant-design-vue'
 import { createApp } from 'vue'
 import App from './App.vue'
+import { initTheme } from './theme/useTheme'
 import './style.css'
 
-createApp(App).mount('#app')
+const app = createApp(App)
+app.use(Antd)
+
+// initialize theme before mount
+initTheme()
+
+app.mount('#app')
