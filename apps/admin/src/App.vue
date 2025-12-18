@@ -1,19 +1,9 @@
 <script setup lang="ts">
-import BaseLayout from '@admin/layouts/BaseLayout.vue'
-import { App, ConfigProvider } from 'ant-design-vue'
-import { useTheme } from './theme/useTheme'
-
-const { themeConfig } = useTheme()
+import { Button } from '@admin/components/ui/button'
 </script>
 
 <template>
-  <ConfigProvider :theme="themeConfig">
-    <App>
-      <BaseLayout />
-    </App>
-  </ConfigProvider>
+  <div>
+    <Button>Click me</Button>
+  </div>
 </template>
-
-<style scoped>
-
-</style>
