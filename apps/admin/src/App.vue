@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import ToggleTheme from '@admin/components/ToggleTheme.vue'
-import { Button } from '@admin/components/ui/button'
+import GlobalHeader from '@admin/components/GlobalHeader.vue'
 </script>
 
 <template>
   <div>
-    <ToggleTheme />
-    <Button>
-      Click me
-    </Button>
+    <GlobalHeader />
   </div>
 </template>
