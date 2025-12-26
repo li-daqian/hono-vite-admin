@@ -1,4 +1,3 @@
-import { env } from 'node:process'
 import { swaggerUI } from '@hono/swagger-ui'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { envConfig } from '@server/src/common/config'
