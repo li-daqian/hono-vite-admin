@@ -1,10 +1,10 @@
 import type { Context } from 'hono'
-import { envConfig } from '@server/src/common/config'
+import { getEnv } from '@server/src/lib/env'
 import { logger } from '@server/src/middleware/trace-logger'
 import { getCookie, setCookie } from 'hono/cookie'
 import { jwtVerify, SignJWT } from 'jose'
 
-const jwtSecret = new TextEncoder().encode(envConfig.auth.jwtSecret)
+const jwtSecret = new TextEncoder().encode(getEnv().auth.jwtSecret)
 
 export interface UserAuthContext {
   userId: string
@@ -13,7 +13,7 @@ export interface UserAuthContext {
 export async function generateAccessToken(userId: string): Promise<string> {
   return await new SignJWT({ userId })
     .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime(envConfig.auth.accessTokenExpiry)
+    .setExpirationTime(getEnv().auth.accessTokenExpiry)
     .sign(jwtSecret)
 }
 
@@ -31,9 +31,9 @@ export async function getAuthContext(token: string): Promise<UserAuthContext | u
 const accessTokenCookieName = 'access_token'
 const accessTokenCookieOptions = {
   httpOnly: true,
-  secure: envConfig.isProduction,
+  secure: getEnv().isProduction,
   sameSite: 'Lax' as const,
-  domain: envConfig.domain,
+  domain: getEnv().domain,
   path: '/',
 }
 

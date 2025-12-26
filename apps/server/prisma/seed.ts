@@ -1,5 +1,5 @@
 import { UserStatus } from '@server/generated/prisma/enums'
-import { envConfig } from '@server/src/common/config'
+import { envConfig } from '@server/src/lib/env'
 import { prisma } from '@server/src/lib/prisma'
 import bcrypt from 'bcryptjs'
 

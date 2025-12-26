@@ -1,7 +1,7 @@
 import type { AuthLoginRequest, AuthLoginResponse, AuthLogoutRequest, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
 import { randomUUID } from 'node:crypto'
-import { envConfig } from '@server/src/common/config'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
+import { getEnv } from '@server/src/lib/env'
 import { clearAccessToken, generateAccessToken, getAuthContext, storeAcessToken } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth'
@@ -35,7 +35,7 @@ class AuthService {
       data: {
         userId: user.id,
         token: randomUUID(),
-        expiresAt: parseTimeDuration(envConfig.auth.refreshTokenExpiry),
+        expiresAt: parseTimeDuration(getEnv().auth.refreshTokenExpiry),
       },
     })
 
@@ -64,7 +64,7 @@ class AuthService {
         data: {
           userId: existingToken.userId,
           token: randomUUID(),
-          expiresAt: parseTimeDuration(envConfig.auth.refreshTokenExpiry),
+          expiresAt: parseTimeDuration(getEnv().auth.refreshTokenExpiry),
         },
       })
 

@@ -1,10 +1,10 @@
-import { envConfig } from '@server/src/common/config'
+import { getEnv } from '@server/src/lib/env'
 import { cors } from 'hono/cors'
 
 export const corsMiddleware = cors({
   origin: (origin, _c) => {
-    if (envConfig.isProduction) {
-      return `https://${envConfig.domain}`
+    if (getEnv().isProduction) {
+      return `https://${getEnv().domain}`
     }
     else {
       return origin

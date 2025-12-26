@@ -1,5 +1,5 @@
 import type { Context, Next } from 'hono'
-import { envConfig } from '@server/src/common/config'
+import { getEnv } from '@server/src/lib/env'
 import { getContext } from '@server/src/middleware/context-holder'
 import pino from 'pino'
 import pretty from 'pino-pretty'
@@ -7,7 +7,7 @@ import pretty from 'pino-pretty'
 // Create the base logger instance
 const baseLogger = pino(
   {
-    level: envConfig.log.level,
+    level: getEnv().log.level,
   },
   pretty({
     colorize: true,
