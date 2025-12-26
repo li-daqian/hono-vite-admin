@@ -20,4 +20,4 @@ export const UserCreateResponseSchema = BaseResponseSchema.extend({
   }).optional(),
 })
 export type UserCreateRequest = z.infer<typeof UserCreateRequestSchema>
-export type UserCreateResponse = z.infer<typeof UserCreateResponseSchema>
+export type UserCreateResponse = z.infer<typeof UserCreateResponseSchema>['data']

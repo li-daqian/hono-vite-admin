@@ -11,7 +11,7 @@ export const AuthLoginResponseSchema = BaseResponseSchema.extend({
   }).optional(),
 })
 export type AuthLoginRequest = z.infer<typeof AuthLoginRequestSchema>
-export type AuthLoginResponse = z.infer<typeof AuthLoginResponseSchema>
+export type AuthLoginResponse = z.infer<typeof AuthLoginResponseSchema>['data']
 
 export const AuthRefreshRequestSchema = z.object({
   refreshToken: z.string().openapi({ description: 'Existing refresh token', example: 'f8b0c6ac-2f21-4e56-9f47-1b2a3c4d5e6f' }),
@@ -22,7 +22,7 @@ export const AuthRefreshResponseSchema = BaseResponseSchema.extend({
   }).optional(),
 })
 export type AuthRefreshRequest = z.infer<typeof AuthRefreshRequestSchema>
-export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>
+export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>['data']
 
 export const AuthLogoutRequestSchema = z.object({
   refreshToken: z.string().openapi({ description: 'Refresh token to logout', example: 'f8b0c6ac-2f21-4e56-9f47-1b2a3c4d5e6f' }),
