@@ -16,7 +16,7 @@ export function onErrorHandler(error: Error | HTTPResponseError, c: Context): Re
   }
 
   if (error instanceof HttpStatusError) {
-    return c.json(errorResponse(error), error.httpStatus)
+    return errorResponse(c, error)
   }
   else {
     return internalServerErrorResponse(c)

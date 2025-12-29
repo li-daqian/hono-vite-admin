@@ -2,26 +2,26 @@ import type { HttpStatusError } from '@server/src/common/exception'
 import type { Context } from 'hono'
 import { requestId } from '@server/src/middleware/trace-logger'
 
-export interface BaseResponse<T = any> {
-  requestId: string
-  ok: boolean
-  data?: T
-  pagination?: { page: number, limit: number, total: number }
-  error?: { code: string, message: string }
+export interface PaginationResponse<T> {
+  items: T[]
+  total: number
+  page: number
+  pageSize: number
 }
 
-export function okResponse<T = any>(data?: T): BaseResponse<T> {
-  return { requestId: requestId(), ok: true, data }
+export interface ErrorResponse {
+  code: string
+  message: string
 }
 
-export function errorResponse<T = any>(error: HttpStatusError): BaseResponse<T> {
-  return { requestId: requestId(), error: { code: error.code, message: error.message }, ok: false }
+export function errorResponse(c: Context, error: HttpStatusError): Response {
+  return c.json({ code: error.code, message: error.message }, error.httpStatus)
 }
 
 export function internalServerErrorResponse(c: Context): Response {
-  return c.json({ requestId: requestId(), error: { code: 'INTERNAL_SERVER_ERROR', message: 'Internal Server Error' }, ok: false }, 500)
+  return c.json({ code: 'INTERNAL_SERVER_ERROR', message: 'Internal Server Error' }, 500)
 }
 
 export function notFoundErrorResponse(c: Context): Response {
-  return c.json({ requestId: requestId(), error: { code: 'NOT_FOUND', message: 'Not Found' }, ok: false }, 404)
+  return c.json({ code: 'NOT_FOUND', message: 'Not Found' }, 404)
 }

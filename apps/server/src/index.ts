@@ -14,7 +14,7 @@ const app = new Hono()
 // Global middlewares
 app.use('api/*', corsMiddleware)
 app.use('api/*', holdContext)
-app.use('api/*', requestId())
+app.use('api/*', requestId({ headerName: 'X-Request-ID' }))
 app.use('api/*', traceLogger)
 app.use('api/*', authMiddleware)
 
