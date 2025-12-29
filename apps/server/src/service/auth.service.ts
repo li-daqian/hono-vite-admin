@@ -2,7 +2,7 @@ import type { AuthLoginRequest, AuthLoginResponse, AuthLogoutRequest, AuthRefres
 import { randomUUID } from 'node:crypto'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
-import { clearAccessToken, generateAccessToken, getAuthContext, storeAcessToken } from '@server/src/lib/jwt'
+import { clearAccessToken, generateAccessToken, storeAcessToken } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth'
 import { getContext } from '@server/src/middleware/context-holder'
