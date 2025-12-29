@@ -1,16 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../App.vue'),
+    component: () => import('@admin/pages/HomePage.vue'),
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../components/Login.vue'),
+    component: () => import('@admin/pages/Login.vue'),
   },
 ]
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import GlobalHeader from '@admin/components/GlobalHeader.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
   <div>
-    <GlobalHeader />
+    <RouterView />
   </div>
 </template>
