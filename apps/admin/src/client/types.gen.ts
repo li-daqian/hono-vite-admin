@@ -26,43 +26,9 @@ export type PostApiV1AuthLoginResponses = {
      */
     200: {
         /**
-         * Request ID for tracing
+         * Refresh token for the user
          */
-        requestId: string;
-        /**
-         * Whether the request was successful
-         */
-        ok: boolean;
-        pagination?: {
-            /**
-             * Current page number
-             */
-            page: number;
-            /**
-             * Number of items per page
-             */
-            limit: number;
-            /**
-             * Total number of items
-             */
-            total: number;
-        };
-        error?: {
-            /**
-             * Error code
-             */
-            code: string;
-            /**
-             * Error message
-             */
-            message: string;
-        };
-        data?: {
-            /**
-             * Refresh token for the user
-             */
-            refreshToken: string;
-        };
+        refreshToken: string;
     };
 };
 
@@ -86,43 +52,9 @@ export type PostApiV1AuthRefreshResponses = {
      */
     200: {
         /**
-         * Request ID for tracing
+         * Rotated refresh token
          */
-        requestId: string;
-        /**
-         * Whether the request was successful
-         */
-        ok: boolean;
-        pagination?: {
-            /**
-             * Current page number
-             */
-            page: number;
-            /**
-             * Number of items per page
-             */
-            limit: number;
-            /**
-             * Total number of items
-             */
-            total: number;
-        };
-        error?: {
-            /**
-             * Error code
-             */
-            code: string;
-            /**
-             * Error message
-             */
-            message: string;
-        };
-        data?: {
-            /**
-             * Rotated refresh token
-             */
-            refreshToken: string;
-        };
+        refreshToken: string;
     };
 };
 
@@ -145,38 +77,7 @@ export type PostApiV1AuthLogoutResponses = {
      * User logged out successfully
      */
     200: {
-        /**
-         * Request ID for tracing
-         */
-        requestId: string;
-        /**
-         * Whether the request was successful
-         */
-        ok: boolean;
-        pagination?: {
-            /**
-             * Current page number
-             */
-            page: number;
-            /**
-             * Number of items per page
-             */
-            limit: number;
-            /**
-             * Total number of items
-             */
-            total: number;
-        };
-        error?: {
-            /**
-             * Error code
-             */
-            code: string;
-            /**
-             * Error message
-             */
-            message: string;
-        };
+        [key: string]: unknown;
     };
 };
 
@@ -216,67 +117,33 @@ export type PostApiV1UserResponses = {
      */
     201: {
         /**
-         * Request ID for tracing
+         * Unique identifier for the user
          */
-        requestId: string;
+        id: string;
         /**
-         * Whether the request was successful
+         * Unique username for the user
          */
-        ok: boolean;
-        pagination?: {
-            /**
-             * Current page number
-             */
-            page: number;
-            /**
-             * Number of items per page
-             */
-            limit: number;
-            /**
-             * Total number of items
-             */
-            total: number;
-        };
-        error?: {
-            /**
-             * Error code
-             */
-            code: string;
-            /**
-             * Error message
-             */
-            message: string;
-        };
-        data?: {
-            /**
-             * Unique identifier for the user
-             */
-            id: string;
-            /**
-             * Unique username for the user
-             */
-            username: string;
-            /**
-             * Email address of the user
-             */
-            email: string | null;
-            /**
-             * Phone number of the user
-             */
-            phone: string | null;
-            /**
-             * Display name of the user
-             */
-            displayName: string | null;
-            /**
-             * Timestamp when the user was created
-             */
-            createdAt: string;
-            /**
-             * Timestamp when the user was last updated
-             */
-            updatedAt: string;
-        };
+        username: string;
+        /**
+         * Email address of the user
+         */
+        email: string | null;
+        /**
+         * Phone number of the user
+         */
+        phone: string | null;
+        /**
+         * Display name of the user
+         */
+        displayName: string | null;
+        /**
+         * Timestamp when the user was created
+         */
+        createdAt: string;
+        /**
+         * Timestamp when the user was last updated
+         */
+        updatedAt: string;
     };
 };
 
