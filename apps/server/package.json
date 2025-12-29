@@ -9,6 +9,7 @@
     "build": "bun build src/index.ts --outdir dist --target bun",
     "start": "bun run dist/index.js",
     "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "check-types": "tsc --noEmit",
     "prisma:reset": "prisma generate && prisma migrate reset && prisma db push && prisma db seed"
   },
