@@ -7,7 +7,6 @@ import {
   FieldLabel,
 } from '@admin/components/ui/field'
 import { Input } from '@admin/components/ui/input'
-import { GalleryVerticalEnd } from 'lucide-vue-next'
 </script>
 
 <template>
