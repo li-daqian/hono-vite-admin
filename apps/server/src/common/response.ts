@@ -1,6 +1,5 @@
 import type { HttpStatusError } from '@server/src/common/exception'
 import type { Context } from 'hono'
-import { requestId } from '@server/src/middleware/trace-logger'
 
 export interface PaginationResponse<T> {
   items: T[]
