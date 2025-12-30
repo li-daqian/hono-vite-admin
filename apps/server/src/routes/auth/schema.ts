@@ -1,4 +1,3 @@
-import { access } from 'node:fs'
 import { z } from '@hono/zod-openapi'
 
 export const AuthLoginRequestSchema = z.object({

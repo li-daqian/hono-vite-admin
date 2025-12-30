@@ -1,7 +1,7 @@
 import type { OpenAPIHono, RouteConfig } from '@hono/zod-openapi'
-import type { UserCreateRequest } from '@server/src/schemas/user.schema'
+import type { UserCreateRequest } from '@server/src/routes/user/schema'
 import { createRoute } from '@hono/zod-openapi'
-import { UserCreateRequestSchema, UserCreateResponseSchema } from '@server/src/schemas/user.schema'
+import { UserCreateRequestSchema, UserCreateResponseSchema } from '@server/src/routes/user/schema'
 import { userService } from '@server/src/service/user.service'
 
 const userCreationRoute: RouteConfig = createRoute({

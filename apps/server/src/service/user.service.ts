@@ -1,4 +1,4 @@
-import type { UserCreateRequest, UserCreateResponse } from '@server/src/schemas/user.schema'
+import type { UserCreateRequest, UserCreateResponse } from '@server/src/routes/user/schema'
 import { BadRequestError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import bcrypt from 'bcryptjs'

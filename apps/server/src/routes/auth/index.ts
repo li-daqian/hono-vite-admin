@@ -1,7 +1,7 @@
 import type { OpenAPIHono, RouteConfig } from '@hono/zod-openapi'
-import type { AuthLoginRequest, AuthLogoutRequest, AuthRefreshRequest } from '@server/src/schemas/auth.schema'
+import type { AuthLoginRequest, AuthLogoutRequest, AuthRefreshRequest } from '@server/src/routes/auth/schema'
 import { createRoute } from '@hono/zod-openapi'
-import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthLogoutRequestSchema, AuthLogoutResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/schemas/auth.schema'
+import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthLogoutRequestSchema, AuthLogoutResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/routes/auth/schema'
 import { authService } from '@server/src/service/auth.service'
 
 export const authLoginRoute: RouteConfig = createRoute({

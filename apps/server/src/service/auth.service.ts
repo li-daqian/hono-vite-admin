@@ -1,4 +1,4 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthLogoutRequest, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthLogoutRequest, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
 import { randomUUID } from 'node:crypto'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
