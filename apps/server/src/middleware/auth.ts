@@ -1,7 +1,7 @@
 import type { UserAuthContext } from '@server/src/lib/jwt'
 import type { Context, Next } from 'hono'
 import { UnauthorizedError } from '@server/src/common/exception'
-import { getAccessToken, getAuthContext } from '@server/src/lib/jwt'
+import { getAuthContext } from '@server/src/lib/jwt'
 import { getContext } from '@server/src/middleware/context-holder'
 import { authLoginRoute, authRefreshRoute } from '@server/src/routes/auth.route'
 
@@ -15,34 +15,18 @@ export async function authMiddleware(c: Context, next: Next): Promise<void | Res
     return
   }
 
-  const token = getAccessToken(c)
-
+  const token = c.req.header('Authorization')?.replace('Bearer ', '')
   if (!token) {
     throw new UnauthorizedError()
   }
 
   const authContext = await getAuthContext(token)
-
   if (!authContext?.userId) {
     throw new UnauthorizedError()
   }
 
-  try {
-    const authContext = await getAuthContext(token)
-
-    if (!authContext?.userId) {
-      throw new UnauthorizedError()
-    }
-
-    c.set(authContextKey, authContext)
-    await next()
-  }
-  catch (error) {
-    if (error instanceof UnauthorizedError) {
-      throw error
-    }
-    throw new UnauthorizedError()
-  }
+  c.set(authContextKey, authContext)
+  await next()
 }
 
 export function getLoginUser(): UserAuthContext | undefined {

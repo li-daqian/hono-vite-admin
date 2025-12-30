@@ -13,8 +13,15 @@ export const api = new OpenAPIHono({
   },
 })
 
+// Register security scheme
+api.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+})
+
 if (!getEnv().isProduction) {
-  // OpenAPI JSON
+  // OpenAPI JSON with Bearer auth
   api.doc('/openapi.json', {
     openapi: '3.0.0',
     info: {
@@ -22,8 +29,26 @@ if (!getEnv().isProduction) {
       version: '1.0.0',
     },
   })
-  // Swagger UI
-  api.get('/docs', swaggerUI({ url: '/openapi.json' }))
+  // Swagger UI with auto token setup
+  api.get('/docs', swaggerUI({
+    url: '/openapi.json',
+    onComplete: `() => {
+      const originalFetch = window.fetch;
+      window.fetch = function(...args) {
+        return originalFetch.apply(this, args).then(response => {
+          if (args[0].includes('/api/v1/auth/login') && response.ok) {
+            response.clone().json().then(data => {
+              if (data?.accessToken) {
+                const ui = window.ui;
+                ui.preauthorizeApiKey('Bearer', data.accessToken);
+              }
+            });
+          }
+          return response;
+        });
+      };
+    }`,
+  }))
 }
 
 authRoute(api)

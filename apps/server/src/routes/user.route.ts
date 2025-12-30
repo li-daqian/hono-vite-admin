@@ -5,10 +5,12 @@ import { UserCreateRequestSchema, UserCreateResponseSchema } from '@server/src/s
 import { userService } from '@server/src/service/user.service'
 
 const userCreationRoute: RouteConfig = createRoute({
+  description: 'Create a new user',
   method: 'post',
   path: '/api/v1/user',
   request: { body: { content: { 'application/json': { schema: UserCreateRequestSchema } } } },
   responses: { 201: { description: 'User created successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } } },
+  security: [{ Bearer: [] }],
   tags: ['User'],
 })
 

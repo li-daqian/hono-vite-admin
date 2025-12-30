@@ -2,10 +2,9 @@ import type { AuthLoginRequest, AuthLoginResponse, AuthLogoutRequest, AuthRefres
 import { randomUUID } from 'node:crypto'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
-import { clearAccessToken, generateAccessToken, storeAcessToken } from '@server/src/lib/jwt'
+import { generateAccessToken, refreshTokenCookie } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth'
-import { getContext } from '@server/src/middleware/context-holder'
 import { parseTimeDuration } from '@server/src/utils/date'
 import bcrypt from 'bcryptjs'
 
@@ -27,19 +26,24 @@ class AuthService {
 
     // Generate access token
     const accessToken = await generateAccessToken(user.id)
-    // Store access token in cookie
-    storeAcessToken(getContext()!, accessToken)
 
     // Generate refresh token
+    const refreshTokenExpiry = getEnv().auth.refreshTokenExpiry
     const refreshToken = await prisma.refreshToken.create({
       data: {
         userId: user.id,
         token: randomUUID(),
-        expiresAt: parseTimeDuration(getEnv().auth.refreshTokenExpiry),
+        expiresAt: parseTimeDuration(refreshTokenExpiry),
       },
     })
 
-    return { refreshToken: refreshToken.token }
+    refreshTokenCookie.set(refreshToken)
+
+    return {
+      accessToken,
+      refreshToken: refreshToken.token,
+      refreshTokenExpiresAt: refreshToken.expiresAt.toISOString(),
+    }
   }
 
   async refresh(request: AuthRefreshRequest): Promise<AuthRefreshResponse> {
@@ -57,7 +61,6 @@ class AuthService {
     }
 
     const accessToken = await generateAccessToken(existingToken.userId)
-    storeAcessToken(getContext()!, accessToken)
 
     const newRefreshToken = await prisma.$transaction(async (tx) => {
       const created = await tx.refreshToken.create({
@@ -72,7 +75,13 @@ class AuthService {
       return created
     })
 
-    return { refreshToken: newRefreshToken.token }
+    refreshTokenCookie.set(newRefreshToken)
+
+    return {
+      accessToken,
+      refreshToken: newRefreshToken.token,
+      refreshTokenExpiresAt: newRefreshToken.expiresAt.toISOString(),
+    }
   }
 
   async logout(request: AuthLogoutRequest): Promise<void> {
@@ -84,7 +93,7 @@ class AuthService {
     await prisma.refreshToken.delete({ where: { token: request.refreshToken } })
 
     // Clear access token cookie
-    clearAccessToken(getContext()!)
+    refreshTokenCookie.clear()
   }
 }
 

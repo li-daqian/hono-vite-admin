@@ -5,6 +5,7 @@ import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthLogoutRequestSchem
 import { authService } from '@server/src/service/auth.service'
 
 export const authLoginRoute: RouteConfig = createRoute({
+  description: 'User login',
   method: 'post',
   path: '/api/v1/auth/login',
   request: { body: { content: { 'application/json': { schema: AuthLoginRequestSchema } } } },
@@ -13,6 +14,7 @@ export const authLoginRoute: RouteConfig = createRoute({
 })
 
 export const authRefreshRoute: RouteConfig = createRoute({
+  description: 'Refresh access token using refresh token',
   method: 'post',
   path: '/api/v1/auth/refresh',
   request: { body: { content: { 'application/json': { schema: AuthRefreshRequestSchema } } } },
@@ -21,10 +23,12 @@ export const authRefreshRoute: RouteConfig = createRoute({
 })
 
 export const authLogoutRoute: RouteConfig = createRoute({
+  description: 'User logout',
   method: 'post',
   path: '/api/v1/auth/logout',
   request: { body: { content: { 'application/json': { schema: AuthLogoutRequestSchema } } } },
   responses: { 200: { description: 'User logged out successfully', content: { 'application/json': { schema: AuthLogoutResponseSchema } } } },
+  security: [{ Bearer: [] }],
   tags: ['Auth'],
 })
 

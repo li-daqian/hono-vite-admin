@@ -1,8 +1,10 @@
+import type { RefreshToken } from '@server/generated/prisma/client'
 import type { Context } from 'hono'
 import { getEnv } from '@server/src/lib/env'
+import { getContext } from '@server/src/middleware/context-holder'
 import { logger } from '@server/src/middleware/trace-logger'
 import { getCookie, setCookie } from 'hono/cookie'
-import { jwtVerify, SignJWT } from 'jose'
+import { errors, jwtVerify, SignJWT } from 'jose'
 
 const jwtSecret = new TextEncoder().encode(getEnv().auth.jwtSecret)
 
@@ -23,32 +25,39 @@ export async function getAuthContext(token: string): Promise<UserAuthContext | u
     return payload
   }
   catch (error) {
-    logger().warn(error, `Failed to verify JWT token: ${token}`)
+    if (!(error instanceof errors.JWTExpired)) {
+      logger().warn(error, `Failed to verify JWT token: ${token}`)
+    }
     return undefined
   }
 }
 
-const accessTokenCookieName = 'access_token'
-const accessTokenCookieOptions = {
+const refreshTokenCookieName = 'refresh_token'
+const refreshTokenCookieOptions = {
   httpOnly: true,
   secure: getEnv().isProduction,
   sameSite: 'Lax' as const,
   domain: getEnv().domain,
   path: '/',
 }
+export const refreshTokenCookie = {
+  set(refreshToken: RefreshToken): void {
+    setCookie(getContext()!, refreshTokenCookieName, refreshToken.token, {
+      ...refreshTokenCookieOptions,
+      maxAge: Math.floor(
+        (refreshToken.expiresAt.getTime() - Date.now()) / 1000,
+      ),
+    })
+  },
 
-export function storeAcessToken(c: Context, accessToken: string): void {
-  setCookie(c, accessTokenCookieName, accessToken, accessTokenCookieOptions)
-}
+  get(): string | undefined {
+    return getCookie(getContext()!, refreshTokenCookieName)
+  },
 
-export function getAccessToken(c: Context): string | undefined {
-  const token = getCookie(c, accessTokenCookieName)
-  return token
-}
-
-export function clearAccessToken(c: Context): void {
-  setCookie(c, accessTokenCookieName, '', {
-    ...accessTokenCookieOptions,
-    maxAge: 0,
-  })
+  clear(): void {
+    setCookie(getContext()!, refreshTokenCookieName, '', {
+      ...refreshTokenCookieOptions,
+      maxAge: 0,
+    })
+  },
 }
