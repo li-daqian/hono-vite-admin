@@ -120,6 +120,7 @@
   }
 }
 
+/* Toggle theme animation */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -138,10 +139,10 @@
   z-index: 1;
 }
 
+/* NProgress styles */
 #nprogress {
   pointer-events: none;
 }
-
 #nprogress .bar {
   background: #888;
   opacity: 0.75;
