@@ -5,10 +5,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    name: 'home',
     component: () => import('@admin/pages/HomePage.vue'),
   },
   {
     path: '/login',
+    name: 'login',
     component: () => import('@admin/pages/login/index.vue'),
   },
 ]
