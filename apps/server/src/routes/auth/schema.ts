@@ -13,7 +13,7 @@ export type AuthLoginRequest = z.infer<typeof AuthLoginRequestSchema>
 export type AuthLoginResponse = z.infer<typeof AuthLoginResponseSchema>
 
 export const AuthRefreshRequestSchema = z.object({
-  refreshToken: z.string().openapi({ description: 'Existing refresh token', example: 'f8b0c6ac-2f21-4e56-9f47-1b2a3c4d5e6f' }),
+  refreshToken: z.string().nullable().openapi({ description: 'Existing refresh token', example: 'f8b0c6ac-2f21-4e56-9f47-1b2a3c4d5e6f' }),
 })
 export const AuthRefreshResponseSchema = z.object({
   accessToken: z.string().openapi({ description: 'New access token', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }),

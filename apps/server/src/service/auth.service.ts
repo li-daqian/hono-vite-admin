@@ -47,10 +47,14 @@ class AuthService {
   }
 
   async refresh(request: AuthRefreshRequest): Promise<AuthRefreshResponse> {
-    const existingToken = await prisma.refreshToken.findUnique({
-      where: { token: request.refreshToken },
-    })
+    const refreshToken = request.refreshToken ?? refreshTokenCookie.get()
+    if (!refreshToken) {
+      throw new UnauthorizedError('Missing refresh token')
+    }
 
+    const existingToken = await prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    })
     if (!existingToken) {
       throw new UnauthorizedError('Invalid refresh token')
     }
@@ -60,20 +64,26 @@ class AuthService {
       throw new UnauthorizedError('Refresh token expired')
     }
 
-    const accessToken = await generateAccessToken(existingToken.userId)
+    const newRefreshToken = existingToken
+    newRefreshToken.token = randomUUID()
 
-    const newRefreshToken = await prisma.$transaction(async (tx) => {
-      const created = await tx.refreshToken.create({
-        data: {
-          userId: existingToken.userId,
-          token: randomUUID(),
-          expiresAt: parseTimeDuration(getEnv().auth.refreshTokenExpiry),
-        },
-      })
+    const slideMode = !!request.refreshToken
+    if (slideMode) {
+      // In slide mode, extend the expiry of the existing token
+      const refreshTokenExpiry = getEnv().auth.refreshTokenExpiry
+      const newExpiry = parseTimeDuration(refreshTokenExpiry)
+      newRefreshToken.expiresAt = newExpiry
+    }
 
-      await tx.refreshToken.delete({ where: { token: existingToken.token } })
-      return created
+    await prisma.refreshToken.update({
+      where: { id: existingToken.id },
+      data: {
+        token: newRefreshToken.token,
+        expiresAt: newRefreshToken.expiresAt,
+      },
     })
+
+    const accessToken = await generateAccessToken(existingToken.userId)
 
     refreshTokenCookie.set(newRefreshToken)
 
