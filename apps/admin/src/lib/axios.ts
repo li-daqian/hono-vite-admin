@@ -20,6 +20,19 @@ const refreshAccessToken = (() => {
   }
 })()
 
+const logoutAndRedirect = (() => {
+  let logoutPromise: Promise<void> | null = null
+
+  return async function (): Promise<void> {
+    return logoutPromise ||= (async () => {
+      useAuthStore().clearAccessToken()
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    })()
+  }
+})()
+
 /**
  * Setup custom axios interceptors for the generated API client.
  * This allows us to add request/response handling without modifying generated code.
@@ -55,10 +68,7 @@ function setupAxiosInterceptors() {
       if (response?.status === 401 && config) {
         if (config.url?.includes('/auth/refresh')) {
           // Refresh token request itself failed, force logout
-          useAuthStore().clearAccessToken()
-          if (!window.location.pathname.includes('/login')) {
-            window.location.href = '/login'
-          }
+          await logoutAndRedirect()
           return Promise.reject(error)
         }
 
