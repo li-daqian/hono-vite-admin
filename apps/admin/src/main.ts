@@ -1,15 +1,15 @@
 import App from '@admin/App.vue'
-import { client } from '@admin/client/client.gen'
-import { getEnv } from '@admin/lib/env'
+import { setupAxios } from '@admin/lib/axios'
 import router from '@admin/router'
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import './style.css'
 
-const apiBaseURL = getEnv().apiBaseUrl
-client.setConfig({ baseURL: apiBaseURL })
+setupAxios()
 
 const app = createApp(App)
 
+app.use(createPinia())
 app.use(router)
 
 app.mount('#app')

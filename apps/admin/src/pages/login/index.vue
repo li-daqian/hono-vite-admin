@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from '@admin/components/ui/form'
 import { Input } from '@admin/components/ui/input'
+import { useAuthStore } from '@admin/stores/auth'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -40,8 +41,8 @@ async function onSubmit(values: Record<string, any>) {
       throwOnError: true,
     })
 
-    const refreshToken = res.data.refreshToken
-    localStorage.setItem('refreshToken', refreshToken)
+    const accessToken = res.data.accessToken
+    useAuthStore().setAccessToken(accessToken)
 
     await router.replace({ name: 'Home' })
   }

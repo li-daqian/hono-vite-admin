@@ -6,6 +6,6 @@ export default antfu({
   ignores: [
     'dist/**',
     // openapi-ts generated clients
-    'src/**/*.gen.ts',
+    'src/client/**/*.ts',
   ],
 })

@@ -26,9 +26,17 @@ export type PostApiV1AuthLoginResponses = {
      */
     200: {
         /**
+         * Access token for the user
+         */
+        accessToken: string;
+        /**
          * Refresh token for the user
          */
         refreshToken: string;
+        /**
+         * Refresh token expiry duration
+         */
+        refreshTokenExpiresAt: string;
     };
 };
 
@@ -39,7 +47,7 @@ export type PostApiV1AuthRefreshData = {
         /**
          * Existing refresh token
          */
-        refreshToken: string;
+        refreshToken: string | null;
     };
     path?: never;
     query?: never;
@@ -52,9 +60,17 @@ export type PostApiV1AuthRefreshResponses = {
      */
     200: {
         /**
+         * New access token
+         */
+        accessToken: string;
+        /**
          * Rotated refresh token
          */
         refreshToken: string;
+        /**
+         * New refresh token expiry duration
+         */
+        refreshTokenExpiresAt: string;
     };
 };
 
