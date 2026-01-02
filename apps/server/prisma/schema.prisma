@@ -83,7 +83,21 @@ model Menu {
   icon     String?
   order    Int
 
+  actions Action[]
+
   @@map("menu")
+}
+
+model Action {
+  id          String  @id @default(ulid())
+  menuId      String  @map("menu_id")
+  name        String
+  description String?
+
+  menu Menu @relation(fields: [menuId], references: [id])
+
+  @@index([menuId])
+  @@map("action")
 }
 
 model SysConfig {
@@ -114,6 +128,7 @@ enum UserStatus {
 
 enum PermissionType {
   MENU
+  ACTION
 
   @@map("permission_type")
 }
