@@ -1,17 +1,72 @@
-import { UserStatus } from '@server/generated/prisma/enums'
+import type { PrismaClient, User } from '@server/generated/prisma/client'
+import type { TransactionClient } from '@server/generated/prisma/internal/prismaNamespace'
+import { PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { getEnv } from '@server/src/lib/env'
 import { prisma } from '@server/src/lib/prisma'
 import bcrypt from 'bcryptjs'
 
-async function main() {
-  const adminRole = await upsertAdminRole()
+const menus = [
+  {
+    code: 'dashboard',
+    name: 'Dashboard',
+    path: '/dashboard',
+    icon: 'CircleGauge',
+    order: 1,
+    actions: [
+      { code: 'view', name: 'View', description: 'View dashboard' },
+    ],
+  },
+  {
+    code: 'system',
+    name: 'System Management',
+    icon: 'Settings',
+    order: 2,
+    children: [
+      {
+        code: 'user',
+        name: 'User Management',
+        path: '/system/users',
+        icon: 'User',
+        order: 1,
+        actions: [
+          { code: 'view', name: 'View', description: 'View users' },
+          { code: 'create', name: 'Create', description: 'Create user' },
+          { code: 'edit', name: 'Edit', description: 'Edit user' },
+          { code: 'delete', name: 'Delete', description: 'Delete user' },
+        ],
+      },
+      {
+        code: 'role',
+        name: 'Role Management',
+        path: '/system/roles',
+        icon: 'ShieldCheckered',
+        order: 2,
+        actions: [
+          { code: 'view', name: 'View', description: 'View roles' },
+          { code: 'create', name: 'Create', description: 'Create role' },
+          { code: 'edit', name: 'Edit', description: 'Edit role' },
+          { code: 'delete', name: 'Delete', description: 'Delete role' },
+        ],
+      },
+    ],
+  },
+]
 
-  await upsertAdminUser(adminRole.id)
+async function main() {
+  const adminUser = await upsertAdminUser()
+
+  await prisma.$transaction(async (tx) => {
+    await tx.menu.deleteMany({})
+    await tx.action.deleteMany({})
+    await initializeMenus(tx, menus)
+
+    await initializePermissions(tx, adminUser)
+  })
 }
 
-async function upsertAdminRole() {
+async function initializePermissions(client: PrismaClient | TransactionClient, adminUser: User) {
   const adminRoleName = getEnv().admin.roleName
-  return await prisma.role.upsert({
+  const adminRole = await client.role.upsert({
     where: { name: adminRoleName },
     update: {},
     create: {
@@ -19,13 +74,85 @@ async function upsertAdminRole() {
       description: 'Administrator role with full permissions',
     },
   })
+
+  await client.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: adminUser.id,
+        roleId: adminRole.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      roleId: adminRole.id,
+    },
+  })
+
+  await client.permission.deleteMany({})
+  const permissions = [
+    ...(await client.menu.findMany({})).map(menu => ({
+      id: `${PermissionType.MENU}.${menu.id}`,
+      type: PermissionType.MENU,
+      targetId: menu.id,
+    })),
+    ...(await client.action.findMany({})).map(action => ({
+      id: `${PermissionType.ACTION}.${action.id}`,
+      type: PermissionType.ACTION,
+      targetId: action.id,
+    })),
+  ]
+  await client.permission.createMany({
+    data: permissions,
+  })
+
+  await client.rolePermission.deleteMany({ where: { roleId: adminRole.id } })
+  await client.rolePermission.createMany({
+    data: permissions.map(permission => ({
+      roleId: adminRole.id,
+      permissionId: permission.id,
+    })),
+  })
 }
 
-async function upsertAdminUser(adminRoleId: string) {
+async function initializeMenus(client: PrismaClient | TransactionClient, menus: any[], parentCode?: string) {
+  for (const menu of menus) {
+    const menuId = parentCode
+      ? `${parentCode}.${menu.code}`
+      : menu.code
+
+    await client.menu.create({
+      data: {
+        id: menuId,
+        parentId: parentCode ?? null,
+        name: menu.name,
+        path: menu.path,
+        icon: menu.icon,
+        order: menu.order,
+      },
+    })
+
+    if (menu.actions?.length) {
+      await client.action.createMany({
+        data: menu.actions.map((action: any) => ({
+          id: `${menuId}.${action.code}`,
+          menuId,
+          name: action.name,
+          description: action.description,
+        })),
+      })
+    }
+
+    if (menu.children?.length) {
+      await initializeMenus(client, menu.children, menuId)
+    }
+  }
+}
+
+async function upsertAdminUser(): Promise<User> {
   const adminUsername = getEnv().admin.username
   const salt = await bcrypt.genSalt(10)
   const hashedPassword = await bcrypt.hash(getEnv().admin.password, salt)
-
   return await prisma.user.upsert({
     where: { username: adminUsername },
     update: {},
@@ -34,9 +161,6 @@ async function upsertAdminUser(adminRoleId: string) {
       password: hashedPassword,
       salt,
       displayName: 'Administrator',
-      roles: {
-        create: { roleId: adminRoleId },
-      },
       status: UserStatus.ACTIVE,
     },
   })
