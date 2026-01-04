@@ -15,16 +15,17 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(ulid())
-  username      String         @unique
-  password      String
-  salt          String
-  email         String?
-  phone         String?
-  displayName   String?        @map("display_name")
-  status        UserStatus     @default(ACTIVE)
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  id          String     @id @default(ulid())
+  username    String     @unique
+  password    String
+  salt        String
+  email       String?
+  phone       String?
+  displayName String?    @map("display_name")
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
   roles         UserRole[]
   refreshTokens RefreshToken[]
 
@@ -32,9 +33,10 @@ model User {
 }
 
 model Role {
-  id          String           @id @default(ulid())
-  name        String           @unique
+  id          String  @id @default(ulid())
+  name        String  @unique
   description String?
+
   userRoles   UserRole[]
   permissions RolePermission[]
 
@@ -42,9 +44,10 @@ model Role {
 }
 
 model Permission {
-  id              String           @id @default(ulid())
-  type            PermissionType
-  targetId        String           @map("target_id")
+  id       String         @id @default(ulid())
+  type     PermissionType
+  targetId String         @map("target_id")
+
   rolePermissions RolePermission[]
 
   @@unique([type, targetId])
