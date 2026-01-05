@@ -1,4 +1,4 @@
-import type { PrismaClient, User } from '@server/generated/prisma/client'
+import type { Permission, PrismaClient, User } from '@server/generated/prisma/client'
 import type { TransactionClient } from '@server/generated/prisma/internal/prismaNamespace'
 import { PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { getEnv } from '@server/src/lib/env'
@@ -55,11 +55,13 @@ async function main() {
     await tx.action.deleteMany({})
     await initializeMenus(tx, menus)
 
-    await initializePermissions(tx, adminUser)
+    const permissions = await initializePermissions(tx)
+
+    await initializeAdminPermission(tx, adminUser, permissions)
   })
 }
 
-async function initializePermissions(client: PrismaClient | TransactionClient, adminUser: User) {
+async function initializeAdminPermission(client: PrismaClient | TransactionClient, adminUser: User, permissions: Permission[]) {
   const adminRoleName = getEnv().admin.roleName
   const adminRole = await client.role.upsert({
     where: { name: adminRoleName },
@@ -84,6 +86,16 @@ async function initializePermissions(client: PrismaClient | TransactionClient, a
     },
   })
 
+  await client.rolePermission.deleteMany({ where: { roleId: adminRole.id } })
+  await client.rolePermission.createMany({
+    data: permissions.map(permission => ({
+      roleId: adminRole.id,
+      permissionId: permission.id,
+    })),
+  })
+}
+
+async function initializePermissions(client: PrismaClient | TransactionClient): Promise<Permission[]> {
   await client.permission.deleteMany({})
   const permissions = [
     ...(await client.menu.findMany({})).map(menu => ({
@@ -101,13 +113,7 @@ async function initializePermissions(client: PrismaClient | TransactionClient, a
     data: permissions,
   })
 
-  await client.rolePermission.deleteMany({ where: { roleId: adminRole.id } })
-  await client.rolePermission.createMany({
-    data: permissions.map(permission => ({
-      roleId: adminRole.id,
-      permissionId: permission.id,
-    })),
-  })
+  return permissions
 }
 
 async function initializeMenus(client: PrismaClient | TransactionClient, menus: any[], parentCode?: string) {
