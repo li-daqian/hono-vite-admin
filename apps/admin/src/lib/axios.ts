@@ -3,6 +3,7 @@ import { postApiV1AuthRefresh } from '@admin/client'
 import { client } from '@admin/client/client.gen'
 import { getEnv } from '@admin/lib/env'
 import { useAuthStore } from '@admin/stores/auth'
+import { toast } from 'vue-sonner'
 
 const refreshAccessToken = (() => {
   let refreshPromise: Promise<void> | null = null
@@ -65,8 +66,12 @@ function setupAxiosInterceptors() {
       const { response, config } = error
 
       // Handle 401 Unauthorized - token refresh logic
-      if (response?.status === 401 && config) {
-        if (config.url?.includes('/auth/refresh')) {
+      if (response?.status === 401) {
+        if (!config) {
+          await logoutAndRedirect()
+          return Promise.reject(error)
+        }
+        if (config.url?.includes('/api/v1/auth/refresh')) {
           // Refresh token request itself failed, force logout
           await logoutAndRedirect()
           return Promise.reject(error)
@@ -74,6 +79,10 @@ function setupAxiosInterceptors() {
 
         await refreshAccessToken()
         return axiosInstance.request(config)
+      }
+      else {
+        const errorMessage = (response?.data as { message?: string })?.message || 'An error occurred'
+        toast.error(errorMessage)
       }
 
       return Promise.reject(error)
