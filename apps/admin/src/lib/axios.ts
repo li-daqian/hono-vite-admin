@@ -81,7 +81,7 @@ function setupAxiosInterceptors() {
         return axiosInstance.request(config)
       }
       else {
-        const errorMessage = (response?.data as { message?: string })?.message || 'An error occurred'
+        const errorMessage = (response?.data as any)?.message || error.message || 'An unknown error occurred'
         toast.error(errorMessage)
       }
 
