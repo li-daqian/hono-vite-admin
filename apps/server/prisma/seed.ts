@@ -12,9 +12,6 @@ const menus = [
     path: '/dashboard',
     icon: 'CircleGauge',
     order: 1,
-    actions: [
-      { code: 'view', name: 'View', description: 'View dashboard' },
-    ],
   },
   {
     code: 'system',
@@ -29,7 +26,6 @@ const menus = [
         icon: 'User',
         order: 1,
         actions: [
-          { code: 'view', name: 'View', description: 'View users' },
           { code: 'create', name: 'Create', description: 'Create user' },
           { code: 'edit', name: 'Edit', description: 'Edit user' },
           { code: 'delete', name: 'Delete', description: 'Delete user' },
@@ -42,7 +38,6 @@ const menus = [
         icon: 'ShieldCheckered',
         order: 2,
         actions: [
-          { code: 'view', name: 'View', description: 'View roles' },
           { code: 'create', name: 'Create', description: 'Create role' },
           { code: 'edit', name: 'Edit', description: 'Edit role' },
           { code: 'delete', name: 'Delete', description: 'Delete role' },
