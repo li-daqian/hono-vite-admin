@@ -52,7 +52,3 @@ export async function traceLogger(c: Context, next: Next): Promise<void> {
 export function logger(): RequestLogger {
   return getContext()!.get(loggerKey)
 }
-
-export function requestId(): string {
-  return getContext()?.get(requestIdKey) || ''
-}
