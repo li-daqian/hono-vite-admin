@@ -54,7 +54,6 @@ async function bootstrapSystem() {
 
 async function setupAdminAuthorization(adminUser: User) {
   await prisma.$transaction(async (tx) => {
-    await tx.action.deleteMany()
     await tx.menu.deleteMany()
 
     await seedMenus(tx, menus)
