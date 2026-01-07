@@ -78,10 +78,7 @@ export type PostApiV1AuthRefreshResponse = PostApiV1AuthRefreshResponses[keyof P
 
 export type PostApiV1AuthLogoutData = {
     body?: {
-        /**
-         * Refresh token to logout
-         */
-        refreshToken: string;
+        [key: string]: unknown;
     };
     path?: never;
     query?: never;

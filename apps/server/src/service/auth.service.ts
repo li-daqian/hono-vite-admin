@@ -1,10 +1,12 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthLogoutRequest, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
+import { log } from 'node:console'
 import { randomUUID } from 'node:crypto'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
 import { generateAccessToken, refreshTokenCookie } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth'
+import { logger } from '@server/src/middleware/trace-logger'
 import { parseTimeDuration } from '@server/src/utils/date'
 import bcrypt from 'bcryptjs'
 
@@ -94,15 +96,28 @@ class AuthService {
     }
   }
 
-  async logout(request: AuthLogoutRequest): Promise<void> {
-    const existingToken = await prisma.refreshToken.findUnique({ where: { token: request.refreshToken } })
-    if (existingToken?.userId !== getLoginUser()!.userId) {
-      throw BadRequestError.Message('Refresh token does not belong to the logged-in user')
-    }
-    // Remove refresh token if exists
-    await prisma.refreshToken.delete({ where: { token: request.refreshToken } })
+  async logout(): Promise<void> {
+    const refreshToken = refreshTokenCookie.get()
 
-    // Clear access token cookie
+    if (refreshToken) {
+      const existingToken = await prisma.refreshToken.findUnique({
+        where: { token: refreshToken },
+      })
+
+      if (!existingToken) {
+        logger().error(`Refresh token not found: ${refreshToken}`)
+      }
+
+      const currentUserId = getLoginUser()!.userId
+      if (existingToken && existingToken.userId === currentUserId) {
+        await prisma.refreshToken.delete({ where: { token: refreshToken } })
+      }
+      else {
+        logger().error(`Refresh token does not belong to current user: ${refreshToken}, userId: ${currentUserId}, tokenUserId: ${existingToken?.userId}`)
+      }
+    }
+
+    // Clear refresh token cookie, the access token is stateless and cannot be cleared server-side
     refreshTokenCookie.clear()
   }
 }
