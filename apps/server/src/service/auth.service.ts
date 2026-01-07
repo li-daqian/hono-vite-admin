@@ -105,7 +105,7 @@ class AuthService {
       })
 
       if (!existingToken) {
-        logger().error(`Refresh token not found: ${refreshToken}`)
+        logger().warn(`Refresh token not found during logout: ${refreshToken}`)
       }
 
       const currentUserId = getLoginUser()!.userId
@@ -113,7 +113,12 @@ class AuthService {
         await prisma.refreshToken.delete({ where: { token: refreshToken } })
       }
       else {
-        logger().error(`Refresh token does not belong to current user: ${refreshToken}, userId: ${currentUserId}, tokenUserId: ${existingToken?.userId}`)
+        logger().warn(
+          `Refresh token does not belong to the current user. `
+          + `refreshToken=${refreshToken}, `
+          + `currentUserId=${currentUserId}, `
+          + `tokenUserId=${existingToken?.userId}`,
+        )
       }
     }
 
