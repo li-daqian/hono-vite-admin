@@ -47,22 +47,30 @@ const menus = [
   },
 ]
 
-async function main() {
-  const adminUser = await upsertAdminUser()
+async function bootstrapSystem() {
+  const adminUser = await ensureAdminUser()
+  await setupAdminAuthorization(adminUser)
+}
 
+async function setupAdminAuthorization(adminUser: User) {
   await prisma.$transaction(async (tx) => {
-    await tx.menu.deleteMany({})
-    await tx.action.deleteMany({})
-    await initializeMenus(tx, menus)
+    await tx.action.deleteMany()
+    await tx.menu.deleteMany()
 
-    const permissions = await initializePermissions(tx)
+    await seedMenus(tx, menus)
 
-    await initializeAdminPermission(tx, adminUser, permissions)
+    const permissions = await generatePermissions(tx)
+    await assignAllPermissionsToAdmin(tx, adminUser, permissions)
   })
 }
 
-async function initializeAdminPermission(client: PrismaClient | TransactionClient, adminUser: User, permissions: Permission[]) {
+async function assignAllPermissionsToAdmin(
+  client: PrismaClient | TransactionClient,
+  adminUser: User,
+  permissions: Permission[],
+) {
   const adminRoleName = getEnv().admin.roleName
+
   const adminRole = await client.role.upsert({
     where: { name: adminRoleName },
     update: {},
@@ -95,32 +103,37 @@ async function initializeAdminPermission(client: PrismaClient | TransactionClien
   })
 }
 
-async function initializePermissions(client: PrismaClient | TransactionClient): Promise<Permission[]> {
-  await client.permission.deleteMany({})
+async function generatePermissions(
+  client: PrismaClient | TransactionClient,
+): Promise<Permission[]> {
+  await client.permission.deleteMany({
+    where: { type: { in: [PermissionType.MENU, PermissionType.ACTION] } },
+  })
+
   const permissions = [
-    ...(await client.menu.findMany({})).map(menu => ({
+    ...(await client.menu.findMany()).map(menu => ({
       id: `${PermissionType.MENU}.${menu.id}`,
       type: PermissionType.MENU,
       targetId: menu.id,
     })),
-    ...(await client.action.findMany({})).map(action => ({
+    ...(await client.action.findMany()).map(action => ({
       id: `${PermissionType.ACTION}.${action.id}`,
       type: PermissionType.ACTION,
       targetId: action.id,
     })),
   ]
-  await client.permission.createMany({
-    data: permissions,
-  })
 
+  await client.permission.createMany({ data: permissions })
   return permissions
 }
 
-async function initializeMenus(client: PrismaClient | TransactionClient, menus: any[], parentCode?: string) {
+async function seedMenus(
+  client: PrismaClient | TransactionClient,
+  menus: any[],
+  parentCode?: string,
+) {
   for (const menu of menus) {
-    const menuId = parentCode
-      ? `${parentCode}.${menu.code}`
-      : menu.code
+    const menuId = parentCode ? `${parentCode}.${menu.code}` : menu.code
 
     await client.menu.create({
       data: {
@@ -145,16 +158,17 @@ async function initializeMenus(client: PrismaClient | TransactionClient, menus: 
     }
 
     if (menu.children?.length) {
-      await initializeMenus(client, menu.children, menuId)
+      await seedMenus(client, menu.children, menuId)
     }
   }
 }
 
-async function upsertAdminUser(): Promise<User> {
+async function ensureAdminUser(): Promise<User> {
   const adminUsername = getEnv().admin.username
   const salt = await bcrypt.genSalt(10)
   const hashedPassword = await bcrypt.hash(getEnv().admin.password, salt)
-  return await prisma.user.upsert({
+
+  return prisma.user.upsert({
     where: { username: adminUsername },
     update: {},
     create: {
@@ -167,10 +181,8 @@ async function upsertAdminUser(): Promise<User> {
   })
 }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
+bootstrapSystem()
+  .then(async () => prisma.$disconnect())
   .catch(async (e) => {
     console.error(e)
     await prisma.$disconnect()
