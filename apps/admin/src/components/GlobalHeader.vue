@@ -16,7 +16,7 @@ import Button from '@admin/components/ui/button/Button.vue'
       </a>
       <div class="flex items-center gap-2">
         <Button variant="ghost" size="icon" class="rounded-full cursor-pointer">
-          <ToggleTheme />
+          <ToggleTheme class="text-lg" />
         </Button>
         <Button variant="ghost" size="icon-lg" class="rounded-full cursor-pointer">
           <Avatar>
