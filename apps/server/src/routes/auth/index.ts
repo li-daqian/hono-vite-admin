@@ -1,7 +1,7 @@
-import type { OpenAPIHono, RouteConfig } from '@hono/zod-openapi'
+import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { AuthLoginRequest, AuthRefreshRequest } from '@server/src/routes/auth/schema'
 import { createRoute, z } from '@hono/zod-openapi'
-import { authMiddleware } from '@server/src/middleware/auth'
+import { authMiddleware } from '@server/src/middleware/auth.middleware'
 import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/routes/auth/schema'
 import { authService } from '@server/src/service/auth.service'
 

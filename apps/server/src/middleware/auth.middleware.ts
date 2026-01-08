@@ -2,7 +2,7 @@ import type { UserAuthContext } from '@server/src/lib/jwt'
 import type { Context, Next } from 'hono'
 import { UnauthorizedError } from '@server/src/common/exception'
 import { getAuthContext } from '@server/src/lib/jwt'
-import { getContext } from '@server/src/middleware/context-holder'
+import { getContext } from '@server/src/middleware/context.middleware'
 
 const authContextKey = 'authContext'
 

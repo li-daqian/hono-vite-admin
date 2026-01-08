@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { UserCreateRequest } from '@server/src/routes/user/schema'
 import { createRoute } from '@hono/zod-openapi'
-import { authMiddleware } from '@server/src/middleware/auth'
+import { authMiddleware } from '@server/src/middleware/auth.middleware'
 import { UserCreateRequestSchema, UserCreateResponseSchema } from '@server/src/routes/user/schema'
 import { userService } from '@server/src/service/user.service'
 

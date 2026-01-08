@@ -1,7 +1,7 @@
 import type { RefreshToken } from '@server/generated/prisma/client'
 import { getEnv } from '@server/src/lib/env'
-import { getContext } from '@server/src/middleware/context-holder'
-import { logger } from '@server/src/middleware/trace-logger'
+import { getContext } from '@server/src/middleware/context.middleware'
+import { logger } from '@server/src/middleware/trace.middleware'
 import { getCookie, setCookie } from 'hono/cookie'
 import { errors, jwtVerify, SignJWT } from 'jose'
 

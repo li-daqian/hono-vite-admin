@@ -2,7 +2,7 @@ import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
 import { HttpStatusError } from '@server/src/common/exception'
 import { errorResponse, internalServerErrorResponse } from '@server/src/common/response'
-import { logger } from '@server/src/middleware/trace-logger'
+import { logger } from '@server/src/middleware/trace.middleware'
 
 /**
  * Hono `app.onError`-style handler function.

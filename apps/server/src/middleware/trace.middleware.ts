@@ -1,6 +1,6 @@
 import type { Context, Next } from 'hono'
 import { getEnv } from '@server/src/lib/env'
-import { getContext } from '@server/src/middleware/context-holder'
+import { getContext } from '@server/src/middleware/context.middleware'
 import pino from 'pino'
 import pretty from 'pino-pretty'
 
