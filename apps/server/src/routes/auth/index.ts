@@ -1,7 +1,7 @@
 import type { OpenAPIHono, RouteConfig } from '@hono/zod-openapi'
 import type { AuthLoginRequest, AuthRefreshRequest } from '@server/src/routes/auth/schema'
-import { createRoute } from '@hono/zod-openapi'
-import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthLogoutRequestSchema, AuthLogoutResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/routes/auth/schema'
+import { createRoute, z } from '@hono/zod-openapi'
+import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/routes/auth/schema'
 import { authService } from '@server/src/service/auth.service'
 
 export const authLoginRoute: RouteConfig = createRoute({
@@ -23,11 +23,11 @@ export const authRefreshRoute: RouteConfig = createRoute({
 })
 
 export const authLogoutRoute: RouteConfig = createRoute({
-  description: 'User logout',
-  method: 'post',
   path: '/api/v1/auth/logout',
-  request: { body: { content: { 'application/json': { schema: AuthLogoutRequestSchema } } } },
-  responses: { 200: { description: 'User logged out successfully', content: { 'application/json': { schema: AuthLogoutResponseSchema } } } },
+  method: 'post',
+  description: 'User logout',
+  request: { body: { content: { 'application/json': { schema: z.object({}) } } } },
+  responses: { 200: { description: 'User logged out successfully', content: { 'application/json': { schema: z.object({}) } } } },
   security: [{ Bearer: [] }],
   tags: ['Auth'],
 })

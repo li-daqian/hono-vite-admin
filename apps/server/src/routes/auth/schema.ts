@@ -22,8 +22,3 @@ export const AuthRefreshResponseSchema = z.object({
 })
 export type AuthRefreshRequest = z.infer<typeof AuthRefreshRequestSchema>
 export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>
-
-export const AuthLogoutRequestSchema = z.object({})
-export const AuthLogoutResponseSchema = z.object({})
-export type AuthLogoutRequest = z.infer<typeof AuthLogoutRequestSchema>
-export type AuthLogoutResponse = z.infer<typeof AuthLogoutResponseSchema>
