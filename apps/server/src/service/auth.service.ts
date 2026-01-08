@@ -4,7 +4,7 @@ import { UserStatus } from '@server/generated/prisma/enums'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
 import { refreshTokenCookie } from '@server/src/lib/cookie'
 import { getEnv } from '@server/src/lib/env'
-import { generateAccessToken } from '@server/src/lib/jwt'
+import { jwtService } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import { logger } from '@server/src/middleware/trace.middleware'
@@ -31,7 +31,7 @@ class AuthService {
     }
 
     // Generate access token
-    const accessToken = await generateAccessToken(user.id)
+    const accessToken = await jwtService.generateAccessToken(user.id)
 
     // Generate refresh token
     const refreshTokenExpiry = getEnv().auth.refreshTokenExpiry
@@ -89,7 +89,7 @@ class AuthService {
       },
     })
 
-    const accessToken = await generateAccessToken(existingToken.userId)
+    const accessToken = await jwtService.generateAccessToken(existingToken.userId)
 
     refreshTokenCookie.set(newRefreshToken)
 

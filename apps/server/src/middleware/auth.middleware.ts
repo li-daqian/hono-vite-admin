@@ -1,7 +1,7 @@
 import type { AuthPayload } from '@server/src/lib/jwt'
 import type { Context, Next } from 'hono'
 import { UnauthorizedError } from '@server/src/common/exception'
-import { verifyAccessToken } from '@server/src/lib/jwt'
+import { jwtService } from '@server/src/lib/jwt'
 import { getContext } from '@server/src/middleware/context.middleware'
 
 const authPayloadKey = 'authPayload'
@@ -12,7 +12,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<void | Res
     throw new UnauthorizedError()
   }
 
-  const authPayload = await verifyAccessToken(token)
+  const authPayload = await jwtService.verifyAccessToken(token)
   if (!authPayload?.userId) {
     throw new UnauthorizedError()
   }

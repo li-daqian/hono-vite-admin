@@ -2,28 +2,45 @@ import { getEnv } from '@server/src/lib/env'
 import { logger } from '@server/src/middleware/trace.middleware'
 import { errors, jwtVerify, SignJWT } from 'jose'
 
-const jwtSecret = new TextEncoder().encode(getEnv().auth.jwtSecret)
-
 export interface AuthPayload {
   userId: string
 }
 
-export async function generateAccessToken(userId: string): Promise<string> {
-  return await new SignJWT({ userId })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime(getEnv().auth.accessTokenExpiry)
-    .sign(jwtSecret)
+export interface JwtConfig {
+  secret: Uint8Array
+  accessTokenExpiry: string | number
 }
 
-export async function verifyAccessToken(token: string): Promise<AuthPayload | undefined> {
-  try {
-    const { payload } = await jwtVerify<AuthPayload>(token, jwtSecret)
-    return payload
+export function createJwtService(config: JwtConfig) {
+  async function generateAccessToken(userId: string): Promise<string> {
+    return new SignJWT({ userId })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime(config.accessTokenExpiry)
+      .sign(config.secret)
   }
-  catch (error) {
-    if (!(error instanceof errors.JWTExpired)) {
-      logger().warn(error, `Failed to verify JWT token: ${token}`)
+
+  async function verifyAccessToken(token: string): Promise<AuthPayload | undefined> {
+    try {
+      const { payload } = await jwtVerify<AuthPayload>(token, config.secret)
+      return payload
     }
-    return undefined
+    catch (error) {
+      if (!(error instanceof errors.JWTExpired)) {
+        logger()?.warn(error, `Failed to verify JWT token`)
+      }
+      return undefined
+    }
+  }
+
+  return {
+    generateAccessToken,
+    verifyAccessToken,
   }
 }
+
+export const jwtService = createJwtService(
+  {
+    secret: new TextEncoder().encode(getEnv().auth.jwtSecret),
+    accessTokenExpiry: getEnv().auth.accessTokenExpiry,
+  },
+)
