@@ -1,8 +1,5 @@
-import type { RefreshToken } from '@server/generated/prisma/client'
 import { getEnv } from '@server/src/lib/env'
-import { getContext } from '@server/src/middleware/context.middleware'
 import { logger } from '@server/src/middleware/trace.middleware'
-import { getCookie, setCookie } from 'hono/cookie'
 import { errors, jwtVerify, SignJWT } from 'jose'
 
 const jwtSecret = new TextEncoder().encode(getEnv().auth.jwtSecret)
@@ -29,34 +26,4 @@ export async function verifyAccessToken(token: string): Promise<AuthPayload | un
     }
     return undefined
   }
-}
-
-const refreshTokenCookieName = 'refresh_token'
-const refreshTokenCookieOptions = {
-  httpOnly: true,
-  secure: getEnv().isProduction,
-  sameSite: 'Lax' as const,
-  domain: getEnv().domain,
-  path: '/',
-}
-export const refreshTokenCookie = {
-  set(refreshToken: RefreshToken): void {
-    setCookie(getContext()!, refreshTokenCookieName, refreshToken.token, {
-      ...refreshTokenCookieOptions,
-      maxAge: Math.floor(
-        (refreshToken.expiresAt.getTime() - Date.now()) / 1000,
-      ),
-    })
-  },
-
-  get(): string | undefined {
-    return getCookie(getContext()!, refreshTokenCookieName)
-  },
-
-  clear(): void {
-    setCookie(getContext()!, refreshTokenCookieName, '', {
-      ...refreshTokenCookieOptions,
-      maxAge: 0,
-    })
-  },
 }
