@@ -7,7 +7,7 @@ import { errors, jwtVerify, SignJWT } from 'jose'
 
 const jwtSecret = new TextEncoder().encode(getEnv().auth.jwtSecret)
 
-export interface UserAuthContext {
+export interface AuthPayload {
   userId: string
 }
 
@@ -18,9 +18,9 @@ export async function generateAccessToken(userId: string): Promise<string> {
     .sign(jwtSecret)
 }
 
-export async function getAuthContext(token: string): Promise<UserAuthContext | undefined> {
+export async function verifyAccessToken(token: string): Promise<AuthPayload | undefined> {
   try {
-    const { payload } = await jwtVerify<UserAuthContext>(token, jwtSecret)
+    const { payload } = await jwtVerify<AuthPayload>(token, jwtSecret)
     return payload
   }
   catch (error) {

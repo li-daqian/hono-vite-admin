@@ -1,10 +1,10 @@
-import type { UserAuthContext } from '@server/src/lib/jwt'
+import type { AuthPayload } from '@server/src/lib/jwt'
 import type { Context, Next } from 'hono'
 import { UnauthorizedError } from '@server/src/common/exception'
-import { getAuthContext } from '@server/src/lib/jwt'
+import { verifyAccessToken } from '@server/src/lib/jwt'
 import { getContext } from '@server/src/middleware/context.middleware'
 
-const authContextKey = 'authContext'
+const authPayloadKey = 'authPayload'
 
 export async function authMiddleware(c: Context, next: Next): Promise<void | Response> {
   const token = c.req.header('Authorization')?.replace('Bearer ', '')
@@ -12,15 +12,15 @@ export async function authMiddleware(c: Context, next: Next): Promise<void | Res
     throw new UnauthorizedError()
   }
 
-  const authContext = await getAuthContext(token)
-  if (!authContext?.userId) {
+  const authPayload = await verifyAccessToken(token)
+  if (!authPayload?.userId) {
     throw new UnauthorizedError()
   }
 
-  c.set(authContextKey, authContext)
+  c.set(authPayloadKey, authPayload)
   await next()
 }
 
-export function getLoginUser(): UserAuthContext | undefined {
-  return getContext()?.get(authContextKey)
+export function getLoginUser(): AuthPayload | undefined {
+  return getContext()?.get(authPayloadKey)
 }
