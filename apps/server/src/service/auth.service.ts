@@ -1,6 +1,7 @@
 import type { AuthLoginRequest, AuthLoginResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
 import { log } from 'node:console'
 import { randomUUID } from 'node:crypto'
+import { UserStatus } from '@server/generated/prisma/enums'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
 import { generateAccessToken, refreshTokenCookie } from '@server/src/lib/jwt'
@@ -18,6 +19,9 @@ class AuthService {
     })
     if (!user) {
       throw BadRequestError.UserOrPasswordIncorrect()
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new BadRequestError('USER_DISABLED', 'User account is disabled')
     }
 
     // Verify password
