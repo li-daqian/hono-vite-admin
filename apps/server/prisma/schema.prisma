@@ -19,7 +19,6 @@ model User {
   username    String     @unique
   password    String
   salt        String
-  avatar      String?
   email       String?
   phone       String?
   displayName String?    @map("display_name")
