@@ -42,5 +42,4 @@ class UserService {
   }
 }
 
-const userService = new UserService()
-export { userService }
+export const userService = new UserService()
