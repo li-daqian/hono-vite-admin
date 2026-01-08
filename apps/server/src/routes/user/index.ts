@@ -1,22 +1,21 @@
-import type { OpenAPIHono, RouteConfig } from '@hono/zod-openapi'
+import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { UserCreateRequest } from '@server/src/routes/user/schema'
 import { createRoute } from '@hono/zod-openapi'
+import { authMiddleware } from '@server/src/middleware/auth'
 import { UserCreateRequestSchema, UserCreateResponseSchema } from '@server/src/routes/user/schema'
 import { userService } from '@server/src/service/user.service'
 
-const userCreationRoute: RouteConfig = createRoute({
-  description: 'Create a new user',
-  method: 'post',
-  path: '/api/v1/user',
-  request: { body: { content: { 'application/json': { schema: UserCreateRequestSchema } } } },
-  responses: { 201: { description: 'User created successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } } },
-  security: [{ Bearer: [] }],
-  tags: ['User'],
-})
-
 export function userRoute(api: OpenAPIHono) {
-  // Create user api (protected)
-  api.openapi(userCreationRoute, async (c) => {
+  api.openapi(createRoute({
+    path: '/api/v1/user',
+    method: 'post',
+    description: 'Create a new user',
+    request: { body: { content: { 'application/json': { schema: UserCreateRequestSchema } } } },
+    responses: { 201: { description: 'User created successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } } },
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware],
+    tags: ['User'],
+  }), async (c) => {
     const body = await c.req.json<UserCreateRequest>()
     const createdUser = await userService.createUser(body)
     return c.json(createdUser, 201)

@@ -16,7 +16,6 @@ app.use('api/*', corsMiddleware)
 app.use('api/*', holdContext)
 app.use('api/*', requestId({ headerName: 'X-Request-ID' }))
 app.use('api/*', traceLogger)
-app.use('api/*', authMiddleware)
 
 // Error handling
 app.notFound(c => notFoundErrorResponse(c))
