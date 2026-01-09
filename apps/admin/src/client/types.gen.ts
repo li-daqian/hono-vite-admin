@@ -161,3 +161,48 @@ export type PostUserResponses = {
 };
 
 export type PostUserResponse = PostUserResponses[keyof PostUserResponses];
+
+export type GetUserProfileData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/user/profile';
+};
+
+export type GetUserProfileResponses = {
+    /**
+     * User profile retrieved successfully
+     */
+    200: {
+        /**
+         * Unique identifier for the user
+         */
+        id: string;
+        /**
+         * Unique username for the user
+         */
+        username: string;
+        /**
+         * Email address of the user
+         */
+        email: string | null;
+        /**
+         * Phone number of the user
+         */
+        phone: string | null;
+        /**
+         * Display name of the user
+         */
+        displayName: string | null;
+        /**
+         * Timestamp when the user was created
+         */
+        createdAt: string;
+        /**
+         * Timestamp when the user was last updated
+         */
+        updatedAt: string;
+    };
+};
+
+export type GetUserProfileResponse = GetUserProfileResponses[keyof GetUserProfileResponses];
