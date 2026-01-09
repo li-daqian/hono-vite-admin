@@ -4,6 +4,31 @@ export type ClientOptions = {
     baseURL: `${string}://${string}/api/v1` | (string & {});
 };
 
+export type GetAuthPrefillData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/prefill';
+};
+
+export type GetAuthPrefillResponses = {
+    /**
+     * Prefilled credentials retrieved successfully
+     */
+    200: {
+        /**
+         * Prefilled username for login form
+         */
+        username: string;
+        /**
+         * Prefilled password for login form
+         */
+        password: string;
+    };
+};
+
+export type GetAuthPrefillResponse = GetAuthPrefillResponses[keyof GetAuthPrefillResponses];
+
 export type PostAuthLoginData = {
     body?: {
         /**

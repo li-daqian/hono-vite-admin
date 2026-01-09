@@ -17,8 +17,16 @@ import { toast } from 'vue-sonner'
 import { z } from 'zod'
 
 const loginSchema = z.object({
-  username: z.string().min(1, { message: 'Username is required' }),
-  password: z.string().min(1, { message: 'Password is required' }),
+  username: z
+    .string()
+    .trim()
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username must be at most 50 characters'),
+
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be at most 128 characters'),
 })
 type LoginForm = z.infer<typeof loginSchema>
 const formSchema = toTypedSchema(loginSchema)

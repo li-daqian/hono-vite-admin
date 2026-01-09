@@ -2,10 +2,21 @@ import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { AuthLoginRequest, AuthRefreshRequest } from '@server/src/routes/auth/schema'
 import { createRoute, z } from '@hono/zod-openapi'
 import { authMiddleware } from '@server/src/middleware/auth.middleware'
-import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/routes/auth/schema'
+import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthPrefillResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/routes/auth/schema'
 import { authService } from '@server/src/service/auth.service'
 
 export function authRoute(api: OpenAPIHono) {
+  api.openapi(createRoute({
+    path: '/auth/prefill',
+    method: 'get',
+    description: 'Get prefilled login credentials',
+    responses: { 200: { description: 'Prefilled credentials retrieved successfully', content: { 'application/json': { schema: AuthPrefillResponseSchema } } } },
+    tags: ['Auth'],
+  }), async (c) => {
+    const prefillData = await authService.getPrefilledCredentials()
+    return c.json(prefillData)
+  })
+
   api.openapi(createRoute({
     path: '/auth/login',
     method: 'post',

@@ -1,5 +1,5 @@
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { postApiV1AuthRefresh } from '@admin/client'
+import { postAuthRefresh } from '@admin/client'
 import { client } from '@admin/client/client.gen'
 import { getEnv } from '@admin/lib/env'
 import { useAuthStore } from '@admin/stores/auth'
@@ -11,7 +11,7 @@ const refreshAccessToken = (() => {
   return async function (): Promise<void> {
     return refreshPromise ||= (async () => {
       try {
-        const response = await postApiV1AuthRefresh({ throwOnError: true })
+        const response = await postAuthRefresh({ throwOnError: true })
         useAuthStore().setAccessToken(response.data.accessToken)
       }
       finally {

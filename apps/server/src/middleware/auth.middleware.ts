@@ -2,7 +2,6 @@ import type { AuthPayload } from '@server/src/lib/jwt'
 import type { Context, Next } from 'hono'
 import { UnauthorizedError } from '@server/src/common/exception'
 import { jwtService } from '@server/src/lib/jwt'
-import { prisma } from '@server/src/lib/prisma'
 import { getContext } from '@server/src/middleware/context.middleware'
 
 const authPayloadKey = 'authPayload'

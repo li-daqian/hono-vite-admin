@@ -31,7 +31,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.89.2",
+    "@hey-api/openapi-ts": "^0.90.2",
     "@hono-vite-admin/eslint-config": "workspace:*",
     "@types/node": "^24.10.1",
     "@types/nprogress": "^0.2.3",

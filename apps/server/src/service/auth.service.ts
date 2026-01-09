@@ -1,4 +1,4 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthPrefillResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
 import { randomUUID } from 'node:crypto'
 import { UserStatus } from '@server/generated/prisma/enums'
 import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
@@ -12,6 +12,13 @@ import { parseTimeDuration } from '@server/src/utils/date'
 import bcrypt from 'bcryptjs'
 
 class AuthService {
+  async getPrefilledCredentials(): Promise<AuthPrefillResponse> {
+    return {
+      username: getEnv().admin.username,
+      password: getEnv().admin.password,
+    }
+  }
+
   async login(request: AuthLoginRequest): Promise<AuthLoginResponse> {
     // Find user by username
     const user = await prisma.user.findUnique({

@@ -1,5 +1,11 @@
 import { z } from '@hono/zod-openapi'
 
+export const AuthPrefillResponseSchema = z.object({
+  username: z.string().openapi({ description: 'Prefilled username for login form', example: 'admin' }),
+  password: z.string().openapi({ description: 'Prefilled password for login form', example: 'admin@123!' }),
+})
+export type AuthPrefillResponse = z.infer<typeof AuthPrefillResponseSchema>
+
 export const AuthLoginRequestSchema = z.object({
   username: z.string().openapi({ description: 'Username of the user', example: 'admin' }),
   password: z.string().openapi({ description: 'Password of the user', example: 'admin@123!' }),
