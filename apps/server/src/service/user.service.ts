@@ -42,7 +42,7 @@ class UserService {
       where: { id: userId },
     })
     if (!user) {
-      throw BadRequestError.Message('User not found')
+      throw BadRequestError.withMessage('User not found')
     }
 
     const { password, salt, ...safeUser } = user
