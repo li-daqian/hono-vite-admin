@@ -7,18 +7,10 @@ export default defineConfig({
   },
   plugins: [
     '@hey-api/client-axios',
-    '@hey-api/schemas',
-    {
-      dates: true,
-      name: '@hey-api/transformers',
-    },
-    {
-      enums: 'javascript',
-      name: '@hey-api/typescript',
-    },
+    'zod',
     {
       name: '@hey-api/sdk',
-      transformer: true,
+      validator: true,
     },
   ],
 })

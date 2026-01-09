@@ -3,6 +3,7 @@
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import type { GetAuthPrefillData, GetAuthPrefillResponses, GetUserProfileData, GetUserProfileResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses } from './types.gen';
+import { zGetAuthPrefillData, zGetAuthPrefillResponse, zGetUserProfileData, zGetUserProfileResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostUserData, zPostUserResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -22,7 +23,9 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * Get prefilled login credentials
  */
 export const getAuthPrefill = <ThrowOnError extends boolean = false>(options?: Options<GetAuthPrefillData, ThrowOnError>) => (options?.client ?? client).get<GetAuthPrefillResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetAuthPrefillData.parseAsync(data),
     responseType: 'json',
+    responseValidator: async (data) => await zGetAuthPrefillResponse.parseAsync(data),
     url: '/auth/prefill',
     ...options
 });
@@ -31,7 +34,9 @@ export const getAuthPrefill = <ThrowOnError extends boolean = false>(options?: O
  * User login
  */
 export const postAuthLogin = <ThrowOnError extends boolean = false>(options?: Options<PostAuthLoginData, ThrowOnError>) => (options?.client ?? client).post<PostAuthLoginResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostAuthLoginData.parseAsync(data),
     responseType: 'json',
+    responseValidator: async (data) => await zPostAuthLoginResponse.parseAsync(data),
     url: '/auth/login',
     ...options,
     headers: {
@@ -44,7 +49,9 @@ export const postAuthLogin = <ThrowOnError extends boolean = false>(options?: Op
  * Refresh access token using refresh token
  */
 export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostAuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostAuthRefreshData.parseAsync(data),
     responseType: 'json',
+    responseValidator: async (data) => await zPostAuthRefreshResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/refresh',
     ...options,
@@ -58,7 +65,9 @@ export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: 
  * User logout
  */
 export const postAuthLogout = <ThrowOnError extends boolean = false>(options?: Options<PostAuthLogoutData, ThrowOnError>) => (options?.client ?? client).post<PostAuthLogoutResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostAuthLogoutData.parseAsync(data),
     responseType: 'json',
+    responseValidator: async (data) => await zPostAuthLogoutResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/logout',
     ...options
@@ -68,7 +77,9 @@ export const postAuthLogout = <ThrowOnError extends boolean = false>(options?: O
  * Create a new user
  */
 export const postUser = <ThrowOnError extends boolean = false>(options?: Options<PostUserData, ThrowOnError>) => (options?.client ?? client).post<PostUserResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostUserData.parseAsync(data),
     responseType: 'json',
+    responseValidator: async (data) => await zPostUserResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/user',
     ...options,
@@ -82,7 +93,9 @@ export const postUser = <ThrowOnError extends boolean = false>(options?: Options
  * Get user profile
  */
 export const getUserProfile = <ThrowOnError extends boolean = false>(options?: Options<GetUserProfileData, ThrowOnError>) => (options?.client ?? client).get<GetUserProfileResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetUserProfileData.parseAsync(data),
     responseType: 'json',
+    responseValidator: async (data) => await zGetUserProfileResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/user/profile',
     ...options
