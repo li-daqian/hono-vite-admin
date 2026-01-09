@@ -77,9 +77,7 @@ export type PostAuthRefreshResponses = {
 export type PostAuthRefreshResponse = PostAuthRefreshResponses[keyof PostAuthRefreshResponses];
 
 export type PostAuthLogoutData = {
-    body?: {
-        [key: string]: unknown;
-    };
+    body?: never;
     path?: never;
     query?: never;
     url: '/auth/logout';

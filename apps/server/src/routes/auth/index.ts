@@ -38,7 +38,6 @@ export function authRoute(api: OpenAPIHono) {
     path: '/auth/logout',
     method: 'post',
     description: 'User logout',
-    request: { body: { content: { 'application/json': { schema: z.object({}) } } } },
     responses: { 200: { description: 'User logged out successfully', content: { 'application/json': { schema: z.object({}) } } } },
     security: [{ Bearer: [] }],
     middleware: [authMiddleware],

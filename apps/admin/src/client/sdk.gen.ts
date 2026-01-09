@@ -52,11 +52,7 @@ export const postAuthLogout = <ThrowOnError extends boolean = false>(options?: O
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/logout',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers
-    }
+    ...options
 });
 
 /**
