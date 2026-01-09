@@ -2,6 +2,7 @@ import type { AuthPayload } from '@server/src/lib/jwt'
 import type { Context, Next } from 'hono'
 import { UnauthorizedError } from '@server/src/common/exception'
 import { jwtService } from '@server/src/lib/jwt'
+import { prisma } from '@server/src/lib/prisma'
 import { getContext } from '@server/src/middleware/context.middleware'
 
 const authPayloadKey = 'authPayload'
@@ -21,6 +22,11 @@ export async function authMiddleware(c: Context, next: Next): Promise<void | Res
   await next()
 }
 
-export function getLoginUser(): AuthPayload | undefined {
-  return getContext()?.get(authPayloadKey)
+export function getLoginUser(requireLogin: boolean = true): AuthPayload {
+  const authPayload = getContext()?.get(authPayloadKey)
+  if (requireLogin && !authPayload) {
+    throw new UnauthorizedError()
+  }
+
+  return authPayload ?? { userId: '' }
 }

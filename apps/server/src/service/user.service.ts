@@ -36,7 +36,7 @@ class UserService {
   }
 
   async getUserProfile(): Promise<UserCreateResponse> {
-    const { userId } = getLoginUser()!
+    const { userId } = getLoginUser()
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
