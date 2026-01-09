@@ -20,4 +20,17 @@ export function userRoute(api: OpenAPIHono) {
     const createdUser = await userService.createUser(body)
     return c.json(createdUser, 201)
   })
+
+  api.openapi(createRoute({
+    path: '/user/profile',
+    method: 'get',
+    description: 'Get user profile',
+    responses: { 200: { description: 'User profile retrieved successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } } },
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware],
+    tags: ['User'],
+  }), async (c) => {
+    const userProfile = await userService.getUserProfile()
+    return c.json(userProfile)
+  })
 }

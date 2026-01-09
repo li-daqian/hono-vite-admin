@@ -1,6 +1,7 @@
 import type { UserCreateRequest, UserCreateResponse } from '@server/src/routes/user/schema'
 import { BadRequestError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
+import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import bcrypt from 'bcryptjs'
 
 class UserService {
@@ -34,7 +35,25 @@ class UserService {
     }
   }
 
-  async isUsernameUnique(username: string): Promise<boolean> {
+  async getUserProfile(): Promise<UserCreateResponse> {
+    const { userId } = getLoginUser()!
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+    if (!user) {
+      throw BadRequestError.Message('User not found')
+    }
+
+    const { password, salt, ...safeUser } = user
+    return {
+      ...safeUser,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
+  }
+
+  private async isUsernameUnique(username: string): Promise<boolean> {
     const existingUser = await prisma.user.findUnique({
       where: { username },
     })
