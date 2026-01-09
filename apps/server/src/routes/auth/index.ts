@@ -25,6 +25,7 @@ export function authRoute(api: OpenAPIHono) {
     description: 'Refresh access token using refresh token',
     request: { body: { content: { 'application/json': { schema: AuthRefreshRequestSchema } } } },
     responses: { 200: { description: 'Token refreshed successfully', content: { 'application/json': { schema: AuthRefreshResponseSchema } } } },
+    security: [{ Bearer: [] }],
     middleware: [authMiddleware],
     tags: ['Auth'],
   }), async (c) => {

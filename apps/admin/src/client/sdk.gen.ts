@@ -36,6 +36,7 @@ export const postAuthLogin = <ThrowOnError extends boolean = false>(options?: Op
  */
 export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostAuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
     responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/refresh',
     ...options,
     headers: {
