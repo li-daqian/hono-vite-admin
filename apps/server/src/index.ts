@@ -21,6 +21,6 @@ app.notFound(c => notFoundErrorResponse(c))
 app.onError(onErrorHandler)
 
 // Main API routes
-app.route('/', api)
+app.route('/api/v1', api)
 
 export default app

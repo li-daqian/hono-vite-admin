@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { postApiV1AuthLogin } from '@admin/client'
+import { postAuthLogin } from '@admin/client'
 import { Button } from '@admin/components/ui/button'
 import {
   Form,
@@ -33,7 +33,7 @@ const router = useRouter()
 async function onSubmit(values: Record<string, any>) {
   const formData = values as LoginForm
   try {
-    const res = await postApiV1AuthLogin<true>({
+    const res = await postAuthLogin<true>({
       body: {
         username: formData.username,
         password: formData.password,

@@ -7,7 +7,7 @@ import { userService } from '@server/src/service/user.service'
 
 export function userRoute(api: OpenAPIHono) {
   api.openapi(createRoute({
-    path: '/api/v1/user',
+    path: '/user',
     method: 'post',
     description: 'Create a new user',
     request: { body: { content: { 'application/json': { schema: UserCreateRequestSchema } } } },

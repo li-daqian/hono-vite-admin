@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { PostApiV1AuthLoginData, PostApiV1AuthLoginResponses, PostApiV1AuthLogoutData, PostApiV1AuthLogoutResponses, PostApiV1AuthRefreshData, PostApiV1AuthRefreshResponses, PostApiV1UserData, PostApiV1UserResponses } from './types.gen';
+import type { PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -21,9 +21,9 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * User login
  */
-export const postApiV1AuthLogin = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1AuthLoginData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1AuthLoginResponses, unknown, ThrowOnError>({
+export const postAuthLogin = <ThrowOnError extends boolean = false>(options?: Options<PostAuthLoginData, ThrowOnError>) => (options?.client ?? client).post<PostAuthLoginResponses, unknown, ThrowOnError>({
     responseType: 'json',
-    url: '/api/v1/auth/login',
+    url: '/auth/login',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -34,9 +34,9 @@ export const postApiV1AuthLogin = <ThrowOnError extends boolean = false>(options
 /**
  * Refresh access token using refresh token
  */
-export const postApiV1AuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1AuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1AuthRefreshResponses, unknown, ThrowOnError>({
+export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostAuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
     responseType: 'json',
-    url: '/api/v1/auth/refresh',
+    url: '/auth/refresh',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -47,10 +47,10 @@ export const postApiV1AuthRefresh = <ThrowOnError extends boolean = false>(optio
 /**
  * User logout
  */
-export const postApiV1AuthLogout = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1AuthLogoutData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1AuthLogoutResponses, unknown, ThrowOnError>({
+export const postAuthLogout = <ThrowOnError extends boolean = false>(options?: Options<PostAuthLogoutData, ThrowOnError>) => (options?.client ?? client).post<PostAuthLogoutResponses, unknown, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/auth/logout',
+    url: '/auth/logout',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -61,10 +61,10 @@ export const postApiV1AuthLogout = <ThrowOnError extends boolean = false>(option
 /**
  * Create a new user
  */
-export const postApiV1User = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1UserData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1UserResponses, unknown, ThrowOnError>({
+export const postUser = <ThrowOnError extends boolean = false>(options?: Options<PostUserData, ThrowOnError>) => (options?.client ?? client).post<PostUserResponses, unknown, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/user',
+    url: '/user',
     ...options,
     headers: {
         'Content-Type': 'application/json',

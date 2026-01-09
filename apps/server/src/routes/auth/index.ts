@@ -7,7 +7,7 @@ import { authService } from '@server/src/service/auth.service'
 
 export function authRoute(api: OpenAPIHono) {
   api.openapi(createRoute({
-    path: '/api/v1/auth/login',
+    path: '/auth/login',
     method: 'post',
     description: 'User login',
     request: { body: { content: { 'application/json': { schema: AuthLoginRequestSchema } } } },
@@ -20,7 +20,7 @@ export function authRoute(api: OpenAPIHono) {
   })
 
   api.openapi(createRoute({
-    path: '/api/v1/auth/refresh',
+    path: '/auth/refresh',
     method: 'post',
     description: 'Refresh access token using refresh token',
     request: { body: { content: { 'application/json': { schema: AuthRefreshRequestSchema } } } },
@@ -34,7 +34,7 @@ export function authRoute(api: OpenAPIHono) {
   })
 
   api.openapi(createRoute({
-    path: '/api/v1/auth/logout',
+    path: '/auth/logout',
     method: 'post',
     description: 'User logout',
     request: { body: { content: { 'application/json': { schema: z.object({}) } } } },
