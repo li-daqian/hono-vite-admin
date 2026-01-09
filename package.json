@@ -1,7 +1,7 @@
 {
   "name": "hono-vite-admin",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=20"
   },
@@ -17,8 +17,8 @@
     "openapi-ts": "pnpm --filter @hono-vite-admin/admin openapi-ts"
   },
   "devDependencies": {
-    "prettier": "^3.6.2",
-    "turbo": "^2.6.1",
+    "prettier": "^3.7.4",
+    "turbo": "^2.7.3",
     "typescript": "5.9.3"
   }
 }
