@@ -9,8 +9,13 @@ export default defineConfig({
     '@hey-api/client-axios',
     'zod',
     {
+      dates: true,
+      name: '@hey-api/transformers',
+    },
+    {
       name: '@hey-api/sdk',
       validator: true,
+      transformer: true,
     },
   ],
 })
