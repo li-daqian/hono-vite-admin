@@ -30,7 +30,7 @@ export type GetAuthPrefillResponses = {
 export type GetAuthPrefillResponse = GetAuthPrefillResponses[keyof GetAuthPrefillResponses];
 
 export type PostAuthLoginData = {
-    body?: {
+    body: {
         /**
          * Username of the user
          */
@@ -68,7 +68,7 @@ export type PostAuthLoginResponses = {
 export type PostAuthLoginResponse = PostAuthLoginResponses[keyof PostAuthLoginResponses];
 
 export type PostAuthRefreshData = {
-    body?: {
+    body: {
         /**
          * Existing refresh token
          */
@@ -120,7 +120,7 @@ export type PostAuthLogoutResponses = {
 export type PostAuthLogoutResponse = PostAuthLogoutResponses[keyof PostAuthLogoutResponses];
 
 export type PostUserData = {
-    body?: {
+    body: {
         /**
          * Unique username for the user
          */

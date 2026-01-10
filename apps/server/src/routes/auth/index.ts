@@ -21,7 +21,7 @@ export function authRoute(api: OpenAPIHono) {
     path: '/auth/login',
     method: 'post',
     description: 'User login',
-    request: { body: { content: { 'application/json': { schema: AuthLoginRequestSchema } } } },
+    request: { body: { required: true, content: { 'application/json': { schema: AuthLoginRequestSchema } } } },
     responses: { 200: { description: 'User logged in successfully', content: { 'application/json': { schema: AuthLoginResponseSchema } } } },
     tags: ['Auth'],
   }), async (c) => {
@@ -34,7 +34,7 @@ export function authRoute(api: OpenAPIHono) {
     path: '/auth/refresh',
     method: 'post',
     description: 'Refresh access token using refresh token',
-    request: { body: { content: { 'application/json': { schema: AuthRefreshRequestSchema } } } },
+    request: { body: { required: true, content: { 'application/json': { schema: AuthRefreshRequestSchema } } } },
     responses: { 200: { description: 'Token refreshed successfully', content: { 'application/json': { schema: AuthRefreshResponseSchema } } } },
     security: [{ Bearer: [] }],
     middleware: [authMiddleware],

@@ -10,7 +10,7 @@ export function userRoute(api: OpenAPIHono) {
     path: '/user',
     method: 'post',
     description: 'Create a new user',
-    request: { body: { content: { 'application/json': { schema: UserCreateRequestSchema } } } },
+    request: { body: { required: true, content: { 'application/json': { schema: UserCreateRequestSchema } } } },
     responses: { 201: { description: 'User created successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } } },
     security: [{ Bearer: [] }],
     middleware: [authMiddleware],

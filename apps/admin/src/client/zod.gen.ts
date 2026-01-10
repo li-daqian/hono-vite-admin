@@ -20,7 +20,7 @@ export const zPostAuthLoginData = z.object({
     body: z.object({
         username: z.string(),
         password: z.string()
-    }).optional(),
+    }),
     path: z.never().optional(),
     query: z.never().optional()
 });
@@ -40,7 +40,7 @@ export const zPostAuthRefreshData = z.object({
             z.string(),
             z.null()
         ])
-    }).optional(),
+    }),
     path: z.never().optional(),
     query: z.never().optional()
 });
@@ -81,7 +81,7 @@ export const zPostUserData = z.object({
             z.string().max(50),
             z.null()
         ])
-    }).optional(),
+    }),
     path: z.never().optional(),
     query: z.never().optional()
 });

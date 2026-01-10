@@ -33,7 +33,7 @@ export const getAuthPrefill = <ThrowOnError extends boolean = false>(options?: O
 /**
  * User login
  */
-export const postAuthLogin = <ThrowOnError extends boolean = false>(options?: Options<PostAuthLoginData, ThrowOnError>) => (options?.client ?? client).post<PostAuthLoginResponses, unknown, ThrowOnError>({
+export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Options<PostAuthLoginData, ThrowOnError>) => (options.client ?? client).post<PostAuthLoginResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostAuthLoginData.parseAsync(data),
     responseType: 'json',
     responseValidator: async (data) => await zPostAuthLoginResponse.parseAsync(data),
@@ -41,14 +41,14 @@ export const postAuthLogin = <ThrowOnError extends boolean = false>(options?: Op
     ...options,
     headers: {
         'Content-Type': 'application/json',
-        ...options?.headers
+        ...options.headers
     }
 });
 
 /**
  * Refresh access token using refresh token
  */
-export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostAuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
+export const postAuthRefresh = <ThrowOnError extends boolean = false>(options: Options<PostAuthRefreshData, ThrowOnError>) => (options.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostAuthRefreshData.parseAsync(data),
     responseType: 'json',
     responseValidator: async (data) => await zPostAuthRefreshResponse.parseAsync(data),
@@ -57,7 +57,7 @@ export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: 
     ...options,
     headers: {
         'Content-Type': 'application/json',
-        ...options?.headers
+        ...options.headers
     }
 });
 
@@ -76,7 +76,7 @@ export const postAuthLogout = <ThrowOnError extends boolean = false>(options?: O
 /**
  * Create a new user
  */
-export const postUser = <ThrowOnError extends boolean = false>(options?: Options<PostUserData, ThrowOnError>) => (options?.client ?? client).post<PostUserResponses, unknown, ThrowOnError>({
+export const postUser = <ThrowOnError extends boolean = false>(options: Options<PostUserData, ThrowOnError>) => (options.client ?? client).post<PostUserResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostUserData.parseAsync(data),
     responseType: 'json',
     responseValidator: async (data) => await zPostUserResponse.parseAsync(data),
@@ -85,7 +85,7 @@ export const postUser = <ThrowOnError extends boolean = false>(options?: Options
     ...options,
     headers: {
         'Content-Type': 'application/json',
-        ...options?.headers
+        ...options.headers
     }
 });
 
