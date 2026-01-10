@@ -48,7 +48,7 @@ export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Refresh access token using refresh token
  */
-export const postAuthRefresh = <ThrowOnError extends boolean = false>(options: Options<PostAuthRefreshData, ThrowOnError>) => (options.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
+export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostAuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostAuthRefreshData.parseAsync(data),
     responseType: 'json',
     responseValidator: async (data) => await zPostAuthRefreshResponse.parseAsync(data),
@@ -57,7 +57,7 @@ export const postAuthRefresh = <ThrowOnError extends boolean = false>(options: O
     ...options,
     headers: {
         'Content-Type': 'application/json',
-        ...options.headers
+        ...options?.headers
     }
 });
 

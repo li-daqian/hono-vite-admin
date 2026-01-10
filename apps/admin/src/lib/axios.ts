@@ -11,7 +11,7 @@ const refreshAccessToken = (() => {
   return async function (): Promise<void> {
     return refreshPromise ||= (async () => {
       try {
-        const response = await postAuthRefresh({ throwOnError: true })
+        const response = await postAuthRefresh<true>()
         useAuthStore().setAccessToken(response.data.accessToken)
       }
       finally {
@@ -91,10 +91,11 @@ function setupAxiosInterceptors() {
 }
 
 export function setupAxios() {
-  const apiBaseURL = getEnv().apiBaseUrl
+  const apiBaseURL = `${getEnv().apiBaseUrl}/api/v1`
   client.setConfig({
     baseURL: apiBaseURL,
     withCredentials: true,
+    throwOnError: true,
   })
 
   setupAxiosInterceptors()

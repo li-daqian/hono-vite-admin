@@ -68,7 +68,7 @@ export type PostAuthLoginResponses = {
 export type PostAuthLoginResponse = PostAuthLoginResponses[keyof PostAuthLoginResponses];
 
 export type PostAuthRefreshData = {
-    body: {
+    body?: {
         /**
          * Existing refresh token
          */

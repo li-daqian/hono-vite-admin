@@ -12,14 +12,14 @@ export const zGetAuthPrefillData = z.object({
  * Prefilled credentials retrieved successfully
  */
 export const zGetAuthPrefillResponse = z.object({
-    username: z.string(),
-    password: z.string()
-});
+    username: z.string().describe('Prefilled username for login form'),
+    password: z.string().describe('Prefilled password for login form')
+}).describe('Prefilled credentials retrieved successfully');
 
 export const zPostAuthLoginData = z.object({
     body: z.object({
-        username: z.string(),
-        password: z.string()
+        username: z.string().min(1).max(50).describe('Username of the user'),
+        password: z.string().min(1).describe('Password of the user')
     }),
     path: z.never().optional(),
     query: z.never().optional()
@@ -29,10 +29,10 @@ export const zPostAuthLoginData = z.object({
  * User logged in successfully
  */
 export const zPostAuthLoginResponse = z.object({
-    accessToken: z.string(),
-    refreshToken: z.string(),
-    refreshTokenExpiresAt: z.string()
-});
+    accessToken: z.string().describe('Access token for the user'),
+    refreshToken: z.string().describe('Refresh token for the user'),
+    refreshTokenExpiresAt: z.string().describe('Refresh token expiry duration')
+}).describe('User logged in successfully');
 
 export const zPostAuthRefreshData = z.object({
     body: z.object({
@@ -40,7 +40,7 @@ export const zPostAuthRefreshData = z.object({
             z.string(),
             z.null()
         ])
-    }),
+    }).optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
@@ -49,10 +49,10 @@ export const zPostAuthRefreshData = z.object({
  * Token refreshed successfully
  */
 export const zPostAuthRefreshResponse = z.object({
-    accessToken: z.string(),
-    refreshToken: z.string(),
-    refreshTokenExpiresAt: z.string()
-});
+    accessToken: z.string().describe('New access token'),
+    refreshToken: z.string().describe('Rotated refresh token'),
+    refreshTokenExpiresAt: z.string().describe('New refresh token expiry duration')
+}).describe('Token refreshed successfully');
 
 export const zPostAuthLogoutData = z.object({
     body: z.never().optional(),
@@ -63,12 +63,12 @@ export const zPostAuthLogoutData = z.object({
 /**
  * User logged out successfully
  */
-export const zPostAuthLogoutResponse = z.record(z.unknown());
+export const zPostAuthLogoutResponse = z.record(z.unknown()).describe('User logged out successfully');
 
 export const zPostUserData = z.object({
     body: z.object({
-        username: z.string().min(3).max(30),
-        password: z.string().min(6).max(100),
+        username: z.string().min(3).max(30).describe('Unique username for the user'),
+        password: z.string().min(6).max(100).describe('Password for the user'),
         email: z.union([
             z.string().email(),
             z.null()
@@ -90,8 +90,8 @@ export const zPostUserData = z.object({
  * User created successfully
  */
 export const zPostUserResponse = z.object({
-    id: z.string().uuid(),
-    username: z.string(),
+    id: z.string().uuid().describe('Unique identifier for the user'),
+    username: z.string().describe('Unique username for the user'),
     email: z.union([
         z.string().email(),
         z.null()
@@ -104,9 +104,9 @@ export const zPostUserResponse = z.object({
         z.string(),
         z.null()
     ]),
-    createdAt: z.string(),
-    updatedAt: z.string()
-});
+    createdAt: z.string().describe('Timestamp when the user was created'),
+    updatedAt: z.string().describe('Timestamp when the user was last updated')
+}).describe('User created successfully');
 
 export const zGetUserProfileData = z.object({
     body: z.never().optional(),
@@ -118,8 +118,8 @@ export const zGetUserProfileData = z.object({
  * User profile retrieved successfully
  */
 export const zGetUserProfileResponse = z.object({
-    id: z.string().uuid(),
-    username: z.string(),
+    id: z.string().uuid().describe('Unique identifier for the user'),
+    username: z.string().describe('Unique username for the user'),
     email: z.union([
         z.string().email(),
         z.null()
@@ -132,6 +132,6 @@ export const zGetUserProfileResponse = z.object({
         z.string(),
         z.null()
     ]),
-    createdAt: z.string(),
-    updatedAt: z.string()
-});
+    createdAt: z.string().describe('Timestamp when the user was created'),
+    updatedAt: z.string().describe('Timestamp when the user was last updated')
+}).describe('User profile retrieved successfully');

@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import type { PostAuthLoginData } from '@admin/client'
+import type { z } from 'zod'
 import { postAuthLogin } from '@admin/client'
+import { zPostAuthLoginData } from '@admin/client/zod.gen'
 import { Button } from '@admin/components/ui/button'
 import {
   Form,
@@ -14,22 +17,10 @@ import { useAuthStore } from '@admin/stores/auth'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { z } from 'zod'
 
-const loginSchema = z.object({
-  username: z
-    .string()
-    .trim()
-    .min(3, 'Username must be at least 3 characters')
-    .max(50, 'Username must be at most 50 characters'),
-
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be at most 128 characters'),
-})
-type LoginForm = z.infer<typeof loginSchema>
+const loginSchema = zPostAuthLoginData.shape.body
 const formSchema = toTypedSchema(loginSchema)
+type LoginForm = PostAuthLoginData['body']
 
 const initialValues: LoginForm = {
   username: 'admin',
@@ -40,24 +31,16 @@ const router = useRouter()
 
 async function onSubmit(values: Record<string, any>) {
   const formData = values as LoginForm
-  try {
-    const res = await postAuthLogin<true>({
-      body: {
-        username: formData.username,
-        password: formData.password,
-      },
-      throwOnError: true,
-    })
+  const res = await postAuthLogin<true>({
+    body: {
+      ...formData,
+    },
+  })
 
-    const accessToken = res.data.accessToken
-    useAuthStore().setAccessToken(accessToken)
+  const accessToken = res.data.accessToken
+  useAuthStore().setAccessToken(accessToken)
 
-    await router.replace({ name: 'Home' })
-  }
-  catch (err: any) {
-    const errorMessage = err?.response?.data?.message || 'Login failed'
-    toast.error(errorMessage)
-  }
+  await router.replace({ name: 'Home' })
 }
 </script>
 

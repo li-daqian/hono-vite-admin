@@ -7,8 +7,23 @@ export const AuthPrefillResponseSchema = z.object({
 export type AuthPrefillResponse = z.infer<typeof AuthPrefillResponseSchema>
 
 export const AuthLoginRequestSchema = z.object({
-  username: z.string().trim().openapi({ description: 'Username of the user', example: 'admin' }),
-  password: z.string().openapi({ description: 'Password of the user', example: 'admin@123!' }),
+  username: z
+    .string()
+    .trim()
+    .min(1)
+    .max(50)
+    .openapi({
+      description: 'Username of the user',
+      example: 'admin',
+    }),
+
+  password: z
+    .string()
+    .min(1)
+    .openapi({
+      description: 'Password of the user',
+      example: 'Admin@123!',
+    }),
 })
 export const AuthLoginResponseSchema = z.object({
   accessToken: z.string().openapi({ description: 'Access token for the user', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }),

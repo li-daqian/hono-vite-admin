@@ -7,7 +7,10 @@ export default defineConfig({
   },
   plugins: [
     '@hey-api/client-axios',
-    'zod',
+    {
+      name: 'zod',
+      metadata: true,
+    },
     {
       dates: true,
       name: '@hey-api/transformers',
