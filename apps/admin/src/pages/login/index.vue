@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PostAuthLoginData } from '@admin/client'
-import type { z } from 'zod'
 import { postAuthLogin } from '@admin/client'
 import { zPostAuthLoginData } from '@admin/client/zod.gen'
 import { Button } from '@admin/components/ui/button'
@@ -16,7 +15,6 @@ import { Input } from '@admin/components/ui/input'
 import { useAuthStore } from '@admin/stores/auth'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useRouter } from 'vue-router'
-import { toast } from 'vue-sonner'
 
 const loginSchema = zPostAuthLoginData.shape.body
 const formSchema = toTypedSchema(loginSchema)
