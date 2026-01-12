@@ -4,6 +4,16 @@ export type ClientOptions = {
     baseURL: `${string}://${string}/api/v1` | (string & {});
 };
 
+/**
+ * Status of the user account
+ */
+export const UserStatus = { ACTIVE: 'ACTIVE', DISABLED: 'DISABLED' } as const;
+
+/**
+ * Status of the user account
+ */
+export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
+
 export type GetAuthPrefillData = {
     body?: never;
     path?: never;

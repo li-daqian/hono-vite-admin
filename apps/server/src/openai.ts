@@ -1,5 +1,6 @@
 import { swaggerUI } from '@hono/swagger-ui'
 import { OpenAPIHono } from '@hono/zod-openapi'
+import { UserStatus } from '@server/generated/prisma/enums'
 import { API_V1_BASE_PATH } from '@server/src/common/constant'
 import { BadRequestError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
@@ -24,6 +25,12 @@ function setUpSwagger(api: OpenAPIHono) {
       type: 'http',
       scheme: 'bearer',
       bearerFormat: 'JWT',
+    })
+    // Register enum schemas
+    api.openAPIRegistry.registerComponent('schemas', 'UserStatus', {
+      type: 'string',
+      enum: Object.values(UserStatus),
+      description: 'Status of the user account',
     })
     // OpenAPI JSON with Bearer auth
     api.doc('/openapi.json', {

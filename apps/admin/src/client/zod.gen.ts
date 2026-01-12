@@ -2,6 +2,11 @@
 
 import { z } from 'zod';
 
+/**
+ * Status of the user account
+ */
+export const zUserStatus = z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account');
+
 export const zGetAuthPrefillData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),

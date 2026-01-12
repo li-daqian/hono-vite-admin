@@ -8,6 +8,10 @@ export default defineConfig({
   plugins: [
     '@hey-api/client-axios',
     {
+      enums: true,
+      name: '@hey-api/typescript',
+    },
+    {
       name: 'zod',
       metadata: true,
     },

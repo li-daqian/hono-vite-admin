@@ -26,7 +26,7 @@ export const UserProfileResponseSchema = z.object({
   email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
-  status: z.enum(Object.values(UserStatus) as [UserStatus, ...UserStatus[]]).openapi({ description: 'Status of the user account', example: 'ACTIVE' }),
+  status: z.enum(Object.values(UserStatus)).openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
   createdAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was created', example: '2024-01-01T12:00:00Z' }),
   updatedAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was last updated', example: '2024-01-02T12:00:00Z' }),
 })
