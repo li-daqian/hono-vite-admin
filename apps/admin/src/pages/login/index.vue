@@ -13,6 +13,7 @@ import {
 } from '@admin/components/ui/form'
 import { Input } from '@admin/components/ui/input'
 import { Skeleton } from '@admin/components/ui/skeleton'
+import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useAuthStore } from '@admin/stores/auth'
 import { toTypedSchema } from '@vee-validate/zod'
 import { ref } from 'vue'
@@ -44,7 +45,7 @@ async function onSubmit(values: Record<string, any>) {
   const accessToken = res.data.accessToken
   useAuthStore().setAccessToken(accessToken)
 
-  await router.replace({ name: 'Home' })
+  await router.replace({ name: ROUTE_NAMES.HOME })
 }
 </script>
 

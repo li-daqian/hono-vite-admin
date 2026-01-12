@@ -1,16 +1,17 @@
 import type { RouteRecordRaw } from 'vue-router'
 import NProgress from '@admin/lib/nprogress'
+import { ROUTE_NAMES } from '@admin/router/route-name'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'home',
+    name: ROUTE_NAMES.HOME,
     component: () => import('@admin/pages/HomePage.vue'),
   },
   {
     path: '/login',
-    name: 'login',
+    name: ROUTE_NAMES.LOGIN,
     component: () => import('@admin/pages/login/index.vue'),
   },
 ]
