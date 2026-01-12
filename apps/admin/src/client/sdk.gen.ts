@@ -2,6 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
+import { getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer } from './transformers.gen';
 import type { GetAuthPrefillData, GetAuthPrefillResponses, GetUserProfileData, GetUserProfileResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses } from './types.gen';
 import { zGetAuthPrefillData, zGetAuthPrefillResponse, zGetUserProfileData, zGetUserProfileResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostUserData, zPostUserResponse } from './zod.gen';
 
@@ -35,6 +36,7 @@ export const getAuthPrefill = <ThrowOnError extends boolean = false>(options?: O
  */
 export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Options<PostAuthLoginData, ThrowOnError>) => (options.client ?? client).post<PostAuthLoginResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostAuthLoginData.parseAsync(data),
+    responseTransformer: postAuthLoginResponseTransformer,
     responseType: 'json',
     responseValidator: async (data) => await zPostAuthLoginResponse.parseAsync(data),
     url: '/auth/login',
@@ -50,6 +52,7 @@ export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Opt
  */
 export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostAuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostAuthRefreshResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostAuthRefreshData.parseAsync(data),
+    responseTransformer: postAuthRefreshResponseTransformer,
     responseType: 'json',
     responseValidator: async (data) => await zPostAuthRefreshResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -78,6 +81,7 @@ export const postAuthLogout = <ThrowOnError extends boolean = false>(options?: O
  */
 export const postUser = <ThrowOnError extends boolean = false>(options: Options<PostUserData, ThrowOnError>) => (options.client ?? client).post<PostUserResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostUserData.parseAsync(data),
+    responseTransformer: postUserResponseTransformer,
     responseType: 'json',
     responseValidator: async (data) => await zPostUserResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -94,6 +98,7 @@ export const postUser = <ThrowOnError extends boolean = false>(options: Options<
  */
 export const getUserProfile = <ThrowOnError extends boolean = false>(options?: Options<GetUserProfileData, ThrowOnError>) => (options?.client ?? client).get<GetUserProfileResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zGetUserProfileData.parseAsync(data),
+    responseTransformer: getUserProfileResponseTransformer,
     responseType: 'json',
     responseValidator: async (data) => await zGetUserProfileResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],

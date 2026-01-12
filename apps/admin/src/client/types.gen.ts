@@ -61,7 +61,7 @@ export type PostAuthLoginResponses = {
         /**
          * Refresh token expiry duration
          */
-        refreshTokenExpiresAt: string;
+        refreshTokenExpiresAt: Date;
     };
 };
 
@@ -95,7 +95,7 @@ export type PostAuthRefreshResponses = {
         /**
          * New refresh token expiry duration
          */
-        refreshTokenExpiresAt: string;
+        refreshTokenExpiresAt: Date;
     };
 };
 
@@ -175,11 +175,11 @@ export type PostUserResponses = {
         /**
          * Timestamp when the user was created
          */
-        createdAt: string;
+        createdAt: Date;
         /**
          * Timestamp when the user was last updated
          */
-        updatedAt: string;
+        updatedAt: Date;
     };
 };
 
@@ -224,11 +224,11 @@ export type GetUserProfileResponses = {
         /**
          * Timestamp when the user was created
          */
-        createdAt: string;
+        createdAt: Date;
         /**
          * Timestamp when the user was last updated
          */
-        updatedAt: string;
+        updatedAt: Date;
     };
 };
 

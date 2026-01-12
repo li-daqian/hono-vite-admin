@@ -7,28 +7,20 @@ export const AuthPrefillResponseSchema = z.object({
 export type AuthPrefillResponse = z.infer<typeof AuthPrefillResponseSchema>
 
 export const AuthLoginRequestSchema = z.object({
-  username: z
-    .string()
-    .trim()
-    .min(1)
-    .max(50)
-    .openapi({
-      description: 'Username of the user',
-      example: 'admin',
-    }),
+  username: z.string().trim().min(1).max(50).openapi({
+    description: 'Username of the user',
+    example: 'admin',
+  }),
 
-  password: z
-    .string()
-    .min(1)
-    .openapi({
-      description: 'Password of the user',
-      example: 'Admin@123!',
-    }),
+  password: z.string().min(1).openapi({
+    description: 'Password of the user',
+    example: 'Admin@123!',
+  }),
 })
 export const AuthLoginResponseSchema = z.object({
   accessToken: z.string().openapi({ description: 'Access token for the user', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }),
   refreshToken: z.string().openapi({ description: 'Refresh token for the user', example: 'dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4...' }),
-  refreshTokenExpiresAt: z.string().openapi({ description: 'Refresh token expiry duration', example: '2024-12-31T23:59:59Z' }),
+  refreshTokenExpiresAt: z.iso.datetime().openapi({ description: 'Refresh token expiry duration', example: '2024-12-31T23:59:59Z' }),
 })
 export type AuthLoginRequest = z.infer<typeof AuthLoginRequestSchema>
 export type AuthLoginResponse = z.infer<typeof AuthLoginResponseSchema>
@@ -39,7 +31,7 @@ export const AuthRefreshRequestSchema = z.object({
 export const AuthRefreshResponseSchema = z.object({
   accessToken: z.string().openapi({ description: 'New access token', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }),
   refreshToken: z.string().openapi({ description: 'Rotated refresh token', example: '9b8a7c6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d' }),
-  refreshTokenExpiresAt: z.string().openapi({ description: 'New refresh token expiry duration', example: '2025-01-31T23:59:59Z' }),
+  refreshTokenExpiresAt: z.iso.datetime().openapi({ description: 'New refresh token expiry duration', example: '2025-01-31T23:59:59Z' }),
 })
 export type AuthRefreshRequest = z.infer<typeof AuthRefreshRequestSchema>
 export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>

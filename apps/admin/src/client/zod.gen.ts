@@ -31,7 +31,7 @@ export const zPostAuthLoginData = z.object({
 export const zPostAuthLoginResponse = z.object({
     accessToken: z.string().describe('Access token for the user'),
     refreshToken: z.string().describe('Refresh token for the user'),
-    refreshTokenExpiresAt: z.string().describe('Refresh token expiry duration')
+    refreshTokenExpiresAt: z.string().datetime().describe('Refresh token expiry duration')
 }).describe('User logged in successfully');
 
 export const zPostAuthRefreshData = z.object({
@@ -51,7 +51,7 @@ export const zPostAuthRefreshData = z.object({
 export const zPostAuthRefreshResponse = z.object({
     accessToken: z.string().describe('New access token'),
     refreshToken: z.string().describe('Rotated refresh token'),
-    refreshTokenExpiresAt: z.string().describe('New refresh token expiry duration')
+    refreshTokenExpiresAt: z.string().datetime().describe('New refresh token expiry duration')
 }).describe('Token refreshed successfully');
 
 export const zPostAuthLogoutData = z.object({
@@ -104,8 +104,8 @@ export const zPostUserResponse = z.object({
         z.string(),
         z.null()
     ]),
-    createdAt: z.string().describe('Timestamp when the user was created'),
-    updatedAt: z.string().describe('Timestamp when the user was last updated')
+    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
+    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 }).describe('User created successfully');
 
 export const zGetUserProfileData = z.object({
@@ -133,6 +133,6 @@ export const zGetUserProfileResponse = z.object({
         z.null()
     ]),
     status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
-    createdAt: z.string().describe('Timestamp when the user was created'),
-    updatedAt: z.string().describe('Timestamp when the user was last updated')
+    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
+    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 }).describe('User profile retrieved successfully');
