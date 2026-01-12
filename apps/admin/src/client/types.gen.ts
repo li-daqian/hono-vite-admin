@@ -218,6 +218,10 @@ export type GetUserProfileResponses = {
          */
         displayName: string | null;
         /**
+         * Status of the user account
+         */
+        status: 'ACTIVE' | 'DISABLED';
+        /**
          * Timestamp when the user was created
          */
         createdAt: string;

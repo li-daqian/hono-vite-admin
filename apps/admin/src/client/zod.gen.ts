@@ -132,6 +132,7 @@ export const zGetUserProfileResponse = z.object({
         z.string(),
         z.null()
     ]),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
     createdAt: z.string().describe('Timestamp when the user was created'),
     updatedAt: z.string().describe('Timestamp when the user was last updated')
 }).describe('User profile retrieved successfully');

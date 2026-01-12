@@ -2,7 +2,7 @@ import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { UserCreateRequest } from '@server/src/routes/user/schema'
 import { createRoute } from '@hono/zod-openapi'
 import { authMiddleware } from '@server/src/middleware/auth.middleware'
-import { UserCreateRequestSchema, UserCreateResponseSchema } from '@server/src/routes/user/schema'
+import { UserCreateRequestSchema, UserCreateResponseSchema, UserProfileResponseSchema } from '@server/src/routes/user/schema'
 import { userService } from '@server/src/service/user.service'
 
 export function userRoute(api: OpenAPIHono) {
@@ -25,7 +25,7 @@ export function userRoute(api: OpenAPIHono) {
     path: '/user/profile',
     method: 'get',
     description: 'Get user profile',
-    responses: { 200: { description: 'User profile retrieved successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } } },
+    responses: { 200: { description: 'User profile retrieved successfully', content: { 'application/json': { schema: UserProfileResponseSchema } } } },
     security: [{ Bearer: [] }],
     middleware: [authMiddleware],
     tags: ['User'],

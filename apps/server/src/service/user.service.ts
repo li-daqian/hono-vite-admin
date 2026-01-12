@@ -1,4 +1,4 @@
-import type { UserCreateRequest, UserCreateResponse } from '@server/src/routes/user/schema'
+import type { UserCreateRequest, UserCreateResponse, UserProfileResponse } from '@server/src/routes/user/schema'
 import { BadRequestError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
@@ -35,7 +35,7 @@ class UserService {
     }
   }
 
-  async getUserProfile(): Promise<UserCreateResponse> {
+  async getUserProfile(): Promise<UserProfileResponse> {
     const { userId } = getLoginUser()
 
     const user = await prisma.user.findUnique({
