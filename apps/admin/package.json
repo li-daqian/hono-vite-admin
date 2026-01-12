@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "openapi-ts": "openapi-ts",
     "lint": "eslint src --ext .ts,.vue",
-    "lint:fix": "eslint src --ext .ts,.vue --fix"
+    "lint:fix": "eslint src --ext .ts,.vue --fix",
+    "shadcn": "shadcn-vue"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -37,6 +38,7 @@
     "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
+    "shadcn-vue": "^2.4.3",
     "tw-animate-css": "^1.4.0",
     "vite": "^7.2.4",
     "vue-tsc": "^3.1.4"
