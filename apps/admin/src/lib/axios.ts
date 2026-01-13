@@ -45,9 +45,9 @@ function setupAxiosInterceptors() {
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       // Add Authorization header if access token is available
-      const authRoute = useAuthStore()
-      if (authRoute.isAuthenticated) {
-        config.headers.Authorization = `Bearer ${authRoute.accessToken}`
+      const authStore = useAuthStore()
+      if (authStore.isAuthenticated) {
+        config.headers.Authorization = `Bearer ${authStore.accessToken}`
       }
 
       return config
