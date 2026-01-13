@@ -11,7 +11,9 @@ const refreshAccessToken = (() => {
   return async function (): Promise<void> {
     return refreshPromise ||= (async () => {
       try {
-        const response = await postAuthRefresh<true>()
+        const response = await postAuthRefresh<true>({
+          body: { refreshToken: null },
+        })
         useAuthStore().setAccessToken(response.data.accessToken)
       }
       finally {

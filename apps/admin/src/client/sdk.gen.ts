@@ -55,7 +55,6 @@ export const postAuthRefresh = <ThrowOnError extends boolean = false>(options?: 
     responseTransformer: postAuthRefreshResponseTransformer,
     responseType: 'json',
     responseValidator: async (data) => await zPostAuthRefreshResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/refresh',
     ...options,
     headers: {
