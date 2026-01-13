@@ -9,7 +9,7 @@ export const UserCreateRequestSchema = z.object({
   displayName: z.string().max(50).nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
 })
 export const UserCreateResponseSchema = z.object({
-  id: z.uuid().openapi({ description: 'Unique identifier for the user', example: '550e8400-e29b-41d4-a716-446655440000' }),
+  id: z.string().openapi({ description: 'Unique identifier for the user', example: '550e8400-e29b-41d4-a716-446655440000' }),
   username: z.string().openapi({ description: 'Unique username for the user', example: 'johndoe' }),
   email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
@@ -21,7 +21,7 @@ export type UserCreateRequest = z.infer<typeof UserCreateRequestSchema>
 export type UserCreateResponse = z.infer<typeof UserCreateResponseSchema>
 
 export const UserProfileResponseSchema = z.object({
-  id: z.uuid().openapi({ description: 'Unique identifier for the user', example: '550e8400-e29b-41d4-a716-446655440000' }),
+  id: z.string().openapi({ description: 'Unique identifier for the user', example: '550e8400-e29b-41d4-a716-446655440000' }),
   username: z.string().openapi({ description: 'Unique username for the user', example: 'johndoe' }),
   email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),

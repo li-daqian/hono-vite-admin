@@ -95,7 +95,7 @@ export const zPostUserData = z.object({
  * User created successfully
  */
 export const zPostUserResponse = z.object({
-    id: z.string().uuid().describe('Unique identifier for the user'),
+    id: z.string().describe('Unique identifier for the user'),
     username: z.string().describe('Unique username for the user'),
     email: z.union([
         z.string().email(),
@@ -123,7 +123,7 @@ export const zGetUserProfileData = z.object({
  * User profile retrieved successfully
  */
 export const zGetUserProfileResponse = z.object({
-    id: z.string().uuid().describe('Unique identifier for the user'),
+    id: z.string().describe('Unique identifier for the user'),
     username: z.string().describe('Unique username for the user'),
     email: z.union([
         z.string().email(),
