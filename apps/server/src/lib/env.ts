@@ -1,7 +1,7 @@
 export function getEnv() {
   return {
     isProduction: process.env.NODE_ENV === 'production',
-    domain: process.env.DOMAIN!,
+    frontendDomain: process.env.FRONTEND_DOMAIN!,
 
     database: {
       url: process.env.DATABASE_URL!,

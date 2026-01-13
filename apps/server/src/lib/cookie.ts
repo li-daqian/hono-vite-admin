@@ -68,7 +68,7 @@ export const refreshTokenCookie = createRefreshTokenCookie(
       httpOnly: true,
       secure: getEnv().isProduction,
       sameSite: 'Lax',
-      domain: getEnv().domain,
+      domain: getEnv().frontendDomain,
       path: '/',
     },
   },
