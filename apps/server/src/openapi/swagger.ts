@@ -3,10 +3,11 @@ import { swaggerUI } from '@hono/swagger-ui'
 import { PermissionType, UserStatus } from '@server/generated/prisma/client'
 import { API_V1_BASE_PATH } from '@server/src/common/constant'
 import { getEnv } from '@server/src/lib/env'
+import { ErrorResponseSchema } from '@server/src/schemas/error.schema'
 
 export function setUpSwagger(api: OpenAPIHono) {
   if (!getEnv().isProduction) {
-  // Register security scheme
+    // Register security scheme
     api.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
       type: 'http',
       scheme: 'bearer',
@@ -23,6 +24,7 @@ export function setUpSwagger(api: OpenAPIHono) {
       enum: Object.values(PermissionType),
       description: 'Type of permission',
     })
+    api.openAPIRegistry.register('ErrorResponse', ErrorResponseSchema)
     // OpenAPI JSON with Bearer auth
     api.doc('/openapi.json', {
       openapi: '3.0.0',

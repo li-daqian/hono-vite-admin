@@ -1,8 +1,10 @@
+import type { ErrorResponse } from '@admin/client'
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { postAuthRefresh } from '@admin/client'
 import { client } from '@admin/client/client.gen'
 import { getEnv } from '@admin/lib/env'
 import { useAuthStore } from '@admin/stores/auth'
+import axios from 'axios'
 import { toast } from 'vue-sonner'
 
 const refreshAccessToken = (() => {
@@ -83,8 +85,12 @@ function setupAxiosInterceptors() {
         return axiosInstance.request(config)
       }
       else {
-        const errorMessage = (response?.data as any)?.message || error.message || 'An unknown error occurred'
-        toast.error(errorMessage)
+        if (axios.isAxiosError<ErrorResponse>(error)) {
+          toast.error(error.response?.data.error.message ?? 'An unknown error occurred')
+        }
+        else {
+          toast.error(error.message ?? 'An unknown error occurred')
+        }
       }
 
       return Promise.reject(error)

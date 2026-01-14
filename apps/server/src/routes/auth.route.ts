@@ -13,7 +13,6 @@ export function authRoute(api: OpenAPIHono) {
     description: 'Get prefilled login credentials',
     responses: {
       200: { description: 'Prefilled credentials retrieved successfully', content: { 'application/json': { schema: AuthPrefillResponseSchema } } },
-      ...GlobalErrorResponses,
     },
     tags: ['Auth'],
   }), async (c) => {
@@ -28,7 +27,6 @@ export function authRoute(api: OpenAPIHono) {
     request: { body: { required: true, content: { 'application/json': { schema: AuthLoginRequestSchema } } } },
     responses: {
       200: { description: 'User logged in successfully', content: { 'application/json': { schema: AuthLoginResponseSchema } } },
-      ...GlobalErrorResponses,
     },
     tags: ['Auth'],
   }), async (c) => {
@@ -44,7 +42,6 @@ export function authRoute(api: OpenAPIHono) {
     request: { body: { content: { 'application/json': { schema: AuthRefreshRequestSchema } } } },
     responses: {
       200: { description: 'Token refreshed successfully', content: { 'application/json': { schema: AuthRefreshResponseSchema } } },
-      ...GlobalErrorResponses,
     },
     tags: ['Auth'],
   }), async (c) => {
@@ -59,7 +56,6 @@ export function authRoute(api: OpenAPIHono) {
     description: 'User logout',
     responses: {
       200: { description: 'User logged out successfully', content: { 'application/json': { schema: z.object({}) } } },
-      ...GlobalErrorResponses,
     },
     security: [{ Bearer: [] }],
     middleware: [authMiddleware],

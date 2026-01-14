@@ -14,6 +14,28 @@ export const UserStatus = { ACTIVE: 'ACTIVE', DISABLED: 'DISABLED' } as const;
  */
 export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
 
+/**
+ * Type of permission
+ */
+export const PermissionType = { MENU: 'MENU', ACTION: 'ACTION' } as const;
+
+/**
+ * Type of permission
+ */
+export type PermissionType = typeof PermissionType[keyof typeof PermissionType];
+
+/**
+ * Standard error response envelope
+ */
+export type ErrorResponse = {
+    error: {
+        type: string;
+        code: string;
+        message: string;
+        requestId: string;
+    };
+};
+
 export type GetAuthPrefillData = {
     body?: never;
     path?: never;

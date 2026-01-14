@@ -7,6 +7,23 @@ import { z } from 'zod';
  */
 export const zUserStatus = z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account');
 
+/**
+ * Type of permission
+ */
+export const zPermissionType = z.enum(['MENU', 'ACTION']).describe('Type of permission');
+
+/**
+ * Standard error response envelope
+ */
+export const zErrorResponse = z.object({
+    error: z.object({
+        type: z.string(),
+        code: z.string(),
+        message: z.string(),
+        requestId: z.string()
+    })
+}).describe('Standard error response envelope');
+
 export const zGetAuthPrefillData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),

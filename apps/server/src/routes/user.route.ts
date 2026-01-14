@@ -14,7 +14,6 @@ export function userRoute(api: OpenAPIHono) {
     request: { body: { required: true, content: { 'application/json': { schema: UserCreateRequestSchema } } } },
     responses: {
       201: { description: 'User created successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } },
-      ...GlobalErrorResponses,
     },
     security: [{ Bearer: [] }],
     middleware: [authMiddleware],
@@ -31,7 +30,6 @@ export function userRoute(api: OpenAPIHono) {
     description: 'Get user profile',
     responses: {
       200: { description: 'User profile retrieved successfully', content: { 'application/json': { schema: UserProfileResponseSchema } } },
-      ...GlobalErrorResponses,
     },
     security: [{ Bearer: [] }],
     middleware: [authMiddleware],
