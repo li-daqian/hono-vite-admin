@@ -19,6 +19,11 @@ app.use('*', traceLogger)
 app.notFound(onNotFoundHandler)
 app.onError(onErrorHandler)
 
+// icon route
+app.get('/favicon.ico', (c) => {
+  return c.redirect('https://hono.dev/favicon.ico', 302)
+})
+
 // Main API routes
 app.route('/api/v1', api)
 
