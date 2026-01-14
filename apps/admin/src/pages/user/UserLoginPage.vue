@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { PostAuthLoginData } from '@admin/client'
 import { getAuthPrefill, postAuthLogin } from '@admin/client'
-import { zPostAuthLoginData } from '@admin/client/zod.gen'
 import { Button } from '@admin/components/ui/button'
 import {
   Form,
