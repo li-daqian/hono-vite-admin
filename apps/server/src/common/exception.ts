@@ -22,19 +22,19 @@ export class BusinessError extends Error {
     return c.json(this._errorBody, this._httpStatus)
   }
 
-  public static Unauthorized(message: string, code: string = 'Unauthorized') {
+  public static Unauthorized(message: string, code: string = '') {
     return new BusinessError('Unauthorized', code, message, 401)
   }
 
-  public static Forbidden(message: string, code: string = 'Forbidden') {
+  public static Forbidden(message: string, code: string = '') {
     return new BusinessError('Forbidden', code, message, 403)
   }
 
-  public static BadRequest(message: string, code: string = 'BadRequest') {
+  public static BadRequest(message: string, code: string = '') {
     return new BusinessError('Bad Request', code, message, 400)
   }
 
-  public static NotFound(message: string, code: string = 'NotFound') {
+  public static NotFound(message: string, code: string = '') {
     return new BusinessError('Not Found', code, message, 404)
   }
 
