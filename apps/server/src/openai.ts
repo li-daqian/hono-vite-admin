@@ -9,7 +9,7 @@ import { registerRoutes } from '@server/src/routes'
 const api = new OpenAPIHono({
   defaultHook: (result, _c) => {
     if (!result.success) {
-      throw BusinessError.BadRequest(result.error.message)
+      throw BusinessError.BadRequest(result.error.message, 'ValidationError')
     }
   },
 })
