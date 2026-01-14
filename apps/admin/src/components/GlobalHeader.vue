@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import Logo from '@admin/components/Logo.vue'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
-import Avatar from '@admin/components/ui/avatar/Avatar.vue'
-import AvatarFallback from '@admin/components/ui/avatar/AvatarFallback.vue'
-import AvatarImage from '@admin/components/ui/avatar/AvatarImage.vue'
 import Button from '@admin/components/ui/button/Button.vue'
+import UserProfile from '@admin/pages/user/UserProfile.vue'
 </script>
 
 <template>
@@ -19,10 +17,7 @@ import Button from '@admin/components/ui/button/Button.vue'
           <ToggleTheme class="text-lg" />
         </Button>
         <Button variant="ghost" size="icon-lg" class="rounded-full cursor-pointer">
-          <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <UserProfile />
         </Button>
       </div>
     </header>
