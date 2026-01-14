@@ -1,5 +1,6 @@
-import type { HttpStatusError } from '@server/src/common/exception'
 import type { Context } from 'hono'
+import type { ContentfulStatusCode } from 'hono/utils/http-status'
+import { getRequestId } from '@server/src/middleware/requestId.middleware'
 
 export interface PaginationResponse<T> {
   items: T[]
@@ -9,18 +10,37 @@ export interface PaginationResponse<T> {
 }
 
 export interface ErrorResponse {
-  code: string
-  message: string
+  error: {
+    type: string
+    code: string
+    message: string
+    requestId: string
+  }
 }
 
-export function errorResponse(c: Context, error: HttpStatusError): Response {
-  return c.json({ code: error.code, message: error.message }, error.httpStatus)
+function errorResponse(
+  c: Context,
+  status: ContentfulStatusCode,
+  type: string,
+  message: string,
+  code = '',
+): Response {
+  const body: ErrorResponse = {
+    error: {
+      type,
+      code,
+      message,
+      requestId: getRequestId(),
+    },
+  }
+
+  return c.json(body, status)
 }
 
-export function internalServerErrorResponse(c: Context): Response {
-  return c.json({ code: 'INTERNAL_SERVER_ERROR', message: 'Internal Server Error' }, 500)
+export function internalError(c: Context) {
+  return errorResponse(c, 500, 'Internal Server Error', 'An internal server error occurred')
 }
 
-export function notFoundErrorResponse(c: Context): Response {
-  return c.json({ code: 'NOT_FOUND', message: 'Not Found' }, 404)
+export function notFoundError(c: Context) {
+  return errorResponse(c, 404, 'Not Found', 'The requested resource was not found')
 }

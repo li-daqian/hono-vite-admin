@@ -1,54 +1,48 @@
+import type { ErrorResponse } from '@server/src/common/response'
+import type { Context } from 'hono'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
+import { getRequestId } from '@server/src/middleware/requestId.middleware'
 
-export abstract class HttpStatusError extends Error {
+export class BusinessError extends Error {
   private _httpStatus: ContentfulStatusCode
-  private _code: string
+  private _errorBody: ErrorResponse
 
-  constructor(errorCode: string, message: string, httpStatus: ContentfulStatusCode) {
+  constructor(type: string, errorCode: string, message: string, httpStatus: ContentfulStatusCode) {
     super(message)
+    this._errorBody = { error: { type, code: errorCode, message, requestId: getRequestId() } }
     this._httpStatus = httpStatus
-    this._code = errorCode
     this.name = 'HttpStatusError'
   }
 
-  public get httpStatus(): ContentfulStatusCode {
-    return this._httpStatus
+  public get error(): ErrorResponse {
+    return this._errorBody
   }
 
-  public get code(): string {
-    return this._code
-  }
-}
-
-export class UnauthorizedError extends HttpStatusError {
-  constructor(errorCode: string = 'UNAUTHORIZED', message: string = 'Unauthorized') {
-    super(errorCode, message, 401)
-    this.name = 'UnauthorizedError'
-  }
-}
-
-export class ForbiddenError extends HttpStatusError {
-  constructor(errorCode: string = 'FORBIDDEN', message: string = 'Forbidden') {
-    super(errorCode, message, 403)
-    this.name = 'ForbiddenError'
-  }
-}
-
-export class BadRequestError extends HttpStatusError {
-  constructor(errorCode: string = 'BAD_REQUEST', message: string = 'Bad Request') {
-    super(errorCode, message, 400)
-    this.name = 'BadRequestError'
+  public getErrorResponse(c: Context): Response {
+    return c.json(this._errorBody, this._httpStatus)
   }
 
-  static withMessage(message: string) {
-    return new BadRequestError('BAD_REQUEST', message)
+  public static Unauthorized(message: string, code: string = 'Unauthorized') {
+    return new BusinessError('Unauthorized', code, message, 401)
   }
 
-  static UserOrPasswordIncorrect() {
-    return this.withMessage('User or password is incorrect')
+  public static Forbidden(message: string, code: string = 'Forbidden') {
+    return new BusinessError('Forbidden', code, message, 403)
   }
 
-  static UsernameAlreadyExists() {
-    return this.withMessage('Username already exists')
+  public static BadRequest(message: string, code: string = 'BadRequest') {
+    return new BusinessError('Bad Request', code, message, 400)
+  }
+
+  public static NotFound(message: string, code: string = 'NotFound') {
+    return new BusinessError('Not Found', code, message, 404)
+  }
+
+  public static UserOrPasswordIncorrect() {
+    return this.BadRequest('User or password is incorrect', 'UserOrPasswordIncorrect')
+  }
+
+  public static UsernameAlreadyExists() {
+    return this.BadRequest('Username already exists', 'UsernameAlreadyExists')
   }
 }

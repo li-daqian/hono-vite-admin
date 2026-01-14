@@ -1,5 +1,5 @@
 import type { UserCreateRequest, UserCreateResponse, UserProfileResponse } from '@server/src/routes/user/schema'
-import { BadRequestError } from '@server/src/common/exception'
+import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import bcrypt from 'bcryptjs'
@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs'
 class UserService {
   async createUser(request: UserCreateRequest): Promise<UserCreateResponse> {
     if (!(await this.isUsernameUnique(request.username))) {
-      throw BadRequestError.UsernameAlreadyExists()
+      throw BusinessError.UsernameAlreadyExists()
     }
 
     // Generate salt and hash password
@@ -42,7 +42,7 @@ class UserService {
       where: { id: userId },
     })
     if (!user) {
-      throw BadRequestError.withMessage('User not found')
+      throw BusinessError.NotFound('User not found')
     }
 
     const { password, salt, ...safeUser } = user

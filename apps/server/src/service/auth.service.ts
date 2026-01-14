@@ -1,7 +1,7 @@
 import type { AuthLoginRequest, AuthLoginResponse, AuthPrefillResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
 import { randomUUID } from 'node:crypto'
 import { UserStatus } from '@server/generated/prisma/enums'
-import { BadRequestError, UnauthorizedError } from '@server/src/common/exception'
+import { BusinessError } from '@server/src/common/exception'
 import { refreshTokenCookie } from '@server/src/lib/cookie'
 import { getEnv } from '@server/src/lib/env'
 import { jwtService } from '@server/src/lib/jwt'
@@ -25,16 +25,16 @@ class AuthService {
       where: { username: request.username },
     })
     if (!user) {
-      throw BadRequestError.UserOrPasswordIncorrect()
+      throw BusinessError.UserOrPasswordIncorrect()
     }
     if (user.status !== UserStatus.ACTIVE) {
-      throw new BadRequestError('USER_DISABLED', 'User account is disabled')
+      throw BusinessError.BadRequest('User account is disabled', 'UserAccountDisabled')
     }
 
     // Verify password
     const hashedInputPassword = await bcrypt.hash(request.password, user.salt)
     if (hashedInputPassword !== user.password) {
-      throw BadRequestError.UserOrPasswordIncorrect()
+      throw BusinessError.UserOrPasswordIncorrect()
     }
 
     // Generate access token
@@ -62,19 +62,19 @@ class AuthService {
   async refresh(request: AuthRefreshRequest): Promise<AuthRefreshResponse> {
     const refreshToken = request.refreshToken ?? refreshTokenCookie.get()
     if (!refreshToken) {
-      throw new UnauthorizedError('Missing refresh token')
+      throw BusinessError.Unauthorized('Missing refresh token')
     }
 
     const existingToken = await prisma.refreshToken.findUnique({
       where: { token: refreshToken },
     })
     if (!existingToken) {
-      throw new UnauthorizedError('Invalid refresh token')
+      throw BusinessError.Unauthorized('Invalid refresh token')
     }
 
     if (existingToken.expiresAt <= new Date()) {
       await prisma.refreshToken.delete({ where: { token: existingToken.token } })
-      throw new UnauthorizedError('Refresh token expired')
+      throw BusinessError.Unauthorized('Refresh token expired')
     }
 
     const newRefreshToken = existingToken

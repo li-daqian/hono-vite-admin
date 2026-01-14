@@ -2,14 +2,14 @@ import { swaggerUI } from '@hono/swagger-ui'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { UserStatus } from '@server/generated/prisma/enums'
 import { API_V1_BASE_PATH } from '@server/src/common/constant'
-import { BadRequestError } from '@server/src/common/exception'
+import { BusinessError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
 import { registerRoutes } from '@server/src/routes'
 
 const api = new OpenAPIHono({
   defaultHook: (result, _c) => {
     if (!result.success) {
-      throw new BadRequestError(result.error.message)
+      throw BusinessError.BadRequest(result.error.message)
     }
   },
 })

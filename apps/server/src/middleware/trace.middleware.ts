@@ -1,6 +1,7 @@
 import type { Context, Next } from 'hono'
 import { getEnv } from '@server/src/lib/env'
 import { getContext } from '@server/src/middleware/context.middleware'
+import { getRequestId } from '@server/src/middleware/requestId.middleware'
 import pino from 'pino'
 import pretty from 'pino-pretty'
 
@@ -18,12 +19,11 @@ const baseLogger = pino(
 )
 
 type RequestLogger = pino.Logger
-const requestIdKey = 'requestId'
 const loggerKey = 'logger'
 
 export async function traceLogger(c: Context, next: Next): Promise<void> {
   // Create a child logger for the request using the requestId
-  const requestId = c.get(requestIdKey)
+  const requestId = getRequestId()
   const logger = baseLogger.child({ requestId })
   c.set(loggerKey, logger)
 
@@ -49,6 +49,6 @@ export async function traceLogger(c: Context, next: Next): Promise<void> {
  * Get the logger for the current request
  * @returns The logger for the current request
  */
-export function logger(): RequestLogger {
-  return getContext()!.get(loggerKey)
+export function logger(c: Context = getContext()!): RequestLogger {
+  return c.get(loggerKey)
 }
