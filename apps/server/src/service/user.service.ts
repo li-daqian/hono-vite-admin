@@ -1,4 +1,4 @@
-import type { UserCreateRequest, UserCreateResponse, UserProfileResponse } from '@server/src/routes/user/schema'
+import type { UserCreateRequest, UserCreateResponse, UserProfileResponse } from '@server/src/schemas/user.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'

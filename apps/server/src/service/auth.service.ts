@@ -1,4 +1,4 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthPrefillResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/routes/auth/schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthPrefillResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
 import { randomUUID } from 'node:crypto'
 import { UserStatus } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'

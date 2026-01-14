@@ -1,24 +1,10 @@
+import type { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
-import { OpenAPIHono } from '@hono/zod-openapi'
-import { UserStatus } from '@server/generated/prisma/enums'
+import { PermissionType, UserStatus } from '@server/generated/prisma/client'
 import { API_V1_BASE_PATH } from '@server/src/common/constant'
-import { BusinessError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
-import { registerRoutes } from '@server/src/routes'
 
-const api = new OpenAPIHono({
-  defaultHook: (result, _c) => {
-    if (!result.success) {
-      throw BusinessError.BadRequest(result.error.message, 'ValidationError')
-    }
-  },
-})
-
-setUpSwagger(api)
-
-registerRoutes(api)
-
-function setUpSwagger(api: OpenAPIHono) {
+export function setUpSwagger(api: OpenAPIHono) {
   if (!getEnv().isProduction) {
   // Register security scheme
     api.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
@@ -31,6 +17,11 @@ function setUpSwagger(api: OpenAPIHono) {
       type: 'string',
       enum: Object.values(UserStatus),
       description: 'Status of the user account',
+    })
+    api.openAPIRegistry.registerComponent('schemas', 'PermissionType', {
+      type: 'string',
+      enum: Object.values(PermissionType),
+      description: 'Type of permission',
     })
     // OpenAPI JSON with Bearer auth
     api.doc('/openapi.json', {
@@ -77,5 +68,3 @@ function setUpSwagger(api: OpenAPIHono) {
     }))
   }
 }
-
-export { api }

@@ -1,8 +1,8 @@
 import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
 import { BusinessError } from '@server/src/common/exception'
-import { internalError, notFoundError } from '@server/src/common/response'
 import { logger } from '@server/src/middleware/trace.middleware'
+import { internalError, notFoundError } from '@server/src/schemas/error.schema'
 
 /**
  * Hono `app.onError`-style handler function.

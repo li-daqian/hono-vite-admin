@@ -1,22 +1,18 @@
 import type { Context } from 'hono'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
+import { z } from '@hono/zod-openapi'
 import { getRequestId } from '@server/src/middleware/requestId.middleware'
 
-export interface PaginationResponse<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-}
+export const ErrorResponseSchema = z.object({
+  error: z.object({
+    type: z.string(),
+    code: z.string(),
+    message: z.string(),
+    requestId: z.string(),
+  }),
+})
 
-export interface ErrorResponse {
-  error: {
-    type: string
-    code: string
-    message: string
-    requestId: string
-  }
-}
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 
 function errorResponse(
   c: Context,
