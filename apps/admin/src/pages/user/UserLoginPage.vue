@@ -18,8 +18,17 @@ import { useAuthStore } from '@admin/stores/auth'
 import { toTypedSchema } from '@vee-validate/zod'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import z from 'zod'
 
-const validationSchema = toTypedSchema(zPostAuthLoginData.shape.body)
+const validationSchema = toTypedSchema(z.object({
+  username: z.string()
+    .min(1, 'Username is required')
+    .max(50, 'Username must be at most 50 characters long')
+    .describe('Username of the user'),
+  password: z.string()
+    .min(1, 'Password is required')
+    .describe('Password of the user'),
+}))
 
 const loading = ref(true)
 const router = useRouter()
@@ -67,7 +76,7 @@ async function onSubmit(values: Record<string, any>) {
                   <FormLabel>Username</FormLabel>
                   <FormControl class="h-9">
                     <Skeleton v-if="loading" />
-                    <Input v-else v-bind="componentField" type="text" placeholder="username" />
+                    <Input v-else v-bind="componentField" type="text" placeholder="username" maxlength="50" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
