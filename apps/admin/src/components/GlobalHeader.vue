@@ -2,7 +2,7 @@
 import Logo from '@admin/components/Logo.vue'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
 import { Button } from '@admin/components/ui/button'
-import UserProfile from '@admin/pages/user/UserProfile.vue'
+import UserNav from '@admin/pages/user/UserNav.vue'
 </script>
 
 <template>
@@ -17,7 +17,7 @@ import UserProfile from '@admin/pages/user/UserProfile.vue'
           <ToggleTheme class="text-lg" />
         </Button>
         <Button variant="ghost" size="icon-lg" class="rounded-full cursor-pointer">
-          <UserProfile />
+          <UserNav />
         </Button>
       </div>
     </header>

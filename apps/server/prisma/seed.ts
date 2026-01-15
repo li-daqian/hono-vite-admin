@@ -175,6 +175,7 @@ async function ensureAdminUser(): Promise<User> {
       password: hashedPassword,
       salt,
       displayName: 'Administrator',
+      email: getEnv().admin.email,
       status: UserStatus.ACTIVE,
     },
   })

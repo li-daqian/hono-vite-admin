@@ -10,10 +10,11 @@ export function getEnv() {
       level: process.env.LOG_LEVEL!,
     },
     admin: {
-    // Do not change env values after initial startup
+      // Do not change env values after initial startup
       username: process.env.ADMIN_USERNAME!,
       password: process.env.ADMIN_PASSWORD!,
       roleName: process.env.ADMIN_ROLE_NAME!,
+      email: process.env.ADMIN_EMAIL!,
     },
     auth: {
       jwtSecret: process.env.JWT_SECRET!,
