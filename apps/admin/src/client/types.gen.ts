@@ -5,26 +5,6 @@ export type ClientOptions = {
 };
 
 /**
- * Status of the user account
- */
-export const UserStatus = { ACTIVE: 'ACTIVE', DISABLED: 'DISABLED' } as const;
-
-/**
- * Status of the user account
- */
-export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
-
-/**
- * Type of permission
- */
-export const PermissionType = { MENU: 'MENU', ACTION: 'ACTION' } as const;
-
-/**
- * Type of permission
- */
-export type PermissionType = typeof PermissionType[keyof typeof PermissionType];
-
-/**
  * Standard error response envelope
  */
 export type ErrorResponse = {

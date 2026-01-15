@@ -3,16 +3,6 @@
 import { z } from 'zod';
 
 /**
- * Status of the user account
- */
-export const zUserStatus = z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account');
-
-/**
- * Type of permission
- */
-export const zPermissionType = z.enum(['MENU', 'ACTION']).describe('Type of permission');
-
-/**
  * Standard error response envelope
  */
 export const zErrorResponse = z.object({
