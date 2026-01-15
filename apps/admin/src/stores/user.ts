@@ -6,10 +6,6 @@ export const useUserStore = defineStore('user', {
     profile: null as GetUserProfileResponse | null,
   }),
 
-  getters: {
-    isProfileLoaded: state => state.profile !== null,
-  },
-
   actions: {
     setProfile(profile: GetUserProfileResponse) {
       this.profile = profile

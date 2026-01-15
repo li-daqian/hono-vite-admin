@@ -1,23 +1,15 @@
 <script setup lang="ts">
-import { getUserProfile, postAuthLogout } from '@admin/client'
+import { postAuthLogout } from '@admin/client'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@admin/components/ui/dropdown-menu'
 import UserAvatar from '@admin/pages/user/UserAvatar.vue'
 import UserProfile from '@admin/pages/user/UserProfile.vue'
 import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useUserStore } from '@admin/stores/user'
 import { LogOut } from 'lucide-vue-next'
-import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
 const router = useRouter()
-
-onMounted(async () => {
-  if (!userStore.isProfileLoaded) {
-    const userProfile = await getUserProfile<true>()
-    userStore.setProfile(userProfile.data)
-  }
-})
 
 async function handleLogOut() {
   await postAuthLogout<true>()

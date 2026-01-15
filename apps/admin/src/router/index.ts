@@ -1,6 +1,8 @@
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
+import { getUserProfile } from '@admin/client/sdk.gen'
 import NProgress from '@admin/lib/nprogress'
 import { ROUTE_NAMES } from '@admin/router/route-name'
+import { useUserStore } from '@admin/stores/user'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
@@ -21,8 +23,17 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach(() => {
+const authWhitelist: RouteRecordNameGeneric[] = [ROUTE_NAMES.LOGIN]
+
+router.beforeEach(async (to, _from, next) => {
   NProgress.start()
+
+  if (!authWhitelist.includes(to.name)) {
+    const userProfile = await getUserProfile<true>()
+    useUserStore().setProfile(userProfile.data)
+  }
+
+  next()
 })
 router.afterEach(() => {
   NProgress.done()
