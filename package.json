@@ -15,7 +15,7 @@
     "check-types": "turbo run check-types",
     "prisma:reset": "pnpm --filter @hono-vite-admin/server prisma:reset",
     "openapi-ts": "pnpm --filter @hono-vite-admin/admin openapi-ts",
-    "shadcn": "bash -c 'pnpm --filter @hono-vite-admin/admin shadcn \"$@\" && pnpm lint:fix' --",
+    "shadcn": "pnpm --filter @hono-vite-admin/admin shadcn",
     "prepare": "husky"
   },
   "devDependencies": {
