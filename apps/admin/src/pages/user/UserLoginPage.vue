@@ -52,7 +52,13 @@ async function onSubmit(values: Record<string, any>) {
   const accessToken = res.data.accessToken
   useAuthStore().setAccessToken(accessToken)
 
-  await router.replace({ name: ROUTE_NAMES.HOME })
+  const redirect = router.currentRoute.value.query.redirect
+  if (redirect && typeof redirect === 'string') {
+    window.location.href = redirect
+  }
+  else {
+    await router.replace({ name: ROUTE_NAMES.HOME })
+  }
 }
 </script>
 

@@ -3,6 +3,8 @@ import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axio
 import { postAuthRefresh } from '@admin/client'
 import { client } from '@admin/client/client.gen'
 import { getEnv } from '@admin/lib/env'
+import router from '@admin/router'
+import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useAuthStore } from '@admin/stores/auth'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
@@ -31,8 +33,9 @@ const logoutAndRedirect = (() => {
   return async function (): Promise<void> {
     return logoutPromise ||= (async () => {
       useAuthStore().clearAccessToken()
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
+      if (router.currentRoute.value.name !== ROUTE_NAMES.LOGIN) {
+        const redirect = window.location.href
+        router.replace({ name: ROUTE_NAMES.LOGIN, query: { redirect } })
       }
     })()
   }
