@@ -12,11 +12,11 @@ import {
 } from '@admin/components/ui/form'
 import { Input } from '@admin/components/ui/input'
 import { Skeleton } from '@admin/components/ui/skeleton'
+import router from '@admin/router'
 import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useAuthStore } from '@admin/stores/auth'
 import { toTypedSchema } from '@vee-validate/zod'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import z from 'zod'
 
 const validationSchema = toTypedSchema(z.object({
@@ -30,7 +30,6 @@ const validationSchema = toTypedSchema(z.object({
 }))
 
 const loading = ref(true)
-const router = useRouter()
 
 async function onVueMounted(setValues: (values: Record<string, any>) => void) {
   try {
