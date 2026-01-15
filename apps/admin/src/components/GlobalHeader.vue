@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Logo from '@admin/components/Logo.vue'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
-import Button from '@admin/components/ui/button/Button.vue'
+import { Button } from '@admin/components/ui/button'
 import UserProfile from '@admin/pages/user/UserProfile.vue'
 </script>
 

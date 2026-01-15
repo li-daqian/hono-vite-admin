@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { getUserProfile } from '@admin/client'
-import Avatar from '@admin/components/ui/avatar/Avatar.vue'
-import AvatarFallback from '@admin/components/ui/avatar/AvatarFallback.vue'
-import DropdownMenu from '@admin/components/ui/dropdown-menu/DropdownMenu.vue'
-import DropdownMenuContent from '@admin/components/ui/dropdown-menu/DropdownMenuContent.vue'
-import DropdownMenuLabel from '@admin/components/ui/dropdown-menu/DropdownMenuLabel.vue'
-import DropdownMenuSeparator from '@admin/components/ui/dropdown-menu/DropdownMenuSeparator.vue'
-import DropdownMenuTrigger from '@admin/components/ui/dropdown-menu/DropdownMenuTrigger.vue'
+import { Avatar, AvatarFallback } from '@admin/components/ui/avatar'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@admin/components/ui/dropdown-menu'
 import { useUserStore } from '@admin/stores/user'
 import { onMounted, ref } from 'vue'
 
