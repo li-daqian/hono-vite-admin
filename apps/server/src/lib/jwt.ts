@@ -25,9 +25,16 @@ export function createJwtService(config: JwtConfig) {
       return payload
     }
     catch (error) {
-      if (!(error instanceof errors.JWTExpired)) {
-        logger()?.warn(error, `Failed to verify JWT token`)
+      if (error instanceof errors.JWTExpired) {
+        return undefined
       }
+
+      if (error instanceof errors.JWTInvalid) {
+        logger().debug(error, 'Invalid JWT')
+        return undefined
+      }
+
+      logger().error(error, 'JWT verification failed unexpectedly')
       return undefined
     }
   }
