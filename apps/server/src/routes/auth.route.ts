@@ -1,7 +1,8 @@
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { AuthLoginRequest, AuthRefreshRequest } from '@server/src/schemas/auth.schema'
 import { createRoute, z } from '@hono/zod-openapi'
-import { authMiddleware } from '@server/src/middleware/auth.middleware'
+import { refreshTokenCookie } from '@server/src/lib/cookie'
+import { authMiddleware, getLoginUser } from '@server/src/middleware/auth.middleware'
 import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthPrefillResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/schemas/auth.schema'
 import { authService } from '@server/src/service/auth.service'
 
@@ -31,6 +32,7 @@ export function authRoute(api: OpenAPIHono) {
   }), async (c) => {
     const body = await c.req.json<AuthLoginRequest>()
     const loginResult = await authService.login(body)
+    refreshTokenCookie.set(c, loginResult)
     return c.json(loginResult, 200)
   })
 
@@ -45,7 +47,10 @@ export function authRoute(api: OpenAPIHono) {
     tags: ['Auth'],
   }), async (c) => {
     const body = await c.req.json<AuthRefreshRequest>()
-    const refreshResult = await authService.refresh(body)
+    const refreshToken = body.refreshToken ?? refreshTokenCookie.get(c)
+    const slideMode = !!body.refreshToken
+    const refreshResult = await authService.refresh(refreshToken, slideMode)
+    refreshTokenCookie.set(c, refreshResult)
     return c.json(refreshResult, 200)
   })
 
@@ -60,7 +65,16 @@ export function authRoute(api: OpenAPIHono) {
     middleware: [authMiddleware],
     tags: ['Auth'],
   }), async (c) => {
-    await authService.logout()
+    const refreshToken = refreshTokenCookie.get(c)
+    if (!refreshToken) {
+      return c.json({}, 200)
+    }
+
+    const { userId } = getLoginUser(c)
+    await authService.logout(userId, refreshToken)
+
+    refreshTokenCookie.clear(c)
+
     return c.json({}, 200)
   })
 }

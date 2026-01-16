@@ -1,11 +1,9 @@
-import type { RefreshToken } from '@server/generated/prisma/client'
+import type { AuthLoginResponse } from '@server/src/schemas/auth.schema'
 import type { Context } from 'hono'
 import { getEnv } from '@server/src/lib/env'
-import { getContext } from '@server/src/middleware/context.middleware'
 import { getCookie, setCookie } from 'hono/cookie'
 
 interface CookieDeps {
-  getContext: () => Context
   setCookie: typeof setCookie
   getCookie: typeof getCookie
   now: () => number
@@ -30,24 +28,24 @@ export function createRefreshTokenCookie(
     Math.floor((expiresAt.getTime() - deps.now()) / 1000)
 
   return {
-    set(refreshToken: RefreshToken): void {
+    set(c: Context, authLoginResponse: AuthLoginResponse): void {
       deps.setCookie(
-        deps.getContext(),
+        c,
         config.name,
-        refreshToken.token,
+        authLoginResponse.refreshToken,
         {
           ...config.baseOptions,
-          maxAge: getMaxAgeInSeconds(refreshToken.expiresAt),
+          maxAge: getMaxAgeInSeconds(new Date(authLoginResponse.refreshTokenExpiresAt)),
         },
       )
     },
 
-    get(): string | undefined {
-      return deps.getCookie(deps.getContext(), config.name)
+    get(c: Context): string | undefined {
+      return deps.getCookie(c, config.name)
     },
 
-    clear(): void {
-      deps.setCookie(deps.getContext(), config.name, '', {
+    clear(c: Context): void {
+      deps.setCookie(c, config.name, '', {
         ...config.baseOptions,
         maxAge: 0,
       })
@@ -57,7 +55,6 @@ export function createRefreshTokenCookie(
 
 export const refreshTokenCookie = createRefreshTokenCookie(
   {
-    getContext: () => getContext()!,
     setCookie,
     getCookie,
     now: () => Date.now(),

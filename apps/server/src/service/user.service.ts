@@ -1,7 +1,6 @@
 import type { UserCreateRequest, UserCreateResponse, UserProfileResponse } from '@server/src/schemas/user.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
-import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import bcrypt from 'bcryptjs'
 
 class UserService {
@@ -35,9 +34,7 @@ class UserService {
     }
   }
 
-  async getUserProfile(): Promise<UserProfileResponse> {
-    const { userId } = getLoginUser()
-
+  async getUserProfile(userId: string): Promise<UserProfileResponse> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     })

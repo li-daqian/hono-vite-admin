@@ -1,12 +1,10 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthPrefillResponse, AuthRefreshRequest, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthPrefillResponse, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
 import { randomUUID } from 'node:crypto'
 import { UserStatus } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
-import { refreshTokenCookie } from '@server/src/lib/cookie'
 import { getEnv } from '@server/src/lib/env'
 import { jwtService } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
-import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import { logger } from '@server/src/middleware/trace.middleware'
 import { parseTimeDuration } from '@server/src/utils/date'
 import bcrypt from 'bcryptjs'
@@ -50,8 +48,6 @@ class AuthService {
       },
     })
 
-    refreshTokenCookie.set(refreshToken)
-
     return {
       accessToken,
       refreshToken: refreshToken.token,
@@ -59,8 +55,7 @@ class AuthService {
     }
   }
 
-  async refresh(request: AuthRefreshRequest): Promise<AuthRefreshResponse> {
-    const refreshToken = request.refreshToken ?? refreshTokenCookie.get()
+  async refresh(refreshToken: string | undefined, slideMode: boolean): Promise<AuthRefreshResponse> {
     if (!refreshToken) {
       throw BusinessError.Unauthorized('Missing refresh token')
     }
@@ -80,7 +75,6 @@ class AuthService {
     const newRefreshToken = existingToken
     newRefreshToken.token = randomUUID()
 
-    const slideMode = !!request.refreshToken
     if (slideMode) {
       // In slide mode, extend the expiry of the existing token
       const refreshTokenExpiry = getEnv().auth.refreshTokenExpiry
@@ -98,8 +92,6 @@ class AuthService {
 
     const accessToken = await jwtService.generateAccessToken(existingToken.userId)
 
-    refreshTokenCookie.set(newRefreshToken)
-
     return {
       accessToken,
       refreshToken: newRefreshToken.token,
@@ -107,34 +99,26 @@ class AuthService {
     }
   }
 
-  async logout(): Promise<void> {
-    const refreshToken = refreshTokenCookie.get()
+  async logout(userId: string, refreshToken: string): Promise<void> {
+    const existingToken = await prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    })
 
-    if (refreshToken) {
-      const existingToken = await prisma.refreshToken.findUnique({
-        where: { token: refreshToken },
-      })
-
-      if (!existingToken) {
-        logger().warn(`Refresh token not found during logout: ${refreshToken}`)
-      }
-
-      const { userId } = getLoginUser()
-      if (existingToken && existingToken.userId === userId) {
-        await prisma.refreshToken.delete({ where: { token: refreshToken } })
-      }
-      else {
-        logger().warn(
-          `Refresh token does not belong to the current user. `
-          + `refreshToken=${refreshToken}, `
-          + `currentUserId=${userId}, `
-          + `tokenUserId=${existingToken?.userId}`,
-        )
-      }
+    if (!existingToken) {
+      logger().warn(`Refresh token not found during logout: ${refreshToken}`)
     }
 
-    // Clear refresh token cookie, the access token is stateless and cannot be cleared server-side
-    refreshTokenCookie.clear()
+    if (existingToken && existingToken.userId === userId) {
+      await prisma.refreshToken.delete({ where: { token: refreshToken } })
+    }
+    else {
+      logger().warn(
+        `Refresh token does not belong to the current user. `
+        + `refreshToken=${refreshToken}, `
+        + `currentUserId=${userId}, `
+        + `tokenUserId=${existingToken?.userId}`,
+      )
+    }
   }
 }
 

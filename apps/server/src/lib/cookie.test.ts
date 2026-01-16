@@ -1,3 +1,4 @@
+import type { Context } from 'hono'
 import { createRefreshTokenCookie } from '@server/src/lib/cookie'
 import { describe, expect, it, vi } from 'bun:test'
 
@@ -5,14 +6,12 @@ describe('createRefreshTokenCookie', () => {
   it('sets refresh token with correct maxAge', () => {
     const setCookie = vi.fn()
     const getCookie = vi.fn()
-    const getContext = vi.fn()
 
     const now = new Date('2026-01-01T00:00:00Z').getTime()
     const expiresAt = new Date('2026-01-01T01:00:00Z')
 
     const cookie = createRefreshTokenCookie(
       {
-        getContext,
         setCookie,
         getCookie,
         now: () => now,
@@ -28,10 +27,10 @@ describe('createRefreshTokenCookie', () => {
       },
     )
 
-    cookie.set({ id: 'id', userId: 'userId', token: 'abc123', expiresAt, createdAt: new Date() })
+    cookie.set({} as Context, { accessToken: '', refreshToken: 'abc123', refreshTokenExpiresAt: expiresAt.toISOString() })
 
     expect(setCookie).toHaveBeenCalledWith(
-      undefined,
+      {},
       'refresh_token',
       'abc123',
       expect.objectContaining({
