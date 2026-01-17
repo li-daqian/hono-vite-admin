@@ -3,7 +3,7 @@ import { corsMiddleware } from '@server/src/middleware/cors.middleware'
 import { onErrorHandler, onNotFoundHandler } from '@server/src/middleware/expcetion.middleware'
 import { requestIdMiddleware } from '@server/src/middleware/requestId.middleware'
 import { traceLogger } from '@server/src/middleware/trace.middleware'
-import { api } from '@server/src/openapi/openapi'
+import { openApi } from '@server/src/openapi/openapi'
 import { Hono } from 'hono'
 
 // Initialize main app
@@ -25,6 +25,6 @@ app.get('/favicon.ico', (c) => {
 })
 
 // Main API routes
-app.route('/api/v1', api)
+app.route('/api/v1', openApi)
 
 export default app
