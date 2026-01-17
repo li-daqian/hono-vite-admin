@@ -89,7 +89,7 @@ function setupAxiosInterceptors() {
       }
       else {
         if (axios.isAxiosError<ErrorResponse>(error)) {
-          toast.error(error.response?.data.error.message ?? 'An unknown error occurred')
+          toast.error(error.response?.data.message ?? 'An unknown error occurred')
         }
         else {
           toast.error(error.message ?? 'An unknown error occurred')

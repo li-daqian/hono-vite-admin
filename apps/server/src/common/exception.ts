@@ -9,7 +9,7 @@ export class BusinessError extends Error {
 
   constructor(type: string, errorCode: string, message: string, httpStatus: ContentfulStatusCode) {
     super(message)
-    this._errorBody = { error: { type, code: errorCode, message, requestId: getRequestId() } }
+    this._errorBody = { type, code: errorCode, message, requestId: getRequestId() }
     this._httpStatus = httpStatus
     this.name = 'HttpStatusError'
   }

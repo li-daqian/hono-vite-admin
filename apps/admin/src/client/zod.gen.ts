@@ -6,12 +6,10 @@ import { z } from 'zod';
  * Standard error response envelope
  */
 export const zErrorResponse = z.object({
-    error: z.object({
-        type: z.string(),
-        code: z.string(),
-        message: z.string(),
-        requestId: z.string()
-    })
+    type: z.string(),
+    code: z.string(),
+    message: z.string(),
+    requestId: z.string()
 }).describe('Standard error response envelope');
 
 export const zAuthMenuSchema: z.AnyZodObject = z.object({

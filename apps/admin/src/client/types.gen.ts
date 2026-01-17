@@ -8,12 +8,10 @@ export type ClientOptions = {
  * Standard error response envelope
  */
 export type ErrorResponse = {
-    error: {
-        type: string;
-        code: string;
-        message: string;
-        requestId: string;
-    };
+    type: string;
+    code: string;
+    message: string;
+    requestId: string;
 };
 
 export type AuthMenuSchema = {
