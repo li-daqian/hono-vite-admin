@@ -3,7 +3,7 @@ import type { AuthLoginRequest, AuthRefreshRequest } from '@server/src/schemas/a
 import { createRoute, z } from '@hono/zod-openapi'
 import { refreshTokenCookie } from '@server/src/lib/cookie'
 import { authMiddleware, getLoginUser } from '@server/src/middleware/auth.middleware'
-import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthPrefillResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/schemas/auth.schema'
+import { AuthLoginRequestSchema, AuthLoginResponseSchema, AuthMenuResponseSchema, AuthPrefillResponseSchema, AuthRefreshRequestSchema, AuthRefreshResponseSchema } from '@server/src/schemas/auth.schema'
 import { authService } from '@server/src/service/auth.service'
 
 export function authRoute(api: OpenAPIHono) {
@@ -76,5 +76,21 @@ export function authRoute(api: OpenAPIHono) {
     refreshTokenCookie.clear(c)
 
     return c.json({}, 200)
+  })
+
+  api.openapi(createRoute({
+    path: '/auth/menus',
+    method: 'get',
+    description: 'Get user menus',
+    responses: {
+      200: { description: 'User menus retrieved successfully', content: { 'application/json': { schema: AuthMenuResponseSchema } } },
+    },
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware],
+    tags: ['Auth'],
+  }), async (c) => {
+    const { userId } = getLoginUser(c)
+    const menus = await authService.getUserMenus(userId)
+    return c.json(menus, 200)
   })
 }

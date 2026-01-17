@@ -2,9 +2,9 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import { getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer } from './transformers.gen';
-import type { GetAuthPrefillData, GetAuthPrefillResponses, GetUserProfileData, GetUserProfileResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses } from './types.gen';
-import { zGetAuthPrefillData, zGetAuthPrefillResponse, zGetUserProfileData, zGetUserProfileResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostUserData, zPostUserResponse } from './zod.gen';
+import { getAuthMenusResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer } from './transformers.gen';
+import type { GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetUserProfileData, GetUserProfileResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses } from './types.gen';
+import { zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetUserProfileData, zGetUserProfileResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostUserData, zPostUserResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -72,6 +72,19 @@ export const postAuthLogout = <ThrowOnError extends boolean = false>(options?: O
     responseValidator: async (data) => await zPostAuthLogoutResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/logout',
+    ...options
+});
+
+/**
+ * Get user menus
+ */
+export const getAuthMenus = <ThrowOnError extends boolean = false>(options?: Options<GetAuthMenusData, ThrowOnError>) => (options?.client ?? client).get<GetAuthMenusResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetAuthMenusData.parseAsync(data),
+    responseTransformer: getAuthMenusResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zGetAuthMenusResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/auth/menus',
     ...options
 });
 

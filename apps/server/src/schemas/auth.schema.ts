@@ -35,3 +35,28 @@ export const AuthRefreshResponseSchema = z.object({
 })
 export type AuthRefreshRequest = z.infer<typeof AuthRefreshRequestSchema>
 export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>
+
+export const AuthMenuActionSchema = z.object({
+  id: z.string().openapi({ description: 'Action ID', example: 'edit' }),
+  name: z.string().openapi({ description: 'Action name', example: 'Edit' }),
+})
+export type AuthMenuAction = z.infer<typeof AuthMenuActionSchema>
+export const AuthMenuSchema = z.object({
+  id: z.string().openapi({ description: 'Menu ID', example: 'dashboard' }),
+  name: z.string().openapi({ description: 'Menu name', example: 'Dashboard' }),
+  get children(): z.ZodArray<typeof AuthMenuSchema> {
+    return z.array(AuthMenuSchema).openapi({
+      type: 'array',
+      items: { $ref: '#/components/schemas/AuthMenuSchema' },
+      description: 'Child menus',
+      example: [{ id: 'analytics', name: 'Analytics', actions: [] }],
+    })
+  },
+  actions: z.array(AuthMenuActionSchema).openapi({
+    description: 'Menu actions',
+    example: [{ id: 'edit', name: 'Edit' }],
+  }),
+}).openapi('AuthMenuSchema')
+export type AuthMenu = z.infer<typeof AuthMenuSchema>
+export const AuthMenuResponseSchema = z.array(AuthMenuSchema).openapi({ description: 'List of menus accessible to the user' })
+export type AuthMenuResponse = z.infer<typeof AuthMenuResponseSchema>

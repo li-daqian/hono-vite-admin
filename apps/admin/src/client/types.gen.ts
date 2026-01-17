@@ -16,6 +16,34 @@ export type ErrorResponse = {
     };
 };
 
+export type AuthMenuSchema = {
+    /**
+     * Menu ID
+     */
+    id: string;
+    /**
+     * Menu name
+     */
+    name: string;
+    /**
+     * Child menus
+     */
+    children: Array<AuthMenuSchema>;
+    /**
+     * Menu actions
+     */
+    actions: Array<{
+        /**
+         * Action ID
+         */
+        id: string;
+        /**
+         * Action name
+         */
+        name: string;
+    }>;
+};
+
 export type GetAuthPrefillData = {
     body?: never;
     path?: never;
@@ -130,6 +158,22 @@ export type PostAuthLogoutResponses = {
 };
 
 export type PostAuthLogoutResponse = PostAuthLogoutResponses[keyof PostAuthLogoutResponses];
+
+export type GetAuthMenusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/menus';
+};
+
+export type GetAuthMenusResponses = {
+    /**
+     * List of menus accessible to the user
+     */
+    200: Array<AuthMenuSchema>;
+};
+
+export type GetAuthMenusResponse = GetAuthMenusResponses[keyof GetAuthMenusResponses];
 
 export type PostUserData = {
     body: {

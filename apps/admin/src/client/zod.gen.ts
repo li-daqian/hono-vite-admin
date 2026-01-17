@@ -14,6 +14,16 @@ export const zErrorResponse = z.object({
     })
 }).describe('Standard error response envelope');
 
+export const zAuthMenuSchema: z.AnyZodObject = z.object({
+    id: z.string().describe('Menu ID'),
+    name: z.string().describe('Menu name'),
+    children: z.array(z.lazy(() => zAuthMenuSchema)).describe('Child menus'),
+    actions: z.array(z.object({
+        id: z.string().describe('Action ID'),
+        name: z.string().describe('Action name')
+    })).describe('Menu actions')
+});
+
 export const zGetAuthPrefillData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -76,6 +86,17 @@ export const zPostAuthLogoutData = z.object({
  * User logged out successfully
  */
 export const zPostAuthLogoutResponse = z.record(z.unknown()).describe('User logged out successfully');
+
+export const zGetAuthMenusData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * List of menus accessible to the user
+ */
+export const zGetAuthMenusResponse = z.array(zAuthMenuSchema).describe('List of menus accessible to the user');
 
 export const zPostUserData = z.object({
     body: z.object({

@@ -1,6 +1,7 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthPrefillResponse, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
+import type { Action, Menu } from '@server/generated/prisma/client'
+import type { AuthLoginRequest, AuthLoginResponse, AuthMenu, AuthMenuResponse, AuthPrefillResponse, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
 import { randomUUID } from 'node:crypto'
-import { UserStatus } from '@server/generated/prisma/enums'
+import { PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
 import { jwtService } from '@server/src/lib/jwt'
@@ -119,6 +120,74 @@ class AuthService {
         + `tokenUserId=${existingToken?.userId}`,
       )
     }
+  }
+
+  async getUserMenus(userId: string): Promise<AuthMenuResponse> {
+    const roles = await prisma.userRole.findMany({
+      where: { userId },
+    })
+    if (roles.length === 0) {
+      return []
+    }
+
+    const roleIds = roles.map(role => role.roleId)
+    const rolePermissions = await prisma.rolePermission.findMany({
+      where: { roleId: { in: roleIds } },
+    })
+    if (rolePermissions.length === 0) {
+      return []
+    }
+
+    const permissionIds = rolePermissions.map(rp => rp.permissionId)
+    const permissions = await prisma.permission.findMany({
+      where: { id: { in: permissionIds } },
+    })
+
+    const menuIds = permissions
+      .filter(p => p.type === PermissionType.MENU)
+      .map(p => p.targetId)
+    const menus = await prisma.menu.findMany({
+      where: { id: { in: menuIds } },
+    })
+    const actionIds = permissions
+      .filter(p => p.type === PermissionType.ACTION)
+      .map(p => p.targetId)
+    const actions = await prisma.action.findMany({
+      where: { id: { in: actionIds } },
+    })
+
+    return this.buildMenuTree(menus, actions)
+  }
+
+  private buildMenuTree(menus: Menu[], actions: Action[]): AuthMenuResponse {
+    const menusByParentId = menus.reduce<Record<string, Menu[]>>((acc, menu) => {
+      (acc[menu.parentId ?? ''] ??= []).push(menu)
+      return acc
+    }, {})
+    const actionsByMenuId = actions.reduce<Record<string, Action[]>>((acc, action) => {
+      (acc[action.menuId] ??= []).push(action)
+      return acc
+    }, {})
+
+    const buildMenuNode = (currentLevelMenus: Menu[]): AuthMenu[] => {
+      currentLevelMenus.sort((a, b) => a.order - b.order)
+      return currentLevelMenus.map((m) => {
+        const menuActions = (actionsByMenuId[m.id] ?? []).map(a => ({
+          id: a.id,
+          name: a.name,
+        }))
+
+        const childMenus = menusByParentId[m.id] ?? []
+        return {
+          id: m.id,
+          name: m.name,
+          actions: menuActions,
+          children: buildMenuNode(childMenus),
+        }
+      })
+    }
+
+    return buildMenuNode(menusByParentId[''] || [])
   }
 }
 
