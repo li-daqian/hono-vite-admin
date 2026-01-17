@@ -1,8 +1,8 @@
 import type { Context } from 'hono'
 import type { HTTPResponseError } from 'hono/types'
 import { BusinessError } from '@server/src/common/exception'
+import { getRequestId } from '@server/src/middleware/requestId.middleware'
 import { logger } from '@server/src/middleware/trace.middleware'
-import { internalError, notFoundError } from '@server/src/schemas/error.schema'
 
 /**
  * Hono `app.onError`-style handler function.
@@ -20,12 +20,12 @@ export function onErrorHandler(error: Error | HTTPResponseError, c: Context): Re
   }
 
   logger().error(error, error.message)
-  return internalError(c)
+  return c.json({ message: 'An internal server error occurred', requestId: getRequestId() }, 500)
 }
 
 export function onNotFoundHandler(c: Context): Response | Promise<Response> {
   logger().warn(`Not Found: ${c.req.method} ${c.req.url}`)
-  return notFoundError(c)
+  return c.json({ message: 'The requested resource was not found' }, 404)
 }
 
 function isHTTPResponseError(e: unknown): e is HTTPResponseError {
