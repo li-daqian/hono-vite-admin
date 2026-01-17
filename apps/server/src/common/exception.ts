@@ -14,8 +14,8 @@ export class BusinessError extends Error {
     this.name = 'HttpStatusError'
   }
 
-  public get error(): ErrorResponse {
-    return this._errorBody
+  toString(): string {
+    return `BusinessError: ${this._httpStatus} - ${JSON.stringify(this._errorBody)}`
   }
 
   public getErrorResponse(c: Context): Response {

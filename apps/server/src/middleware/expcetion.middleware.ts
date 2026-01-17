@@ -15,7 +15,7 @@ export function onErrorHandler(error: Error | HTTPResponseError, c: Context): Re
   }
 
   if (error instanceof BusinessError) {
-    logger().info(`Business Error: ${c.req.method} ${c.req.url} - ${JSON.stringify(error.error)}`)
+    logger().info(`${c.req.method} ${c.req.url} - ${error}`)
     return error.getErrorResponse(c)
   }
 
