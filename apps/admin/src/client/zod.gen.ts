@@ -6,8 +6,7 @@ import { z } from 'zod';
  * Standard error response envelope
  */
 export const zErrorResponse = z.object({
-    type: z.string(),
-    code: z.string(),
+    code: z.string().optional(),
     message: z.string(),
     requestId: z.string()
 }).describe('Standard error response envelope');

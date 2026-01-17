@@ -7,9 +7,9 @@ export class BusinessError extends Error {
   private _httpStatus: ContentfulStatusCode
   private _errorBody: ErrorResponse
 
-  constructor(type: string, errorCode: string, message: string, httpStatus: ContentfulStatusCode) {
+  constructor(errorCode: string | undefined, message: string, httpStatus: ContentfulStatusCode) {
     super(message)
-    this._errorBody = { type, code: errorCode, message, requestId: getRequestId() }
+    this._errorBody = { code: errorCode, message, requestId: getRequestId() }
     this._httpStatus = httpStatus
     this.name = 'HttpStatusError'
   }
@@ -22,20 +22,20 @@ export class BusinessError extends Error {
     return c.json(this._errorBody, this._httpStatus)
   }
 
-  public static Unauthorized(message: string, code: string = '') {
-    return new BusinessError('Unauthorized', code, message, 401)
+  public static Unauthorized(message: string) {
+    return new BusinessError(undefined, message, 401)
   }
 
-  public static Forbidden(message: string, code: string = '') {
-    return new BusinessError('Forbidden', code, message, 403)
+  public static Forbidden(message: string, code: string) {
+    return new BusinessError(code, message, 403)
   }
 
   public static BadRequest(message: string, code: string = '') {
-    return new BusinessError('Bad Request', code, message, 400)
+    return new BusinessError(code, message, 400)
   }
 
-  public static NotFound(message: string, code: string = '') {
-    return new BusinessError('Not Found', code, message, 404)
+  public static NotFound(message: string) {
+    return new BusinessError(undefined, message, 404)
   }
 
   public static UserOrPasswordIncorrect() {

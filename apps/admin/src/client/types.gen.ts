@@ -8,8 +8,7 @@ export type ClientOptions = {
  * Standard error response envelope
  */
 export type ErrorResponse = {
-    type: string;
-    code: string;
+    code?: string;
     message: string;
     requestId: string;
 };
