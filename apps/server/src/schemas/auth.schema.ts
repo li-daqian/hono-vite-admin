@@ -44,12 +44,14 @@ export type AuthMenuAction = z.infer<typeof AuthMenuActionSchema>
 export const AuthMenuSchema = z.object({
   id: z.string().openapi({ description: 'Menu ID', example: 'dashboard' }),
   name: z.string().openapi({ description: 'Menu name', example: 'Dashboard' }),
+  path: z.string().nullable().openapi({ description: 'Menu path', example: '/dashboard' }),
+  icon: z.string().nullable().openapi({ description: 'Menu icon', example: 'CircleGauge' }),
   get children(): z.ZodArray<typeof AuthMenuSchema> {
     return z.array(AuthMenuSchema).openapi({
       type: 'array',
       items: { $ref: '#/components/schemas/AuthMenuSchema' },
       description: 'Child menus',
-      example: [{ id: 'analytics', name: 'Analytics', actions: [] }],
+      example: [{ id: 'analytics', name: 'Analytics', path: '/analytics', icon: 'BarChart', actions: [] }],
     })
   },
   actions: z.array(AuthMenuActionSchema).openapi({

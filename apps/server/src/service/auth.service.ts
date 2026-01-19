@@ -181,6 +181,8 @@ class AuthService {
         return {
           id: m.id,
           name: m.name,
+          path: m.path,
+          icon: m.icon,
           actions: menuActions,
           children: buildMenuNode(childMenus),
         }
