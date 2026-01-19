@@ -14,6 +14,14 @@ export const zErrorResponse = z.object({
 export const zAuthMenuSchema: z.AnyZodObject = z.object({
     id: z.string().describe('Menu ID'),
     name: z.string().describe('Menu name'),
+    path: z.union([
+        z.string(),
+        z.null()
+    ]),
+    icon: z.union([
+        z.string(),
+        z.null()
+    ]),
     children: z.array(z.lazy(() => zAuthMenuSchema)).describe('Child menus'),
     actions: z.array(z.object({
         id: z.string().describe('Action ID'),

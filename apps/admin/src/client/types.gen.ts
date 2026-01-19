@@ -23,6 +23,14 @@ export type AuthMenuSchema = {
      */
     name: string;
     /**
+     * Menu path
+     */
+    path: string | null;
+    /**
+     * Menu icon
+     */
+    icon: string | null;
+    /**
      * Child menus
      */
     children: Array<AuthMenuSchema>;
