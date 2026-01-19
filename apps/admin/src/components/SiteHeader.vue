@@ -6,13 +6,13 @@ import UserNav from '@admin/pages/user/UserNav.vue'
 </script>
 
 <template>
-  <div>
-    <header class="flex h-14 shrink-0 items-center justify-between border-b px-4">
+  <div class="flex items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b">
+    <header class="flex items-center px-4 w-full">
       <a class="flex items-center gap-2 select-none">
         <Logo />
         <span class="text-lg font-semibold">User Admin</span>
       </a>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 ml-auto">
         <Button variant="ghost" size="icon" class="rounded-full cursor-pointer">
           <ToggleTheme class="text-lg" />
         </Button>
