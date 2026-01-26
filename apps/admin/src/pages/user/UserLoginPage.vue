@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PostAuthLoginData } from '@admin/client'
-import { getAuthPrefill, postAuthLogin } from '@admin/client'
+import { getAuthMenus, getAuthPrefill, postAuthLogin } from '@admin/client'
 import { Button } from '@admin/components/ui/button'
 import {
   Form,
@@ -15,6 +15,7 @@ import { Skeleton } from '@admin/components/ui/skeleton'
 import router from '@admin/router'
 import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useAuthStore } from '@admin/stores/auth'
+import { useMenuStore } from '@admin/stores/menu'
 import { toTypedSchema } from '@vee-validate/zod'
 import { ref } from 'vue'
 import z from 'zod'
@@ -51,6 +52,9 @@ async function handleLogin(values: Record<string, any>) {
 
   const accessToken = res.data.accessToken
   useAuthStore().setAccessToken(accessToken)
+
+  const menusRes = await getAuthMenus<true>()
+  useMenuStore().setMenus(menusRes.data)
 
   const redirect = router.currentRoute.value.query.redirect
   if (redirect && typeof redirect === 'string') {
