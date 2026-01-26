@@ -13,6 +13,8 @@ const userStore = useUserStore()
 async function handleLogOut() {
   await postAuthLogout<true>()
 
+  userStore.clearProfile()
+
   await router.replace({ name: ROUTE_NAMES.LOGIN })
 }
 </script>
