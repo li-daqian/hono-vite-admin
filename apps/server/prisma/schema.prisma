@@ -83,7 +83,6 @@ model Menu {
   parentId String? @map("parent_id")
   name     String
   path     String?
-  icon     String?
   order    Int
 
   actions Action[]

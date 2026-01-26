@@ -18,10 +18,6 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
         z.string(),
         z.null()
     ]),
-    icon: z.union([
-        z.string(),
-        z.null()
-    ]),
     children: z.array(z.lazy(() => zAuthMenuSchema)).describe('Child menus'),
     actions: z.array(z.object({
         id: z.string().describe('Action ID'),

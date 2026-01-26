@@ -10,20 +10,17 @@ const menus = [
     code: 'dashboard',
     name: 'Dashboard',
     path: '/dashboard',
-    icon: 'CircleGauge',
     order: 1,
   },
   {
     code: 'system',
     name: 'System Management',
-    icon: 'Settings',
     order: 2,
     children: [
       {
         code: 'user',
         name: 'User Management',
         path: '/system/users',
-        icon: 'User',
         order: 1,
         actions: [
           { code: 'create', name: 'Create', description: 'Create user' },
@@ -35,7 +32,6 @@ const menus = [
         code: 'role',
         name: 'Role Management',
         path: '/system/roles',
-        icon: 'ShieldCheckered',
         order: 2,
         actions: [
           { code: 'create', name: 'Create', description: 'Create role' },
@@ -140,7 +136,6 @@ async function seedMenus(
         parentId: parentCode ?? null,
         name: menu.name,
         path: menu.path,
-        icon: menu.icon,
         order: menu.order,
       },
     })
