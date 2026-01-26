@@ -41,7 +41,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
   }
 }
 
-async function onSubmit(values: Record<string, any>) {
+async function handleLogin(values: Record<string, any>) {
   const formData = values as PostAuthLoginData['body']
   const res = await postAuthLogin<true>({
     body: {
@@ -67,7 +67,7 @@ async function onSubmit(values: Record<string, any>) {
     <div class="w-full max-w-sm">
       <div class="flex flex-col gap-6">
         <Form v-slot="{ handleSubmit, isSubmitting, setValues }" :validation-schema="validationSchema">
-          <form @vue:mounted="() => onVueMounted(setValues)" @submit.prevent="handleSubmit(onSubmit)">
+          <form @vue:mounted="() => onVueMounted(setValues)" @submit.prevent="handleSubmit(handleLogin)">
             <div class="flex flex-col items-center gap-2 text-center">
               <h1 class="text-xl font-bold">
                 Sign in to Admin
