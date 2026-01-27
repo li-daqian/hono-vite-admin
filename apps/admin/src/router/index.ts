@@ -22,6 +22,11 @@ const routes: RouteRecordRaw[] = [
     name: ROUTE_NAMES.LOGIN,
     component: () => import('@admin/pages/user/UserLoginPage.vue'),
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: ROUTE_NAMES.NOT_FOUND,
+    component: () => import('@admin/pages/error/NotFoundPage.vue'),
+  },
 ]
 
 const router = createRouter({
@@ -29,7 +34,7 @@ const router = createRouter({
   routes,
 })
 
-const authWhitelist: RouteRecordNameGeneric[] = [ROUTE_NAMES.LOGIN]
+const authWhitelist: RouteRecordNameGeneric[] = [ROUTE_NAMES.LOGIN, ROUTE_NAMES.NOT_FOUND]
 
 router.beforeEach(async (to, _from, next) => {
   NProgress.start()
