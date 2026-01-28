@@ -1,5 +1,7 @@
 import type { GetAuthMenusResponse } from '@admin/client'
-import type { RouteComponent, RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
+import type { RouteComponent, Router, RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
+import { ROUTE_NAMES } from '@admin/router/route-name'
+import { useMenuStore } from '@admin/stores/menu'
 
 const componentMap: Record<string, RouteComponent> = {
   'dashboard': () => import('@admin/pages/DashboardPage.vue'),
@@ -7,7 +9,7 @@ const componentMap: Record<string, RouteComponent> = {
   'system.role': () => import('@admin/pages/DashboardPage.vue'),
 }
 
-export function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRaw[] {
+function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRaw[] {
   return menus
     .flatMap((menu) => {
       const routes: RouteRecordRaw[] = []
@@ -30,4 +32,26 @@ export function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRa
 
       return routes
     })
+}
+
+export function initializeDynamicRoutes(router: Router): boolean {
+  const useMenu = useMenuStore()
+  if (!useMenu.routesLoaded) {
+    const newRoutes = buildRoutesFromMenus(useMenu.menus)
+    newRoutes.forEach((route) => {
+      router.addRoute(ROUTE_NAMES.HOME, route)
+    })
+
+    router.addRoute({
+      path: '/:pathMatch(.*)*',
+      name: ROUTE_NAMES.NOT_FOUND,
+      component: () => import('@admin/pages/error/NotFoundPage.vue'),
+    })
+
+    useMenu.setRoutesLoaded(true)
+
+    return true
+  }
+
+  return false
 }
