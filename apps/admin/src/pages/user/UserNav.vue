@@ -15,7 +15,7 @@ const menuStore = useMenuStore()
 async function handleLogOut() {
   await postAuthLogout<true>()
 
-  userStore.clearProfile()
+  userStore.reset()
   menuStore.reset()
 
   await router.replace({ name: ROUTE_NAMES.LOGIN })
