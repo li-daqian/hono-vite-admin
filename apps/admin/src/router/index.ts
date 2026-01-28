@@ -1,7 +1,9 @@
 import type { RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
 import { getUserProfile } from '@admin/client/sdk.gen'
 import NProgress from '@admin/lib/nprogress'
+import { buildRoutesFromMenus } from '@admin/router/build-routes'
 import { ROUTE_NAMES } from '@admin/router/route-name'
+import { useMenuStore } from '@admin/stores/menu'
 import { useUserStore } from '@admin/stores/user'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -10,12 +12,6 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: ROUTE_NAMES.HOME,
     component: () => import('@admin/pages/HomePage.vue'),
-    children: [
-      {
-        path: 'users',
-        component: () => import('@admin/pages/user/UserLoginPage.vue'),
-      },
-    ],
   },
   {
     path: '/login',
@@ -42,6 +38,18 @@ router.beforeEach(async (to, _from, next) => {
   if (!authWhitelist.includes(to.name)) {
     const userProfile = await getUserProfile<true>()
     useUserStore().setProfile(userProfile.data)
+
+    const useMenu = useMenuStore()
+    if (!useMenu.routesLoaded) {
+      const newRoutes = buildRoutesFromMenus(useMenu.menus)
+
+      newRoutes.forEach((route) => {
+        router.addRoute(ROUTE_NAMES.HOME, route)
+      })
+      useMenu.setRoutesLoaded(true)
+
+      return next({ ...to, replace: true })
+    }
   }
 
   next()

@@ -5,15 +5,18 @@ import UserAvatar from '@admin/pages/user/UserAvatar.vue'
 import UserProfile from '@admin/pages/user/UserProfile.vue'
 import router from '@admin/router'
 import { ROUTE_NAMES } from '@admin/router/route-name'
+import { useMenuStore } from '@admin/stores/menu'
 import { useUserStore } from '@admin/stores/user'
 import { LogOut } from 'lucide-vue-next'
 
 const userStore = useUserStore()
+const menuStore = useMenuStore()
 
 async function handleLogOut() {
   await postAuthLogout<true>()
 
   userStore.clearProfile()
+  menuStore.reset()
 
   await router.replace({ name: ROUTE_NAMES.LOGIN })
 }
