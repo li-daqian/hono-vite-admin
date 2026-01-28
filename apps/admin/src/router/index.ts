@@ -1,5 +1,4 @@
 import type { RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
-import { getUserProfile } from '@admin/client/sdk.gen'
 import NProgress from '@admin/lib/nprogress'
 import { initializeDynamicRoutes } from '@admin/router/dynamic-routes'
 import { ROUTE_NAMES } from '@admin/router/route-name'
@@ -30,8 +29,7 @@ router.beforeEach(async (to, _from, next) => {
   NProgress.start()
 
   if (to.name || !authWhitelist.includes(to.name)) {
-    const userProfile = await getUserProfile<true>()
-    useUserStore().setProfile(userProfile.data)
+    useUserStore().initProfile()
 
     if (initializeDynamicRoutes(router)) {
       return next({ ...to, replace: true })

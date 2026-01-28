@@ -1,4 +1,5 @@
 import type { GetUserProfileResponse } from '@admin/client'
+import { getUserProfile } from '@admin/client'
 import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('user', {
@@ -7,8 +8,11 @@ export const useUserStore = defineStore('user', {
   }),
 
   actions: {
-    setProfile(profile: GetUserProfileResponse) {
-      this.profile = profile
+    async initProfile() {
+      if (!this.profile) {
+        const userProfile = await getUserProfile<true>()
+        this.profile = userProfile.data
+      }
     },
 
     reset() {
