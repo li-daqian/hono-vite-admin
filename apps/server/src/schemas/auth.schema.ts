@@ -36,11 +36,11 @@ export const AuthRefreshResponseSchema = z.object({
 export type AuthRefreshRequest = z.infer<typeof AuthRefreshRequestSchema>
 export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>
 
-export const AuthMenuActionSchema = z.object({
+export const AuthActionSchema = z.object({
   id: z.string().openapi({ description: 'Action ID', example: 'edit' }),
   name: z.string().openapi({ description: 'Action name', example: 'Edit' }),
-})
-export type AuthMenuAction = z.infer<typeof AuthMenuActionSchema>
+}).openapi('AuthActionSchema')
+export type AuthAction = z.infer<typeof AuthActionSchema>
 export const AuthMenuSchema = z.object({
   id: z.string().openapi({ description: 'Menu ID', example: 'dashboard' }),
   name: z.string().openapi({ description: 'Menu name', example: 'Dashboard' }),
@@ -53,7 +53,7 @@ export const AuthMenuSchema = z.object({
       example: [{ id: 'analytics', name: 'Analytics', path: '/analytics', actions: [] }],
     })
   },
-  actions: z.array(AuthMenuActionSchema).openapi({
+  actions: z.array(AuthActionSchema).openapi({
     description: 'Menu actions',
     example: [{ id: 'edit', name: 'Edit' }],
   }),

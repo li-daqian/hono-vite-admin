@@ -13,6 +13,17 @@ export type ErrorResponse = {
     requestId: string;
 };
 
+export type AuthActionSchema = {
+    /**
+     * Action ID
+     */
+    id: string;
+    /**
+     * Action name
+     */
+    name: string;
+};
+
 export type AuthMenuSchema = {
     /**
      * Menu ID
@@ -33,16 +44,7 @@ export type AuthMenuSchema = {
     /**
      * Menu actions
      */
-    actions: Array<{
-        /**
-         * Action ID
-         */
-        id: string;
-        /**
-         * Action name
-         */
-        name: string;
-    }>;
+    actions: Array<AuthActionSchema>;
 };
 
 export type GetAuthPrefillData = {

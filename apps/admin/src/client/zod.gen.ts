@@ -11,6 +11,11 @@ export const zErrorResponse = z.object({
     requestId: z.string()
 }).describe('Standard error response envelope');
 
+export const zAuthActionSchema = z.object({
+    id: z.string().describe('Action ID'),
+    name: z.string().describe('Action name')
+});
+
 export const zAuthMenuSchema: z.AnyZodObject = z.object({
     id: z.string().describe('Menu ID'),
     name: z.string().describe('Menu name'),
@@ -19,10 +24,7 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
         z.null()
     ]),
     children: z.array(z.lazy(() => zAuthMenuSchema)).describe('Child menus'),
-    actions: z.array(z.object({
-        id: z.string().describe('Action ID'),
-        name: z.string().describe('Action name')
-    })).describe('Menu actions')
+    actions: z.array(zAuthActionSchema).describe('Menu actions')
 });
 
 export const zGetAuthPrefillData = z.object({

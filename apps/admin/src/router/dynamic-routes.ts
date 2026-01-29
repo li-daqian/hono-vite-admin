@@ -20,9 +20,8 @@ function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRaw[] {
           name: menu.name as RouteRecordNameGeneric,
           component: componentMap[menu.id]!,
           meta: {
-            title: menu.name,
-            permissions: menu.actions,
             requiresAuth: true,
+            actions: menu.actions,
           },
         })
       }
