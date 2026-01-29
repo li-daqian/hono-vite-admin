@@ -42,7 +42,7 @@ export function initializeDynamicRoutes(router: Router): boolean {
       router.addRoute(ROUTE_NAMES.HOME, route)
     })
 
-    router.addRoute({
+    router.addRoute(ROUTE_NAMES.HOME, {
       path: '/:pathMatch(.*)*',
       name: ROUTE_NAMES.NOT_FOUND,
       component: () => import('@admin/pages/error/NotFoundPage.vue'),
