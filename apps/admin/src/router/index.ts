@@ -1,20 +1,32 @@
-import type { RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 import NProgress from '@admin/lib/nprogress'
 import { loadDynamicRoutes } from '@admin/router/dynamic-routes'
 import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useUserStore } from '@admin/stores/user'
 import { createRouter, createWebHistory } from 'vue-router'
 
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+  }
+}
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: ROUTE_NAMES.HOME,
     component: () => import('@admin/pages/HomePage.vue'),
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
     path: '/login',
     name: ROUTE_NAMES.LOGIN,
     component: () => import('@admin/pages/user/UserLoginPage.vue'),
+    meta: {
+      requiresAuth: false,
+    },
   },
 ]
 
@@ -23,17 +35,15 @@ const router = createRouter({
   routes,
 })
 
-const authWhitelist: RouteRecordNameGeneric[] = [ROUTE_NAMES.LOGIN, ROUTE_NAMES.NOT_FOUND]
-
 router.beforeEach(async (to, _from, next) => {
   NProgress.start()
 
-  if (to.name || !authWhitelist.includes(to.name)) {
-    useUserStore().initProfile()
+  if (loadDynamicRoutes(router)) {
+    return next({ ...to, replace: true })
+  }
 
-    if (loadDynamicRoutes(router)) {
-      return next({ ...to, replace: true })
-    }
+  if (to.meta.requiresAuth) {
+    useUserStore().initProfile()
   }
 
   next()

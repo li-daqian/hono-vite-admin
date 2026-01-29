@@ -22,6 +22,7 @@ function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRaw[] {
           meta: {
             title: menu.name,
             permissions: menu.actions,
+            requiresAuth: true,
           },
         })
       }
@@ -50,6 +51,9 @@ export function loadDynamicRoutes(router: Router): boolean {
     path: '/:pathMatch(.*)*',
     name: ROUTE_NAMES.NOT_FOUND,
     component: () => import('@admin/pages/error/NotFoundPage.vue'),
+    meta: {
+      requiresAuth: true,
+    },
   })
 
   useMenu.setRoutesLoaded(true)
