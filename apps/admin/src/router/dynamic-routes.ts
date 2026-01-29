@@ -34,24 +34,25 @@ function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRaw[] {
     })
 }
 
-export function addDynamicRoutes(router: Router): boolean {
+export function loadDynamicRoutes(router: Router): boolean {
   const useMenu = useMenuStore()
-  if (!useMenu.routesLoaded) {
-    const newRoutes = buildRoutesFromMenus(useMenu.menus)
-    newRoutes.forEach((route) => {
-      router.addRoute(ROUTE_NAMES.HOME, route)
-    })
 
-    router.addRoute(ROUTE_NAMES.HOME, {
-      path: '/:pathMatch(.*)*',
-      name: ROUTE_NAMES.NOT_FOUND,
-      component: () => import('@admin/pages/error/NotFoundPage.vue'),
-    })
-
-    useMenu.setRoutesLoaded(true)
-
-    return true
+  if (useMenu.routesLoaded) {
+    return false
   }
 
-  return false
+  const newRoutes = buildRoutesFromMenus(useMenu.menus)
+  newRoutes.forEach((route) => {
+    router.addRoute(ROUTE_NAMES.HOME, route)
+  })
+
+  router.addRoute(ROUTE_NAMES.HOME, {
+    path: '/:pathMatch(.*)*',
+    name: ROUTE_NAMES.NOT_FOUND,
+    component: () => import('@admin/pages/error/NotFoundPage.vue'),
+  })
+
+  useMenu.setRoutesLoaded(true)
+
+  return true
 }
