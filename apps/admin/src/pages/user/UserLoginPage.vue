@@ -58,7 +58,7 @@ async function handleLogin(values: Record<string, any>) {
 
   const redirect = router.currentRoute.value.query.redirect
   if (redirect && typeof redirect === 'string') {
-    window.location.href = redirect
+    window.location.href = decodeURIComponent(redirect)
   }
   else {
     await router.replace({ name: ROUTE_NAMES.HOME })

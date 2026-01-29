@@ -34,7 +34,7 @@ const logoutAndRedirect = (() => {
     return logoutPromise ||= (async () => {
       useAuthStore().clearAccessToken()
       if (router.currentRoute.value.name !== ROUTE_NAMES.LOGIN) {
-        const redirect = window.location.href
+        const redirect = encodeURIComponent(window.location.href)
         router.replace({ name: ROUTE_NAMES.LOGIN, query: { redirect } })
       }
     })()
