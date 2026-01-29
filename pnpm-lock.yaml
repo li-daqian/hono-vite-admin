@@ -87,9 +87,6 @@ importers:
       '@hey-api/openapi-ts':
         specifier: ^0.90.2
         version: 0.90.2(typescript@5.9.3)
-      '@hono-vite-admin/eslint-config':
-        specifier: workspace:*
-        version: link:../../packages/eslint-config
       '@types/node':
         specifier: ^24.10.1
         version: 24.10.1
