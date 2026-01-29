@@ -2,9 +2,8 @@ import type { ErrorResponse } from '@admin/client'
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { postAuthRefresh } from '@admin/client'
 import { client } from '@admin/client/client.gen'
+import { AuthManager } from '@admin/lib/auth'
 import { getEnv } from '@admin/lib/env'
-import router from '@admin/router'
-import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useAuthStore } from '@admin/stores/auth'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
@@ -31,13 +30,7 @@ const logoutAndRedirect = (() => {
   let logoutPromise: Promise<void> | null = null
 
   return async function (): Promise<void> {
-    return logoutPromise ||= (async () => {
-      useAuthStore().clearAccessToken()
-      if (router.currentRoute.value.name !== ROUTE_NAMES.LOGIN) {
-        const redirect = encodeURIComponent(window.location.href)
-        router.replace({ name: ROUTE_NAMES.LOGIN, query: { redirect } })
-      }
-    })()
+    return logoutPromise ||= AuthManager.logout(true)
   }
 })()
 
@@ -53,8 +46,9 @@ function setupAxiosInterceptors() {
     (config: InternalAxiosRequestConfig) => {
       // Add Authorization header if access token is available
       const authStore = useAuthStore()
-      if (authStore.isAuthenticated) {
-        config.headers.Authorization = `Bearer ${authStore.accessToken}`
+      const accessToken = authStore.accessToken
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`
       }
 
       return config
