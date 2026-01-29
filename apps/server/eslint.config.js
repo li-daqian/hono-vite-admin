@@ -1,7 +1,13 @@
-import { config } from '@hono-vite-admin/eslint-config/base'
+import antfu from '@antfu/eslint-config'
 
-export default config.append({
+export default antfu({
+  typescript: true,
+
   rules: {
     'n/prefer-global/process': 'off',
   },
+
+  ignores: [
+    'dist/**',
+  ],
 })

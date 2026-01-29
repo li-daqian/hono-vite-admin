@@ -1,3 +1,3 @@
-import { config } from './packages/eslint-config/base.js'
+import antfu from '@antfu/eslint-config'
 
-export default config
+export default antfu()
