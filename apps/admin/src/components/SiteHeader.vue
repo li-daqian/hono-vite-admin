@@ -2,7 +2,7 @@
 import Logo from '@admin/components/Logo.vue'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
 import { Button } from '@admin/components/ui/button'
-import UserNav from '@admin/pages/user/UserNav.vue'
+import UserNav from '@admin/components/user/UserNav.vue'
 </script>
 
 <template>
