@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import NProgress from '@admin/lib/nprogress'
 import { loadDynamicRoutes } from '@admin/router/dynamic-routes'
 import { ROUTE_NAMES } from '@admin/router/route-name'
-import { useUserStore } from '@admin/stores/user'
+import { useAuthStore } from '@admin/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
 declare module 'vue-router' {
@@ -45,7 +45,7 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   if (to.meta.requiresAuth) {
-    useUserStore().initProfile()
+    await useAuthStore().fetchMe()
   }
 
   next()

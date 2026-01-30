@@ -4,10 +4,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AuthManager } from '@admin/lib/auth'
 import UserAvatar from '@admin/pages/user/UserAvatar.vue'
 import UserProfile from '@admin/pages/user/UserProfile.vue'
-import { useUserStore } from '@admin/stores/user'
+import { useAuthStore } from '@admin/stores/auth'
 import { LogOut } from 'lucide-vue-next'
 
-const userStore = useUserStore()
+const authStore = useAuthStore()
 
 async function handleLogOut() {
   await postAuthLogout<true>()
@@ -19,11 +19,11 @@ async function handleLogOut() {
   <div>
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
-        <UserAvatar :user-profile="userStore.profile" />
+        <UserAvatar :user-profile="authStore.user" />
       </DropdownMenuTrigger>
       <DropdownMenuContent class="mt-2 mr-2">
         <DropdownMenuLabel>
-          <UserProfile :user-profile="userStore.profile" class="w-48" />
+          <UserProfile :user-profile="authStore.user" class="w-48" />
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem @click="handleLogOut">

@@ -3,7 +3,6 @@ import router from '@admin/router'
 import { ROUTE_NAMES } from '@admin/router/route-name'
 import { useAuthStore } from '@admin/stores/auth'
 import { useMenuStore } from '@admin/stores/menu'
-import { useUserStore } from '@admin/stores/user'
 
 /**
  * Centralized authentication manager
@@ -36,11 +35,9 @@ export const AuthManager = {
    */
   async logout(shouldReturnToPreviousPage: boolean): Promise<void> {
     const authStore = useAuthStore()
-    const userStore = useUserStore()
     const menuStore = useMenuStore()
 
     authStore.reset()
-    userStore.reset()
     menuStore.reset()
 
     if (router.currentRoute.value.name !== ROUTE_NAMES.LOGIN) {
