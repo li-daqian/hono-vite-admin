@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { postAuthLogout } from '@admin/client'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@admin/components/ui/dropdown-menu'
-import UserAvatar from '@admin/components/user/UserAvatar.vue'
-import UserProfile from '@admin/components/user/UserProfile.vue'
 import { AuthManager } from '@admin/lib/auth'
+import UserAvatar from '@admin/pages/home/components/UserAvatar.vue'
+import UserProfile from '@admin/pages/home/components/UserProfile.vue'
 import { useAuthStore } from '@admin/stores/auth'
 import { LogOut } from 'lucide-vue-next'
 

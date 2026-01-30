@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GetUserProfileResponse } from '@admin/client'
-import UserAvatar from '@admin/components/user/UserAvatar.vue'
+import UserAvatar from '@admin/pages/home/components/UserAvatar.vue'
 
 const props = defineProps<
   { userProfile: GetUserProfileResponse | null }

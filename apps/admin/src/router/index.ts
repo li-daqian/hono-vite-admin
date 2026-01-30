@@ -17,7 +17,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: ROUTE_NAMES.HOME,
-    component: () => import('@admin/pages/HomePage.vue'),
+    component: () => import('@admin/pages/home/index.vue'),
     meta: {
       requiresAuth: true,
     },
@@ -25,7 +25,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: ROUTE_NAMES.LOGIN,
-    component: () => import('@admin/pages/LoginPage.vue'),
+    component: () => import('@admin/pages/login/index.vue'),
     meta: {
       requiresAuth: false,
     },

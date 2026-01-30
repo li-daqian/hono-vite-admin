@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AppSidebar from '@admin/components/AppSidebar.vue'
-import SiteHeader from '@admin/components/SiteHeader.vue'
 import { SidebarInset, SidebarProvider } from '@admin/components/ui/sidebar'
+import AppSidebar from '@admin/pages/home/components/AppSidebar.vue'
+import SiteHeader from '@admin/pages/home/components/SiteHeader.vue'
 </script>
 
 <template>
