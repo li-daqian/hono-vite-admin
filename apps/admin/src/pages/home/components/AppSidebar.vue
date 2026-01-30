@@ -1,76 +1,72 @@
 <script setup lang="ts">
 import type { AuthMenuSchema } from '@admin/client'
+import type { LucideIcon } from 'lucide-vue-next'
+import type { HTMLAttributes } from 'vue'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@admin/components/ui/collapsible'
+
 import {
   Sidebar,
   SidebarContent,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@admin/components/ui/sidebar'
-import { useMenuStore } from '@admin/stores/menu'
-import { onMounted, ref } from 'vue'
+import { ChevronRight } from 'lucide-vue-next'
 
-const menus = ref<AuthMenuSchema[]>([])
+type MenuItem = AuthMenuSchema & {
+  children?: MenuItem[]
+  isActive?: boolean
+  icon?: LucideIcon
+}
 
-onMounted(async () => {
-  menus.value = useMenuStore().menus
-})
+const props = defineProps<
+  { menus: Array<MenuItem> }
+  & { class?: HTMLAttributes['class'] }
+>()
 </script>
 
 <template>
   <div>
-    <Sidebar>
+    <Sidebar class="top-(--header-height) h-[calc(100svh-var(--header-height))]!" v-bind="props">
       <SidebarContent class="px-2 py-4">
         <SidebarMenu>
-          <template v-for="menu in menus" :key="menu.id">
+          <Collapsible v-for="item in props.menus" :key="item.name" as-child :default-open="item.isActive">
             <SidebarMenuItem>
-              <SidebarMenuButton
-                v-if="menu.children.length === 0"
-                :as-child="!!menu.path"
-                class="cursor-pointer"
-              >
-                <a v-if="menu.path" :href="menu.path" class="flex items-center gap-2">
-                  <span>{{ menu.name }}</span>
+              <SidebarMenuButton as-child :tooltip="item.name">
+                <a :href="item.path ?? '#'">
+                  <!-- <component :is="item.icon" /> -->
+                  <span>{{ item.name }}</span>
                 </a>
-                <span v-else class="flex items-center gap-2">
-                  <span>{{ menu.name }}</span>
-                </span>
               </SidebarMenuButton>
-
-              <template v-else>
-                <!-- Parent with children - create a collapsible section -->
-                <details class="group w-full">
-                  <summary class="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-sidebar-accent cursor-pointer hover:text-sidebar-accent-foreground">
-                    <span class="flex-1">{{ menu.name }}</span>
-                    <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </summary>
-
-                  <SidebarMenuSub class="ml-2 border-l">
-                    <template v-for="child in menu.children" :key="child.id">
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          :as-child="!!child.path"
-                          class="cursor-pointer"
-                        >
-                          <RouterLink v-if="child.path" :to="child.path" class="flex items-center gap-2">
-                            <span>{{ child.name }}</span>
-                          </RouterLink>
-                          <span v-else class="flex items-center gap-2">
-                            <span>{{ child.name }}</span>
-                          </span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </template>
+              <template v-if="item.children?.length">
+                <CollapsibleTrigger as-child>
+                  <SidebarMenuAction class="data-[state=open]:rotate-90">
+                    <ChevronRight />
+                    <span class="sr-only">Toggle</span>
+                  </SidebarMenuAction>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem v-for="subItem in item.children" :key="subItem.name">
+                      <SidebarMenuSubButton as-child>
+                        <a :href="subItem.path ?? '#'">
+                          <span>{{ subItem.name }}</span>
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
                   </SidebarMenuSub>
-                </details>
+                </CollapsibleContent>
               </template>
             </SidebarMenuItem>
-          </template>
+          </Collapsible>
         </SidebarMenu>
       </SidebarContent>
     </Sidebar>

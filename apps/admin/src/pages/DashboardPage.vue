@@ -3,8 +3,6 @@
 
 <template>
   <div>
-    <p class="text-right">
-      Dashboard Page
-    </p>
+    Dashboard Page
   </div>
 </template>
