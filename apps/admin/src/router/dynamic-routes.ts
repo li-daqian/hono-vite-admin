@@ -1,7 +1,6 @@
 import type { GetAuthMenusResponse } from '@admin/client'
 import type { Router, RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
-import { routeMetaConfigMap } from '@admin/router/route-meta'
-import { ROUTE_NAMES } from '@admin/router/route-name'
+import { ROUTE_NAMES, routeMetaConfigMap } from '@admin/router/route-meta'
 import { useMenuStore } from '@admin/stores/menu'
 
 function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRaw[] {

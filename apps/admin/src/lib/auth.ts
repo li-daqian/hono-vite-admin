@@ -1,6 +1,6 @@
 import type { PostAuthLoginResponse } from '@admin/client'
 import router from '@admin/router'
-import { ROUTE_NAMES } from '@admin/router/route-name'
+import { ROUTE_NAMES } from '@admin/router/route-meta'
 import { useAuthStore } from '@admin/stores/auth'
 import { useMenuStore } from '@admin/stores/menu'
 

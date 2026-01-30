@@ -2,7 +2,7 @@ import type { AuthActionSchema } from '@admin/client'
 import type { RouteRecordRaw } from 'vue-router'
 import NProgress from '@admin/lib/nprogress'
 import { loadDynamicRoutes } from '@admin/router/dynamic-routes'
-import { ROUTE_NAMES } from '@admin/router/route-name'
+import { ROUTE_NAMES } from '@admin/router/route-meta'
 import { useAuthStore } from '@admin/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 

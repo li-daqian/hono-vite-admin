@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@admin/components/ui/card'
 import { Separator } from '@admin/components/ui/separator'
-import { ROUTE_NAMES } from '@admin/router/route-name'
+import { ROUTE_NAMES } from '@admin/router/route-meta'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
