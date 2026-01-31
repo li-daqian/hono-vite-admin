@@ -25,22 +25,22 @@ export type MenuItem = AuthMenuSchema & {
 }
 
 defineProps<{
-  item: MenuItem
+  menu: MenuItem
 }>()
 </script>
 
 <template>
-  <Collapsible as-child :default-open="item.isActive">
+  <Collapsible as-child :default-open="menu.isActive">
     <SidebarMenuItem>
       <!-- Main button -->
-      <SidebarMenuButton as-child :tooltip="item.name">
-        <a :href="item.path ?? '#'">
-          <span>{{ item.name }}</span>
+      <SidebarMenuButton as-child :tooltip="menu.name">
+        <a :href="menu.path ?? '#'">
+          <span>{{ menu.name }}</span>
         </a>
       </SidebarMenuButton>
 
       <!-- Children -->
-      <template v-if="item.children?.length">
+      <template v-if="menu.children?.length">
         <CollapsibleTrigger as-child>
           <SidebarMenuAction class="data-[state=open]:rotate-90">
             <ChevronRight />
@@ -51,11 +51,11 @@ defineProps<{
         <CollapsibleContent>
           <SidebarMenuSub>
             <SidebarMenuSubItem
-              v-for="child in item.children"
+              v-for="child in menu.children"
               :key="child.name"
             >
               <!-- 🔁 Recursive call -->
-              <AppSidebarMenu :item="child" />
+              <AppSidebarMenu :menu="child" />
             </SidebarMenuSubItem>
           </SidebarMenuSub>
         </CollapsibleContent>
