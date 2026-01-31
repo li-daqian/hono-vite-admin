@@ -52,7 +52,7 @@ defineProps<{
           <SidebarMenuSub>
             <SidebarMenuSubItem
               v-for="child in menu.children"
-              :key="child.name"
+              :key="child.id"
             >
               <!-- 🔁 Recursive call -->
               <AppSidebarMenu :menu="child" />

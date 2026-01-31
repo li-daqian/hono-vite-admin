@@ -23,7 +23,7 @@ const props = defineProps<{
       <SidebarMenu>
         <AppSidebarMenu
           v-for="item in props.menus"
-          :key="item.name"
+          :key="item.id"
           :menu="item"
         />
       </SidebarMenu>
