@@ -18,7 +18,7 @@ import {
 
 import { ChevronRight } from 'lucide-vue-next'
 
-type MenuItem = AuthMenuSchema & {
+export type MenuItem = AuthMenuSchema & {
   children?: MenuItem[]
   isActive?: boolean
   icon?: LucideIcon

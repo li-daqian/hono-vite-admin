@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { MenuItem } from '@admin/pages/home/components/AppSidebarMenu.vue'
 import type { HTMLAttributes } from 'vue'
 import {
   Sidebar,
@@ -8,7 +9,7 @@ import {
 import AppSidebarMenu from '@admin/pages/home/components/AppSidebarMenu.vue'
 
 const props = defineProps<{
-  menus: any[]
+  menus: MenuItem[]
   class?: HTMLAttributes['class']
 }>()
 </script>
