@@ -6,6 +6,7 @@ import {
   SidebarContent,
   SidebarMenu,
 } from '@admin/components/ui/sidebar'
+import { cn } from '@admin/lib/utils'
 import AppSidebarMenu from '@admin/pages/home/components/AppSidebarMenu.vue'
 
 const props = defineProps<{
@@ -15,10 +16,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <Sidebar
-    class="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
-    v-bind="props"
-  >
+  <Sidebar :class="cn(props.class, 'top-(--header-height) h-[calc(100svh-var(--header-height))]!')">
     <SidebarContent class="px-2 py-4">
       <SidebarMenu>
         <AppSidebarMenu
