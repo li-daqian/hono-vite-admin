@@ -32,34 +32,41 @@ defineProps<{
 <template>
   <Collapsible as-child :default-open="menu.isActive">
     <SidebarMenuItem>
-      <!-- Main button -->
       <SidebarMenuButton as-child :tooltip="menu.name">
-        <a :href="menu.path ?? '#'">
-          <span>{{ menu.name }}</span>
-        </a>
+        <!-- Main button -->
+        <template v-if="menu.path">
+          <RouterLink :to="menu.path">
+            <span>{{ menu.name }}</span>
+          </RouterLink>
+        </template>
+        <!-- Children -->
+        <template v-if="menu.children?.length">
+          <CollapsibleTrigger as-child>
+            <span class="cursor-pointer">
+              {{ menu.name }}
+            </span>
+          </CollapsibleTrigger>
+
+          <CollapsibleTrigger as-child>
+            <SidebarMenuAction class="data-[state=open]:rotate-90 transition-transform">
+              <ChevronRight />
+              <span class="sr-only">Toggle</span>
+            </SidebarMenuAction>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              <SidebarMenuSubItem
+                v-for="child in menu.children"
+                :key="child.id"
+              >
+                <!-- 🔁 Recursive call -->
+                <AppSidebarMenu :menu="child" />
+              </SidebarMenuSubItem>
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </template>
       </SidebarMenuButton>
-
-      <!-- Children -->
-      <template v-if="menu.children?.length">
-        <CollapsibleTrigger as-child>
-          <SidebarMenuAction class="data-[state=open]:rotate-90">
-            <ChevronRight />
-            <span class="sr-only">Toggle</span>
-          </SidebarMenuAction>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent>
-          <SidebarMenuSub>
-            <SidebarMenuSubItem
-              v-for="child in menu.children"
-              :key="child.id"
-            >
-              <!-- 🔁 Recursive call -->
-              <AppSidebarMenu :menu="child" />
-            </SidebarMenuSubItem>
-          </SidebarMenuSub>
-        </CollapsibleContent>
-      </template>
     </SidebarMenuItem>
   </Collapsible>
 </template>
