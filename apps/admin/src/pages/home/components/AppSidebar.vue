@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MenuItem } from '@admin/pages/home/components/AppSidebarMenu.vue'
+import type { MenuProp } from '@admin/pages/home/components/AppSidebarMenu.vue'
 import type { HTMLAttributes } from 'vue'
 import {
   Sidebar,
@@ -10,7 +10,7 @@ import { cn } from '@admin/lib/utils'
 import AppSidebarMenu from '@admin/pages/home/components/AppSidebarMenu.vue'
 
 const props = defineProps<{
-  menus: MenuItem[]
+  menus: MenuProp[]
   class?: HTMLAttributes['class']
 }>()
 </script>

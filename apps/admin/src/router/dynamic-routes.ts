@@ -1,23 +1,26 @@
-import type { GetAuthMenusResponse } from '@admin/client'
+import type { MenuItem } from '@admin/stores/menu'
 import type { Router, RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
 import { ROUTE_NAMES, routeMetaConfigMap } from '@admin/router/route-meta'
 import { useMenuStore } from '@admin/stores/menu'
 
-function buildRoutesFromMenus(menus: GetAuthMenusResponse): RouteRecordRaw[] {
+function buildRoutesFromMenus(menus: MenuItem[]): RouteRecordRaw[] {
   return menus
     .flatMap((menu) => {
       const routes: RouteRecordRaw[] = []
 
-      if (menu.path !== null && menu.id in routeMetaConfigMap) {
-        routes.push({
-          path: menu.path,
-          name: menu.name as RouteRecordNameGeneric,
-          component: routeMetaConfigMap[menu.id as keyof typeof routeMetaConfigMap]!.component,
-          meta: {
-            requiresAuth: true,
-            actions: menu.actions,
-          },
-        })
+      if (menu.path && menu.name) {
+        const routeMetaConfig = routeMetaConfigMap[menu.id]
+        if (routeMetaConfig?.component) {
+          routes.push({
+            path: menu.path,
+            name: menu.name as RouteRecordNameGeneric,
+            component: routeMetaConfig.component,
+            meta: {
+              requiresAuth: true,
+              actions: menu.actions,
+            },
+          })
+        }
       }
 
       const children = buildRoutesFromMenus(menu.children)

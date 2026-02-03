@@ -1,26 +1,25 @@
 import type { LucideIcon } from 'lucide-vue-next'
 import type { RouteComponent } from 'vue-router'
-import { HomeIcon, ShieldIcon, UsersIcon } from 'lucide-vue-next'
-
-type RouteKey = | 'dashboard' | 'system.user' | 'system.role'
+import { HomeIcon, ShieldIcon } from 'lucide-vue-next'
 
 export interface RouteMetaConfig {
-  component: RouteComponent
-  icon: LucideIcon
+  component?: RouteComponent
+  icon?: LucideIcon
 }
 
-export const routeMetaConfigMap: Record<RouteKey, RouteMetaConfig> = {
+export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
   'dashboard': {
     component: () => import('@admin/pages/DashboardPage.vue'),
     icon: HomeIcon,
   },
+  'system': {
+    icon: ShieldIcon,
+  },
   'system.user': {
     component: () => import('@admin/pages/DashboardPage.vue'),
-    icon: UsersIcon,
   },
   'system.role': {
     component: () => import('@admin/pages/DashboardPage.vue'),
-    icon: ShieldIcon,
   },
 }
 

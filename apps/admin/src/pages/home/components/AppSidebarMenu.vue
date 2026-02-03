@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { AuthMenuSchema } from '@admin/client'
-import type { LucideIcon } from 'lucide-vue-next'
+import type { MenuItem } from '@admin/stores/menu'
 
 import {
   Collapsible,
@@ -15,17 +14,16 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@admin/components/ui/sidebar'
-
+import AppSidebarMenuLable from '@admin/pages/home/components/AppSidebarMenuLable.vue'
 import { ChevronRight } from 'lucide-vue-next'
 
-export type MenuItem = AuthMenuSchema & {
-  children?: MenuItem[]
+export type MenuProp = Omit<MenuItem, 'children'> & {
+  children?: MenuProp[]
   isActive?: boolean
-  icon?: LucideIcon
 }
 
 defineProps<{
-  menu: MenuItem
+  menu: MenuProp
 }>()
 </script>
 
@@ -36,15 +34,13 @@ defineProps<{
         <!-- Main button -->
         <template v-if="menu.path">
           <RouterLink :to="menu.path">
-            <span>{{ menu.name }}</span>
+            <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" />
           </RouterLink>
         </template>
         <!-- Children -->
         <template v-if="menu.children?.length">
           <CollapsibleTrigger as-child>
-            <span class="cursor-pointer">
-              {{ menu.name }}
-            </span>
+            <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" class="cursor-pointer" />
           </CollapsibleTrigger>
 
           <CollapsibleTrigger as-child>
