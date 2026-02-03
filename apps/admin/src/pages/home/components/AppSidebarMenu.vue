@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { MenuItem } from '@admin/stores/menu'
+import type { AuthMenuSchema } from '@admin/client'
 
+import type { LucideIcon } from 'lucide-vue-next'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@admin/components/ui/collapsible'
-
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -17,9 +17,10 @@ import {
 import AppSidebarMenuLable from '@admin/pages/home/components/AppSidebarMenuLable.vue'
 import { ChevronRight } from 'lucide-vue-next'
 
-export type MenuProp = Omit<MenuItem, 'children'> & {
+export type MenuProp = Omit<AuthMenuSchema, 'children'> & {
   children?: MenuProp[]
   isActive?: boolean
+  icon?: LucideIcon
 }
 
 defineProps<{

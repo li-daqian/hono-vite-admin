@@ -1,9 +1,9 @@
-import type { MenuItem } from '@admin/stores/menu'
+import type { AuthMenuSchema } from '@admin/client/types.gen'
 import type { Router, RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
 import { ROUTE_NAMES, routeMetaConfigMap } from '@admin/router/route-meta'
 import { useMenuStore } from '@admin/stores/menu'
 
-function buildRoutesFromMenus(menus: MenuItem[]): RouteRecordRaw[] {
+function buildRoutesFromMenus(menus: AuthMenuSchema[]): RouteRecordRaw[] {
   return menus
     .flatMap((menu) => {
       const routes: RouteRecordRaw[] = []
