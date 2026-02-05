@@ -4,6 +4,7 @@ import NProgress from '@admin/lib/nprogress'
 import { loadDynamicRoutes } from '@admin/router/dynamic-routes'
 import { ROUTE_NAMES } from '@admin/router/route-meta'
 import { useAuthStore } from '@admin/stores/auth'
+import { useMenuStore } from '@admin/stores/menu'
 import { createRouter, createWebHistory } from 'vue-router'
 
 declare module 'vue-router' {
@@ -42,6 +43,15 @@ router.beforeEach(async (to, _from, next) => {
 
   if (loadDynamicRoutes(router)) {
     return next({ ...to, replace: true })
+  }
+
+  if (to.name === ROUTE_NAMES.HOME) {
+    // Redirect to first menu path.
+    const menuStore = useMenuStore()
+    const firstMenuWithPath = menuStore.flatMenus.find(menu => !!menu.path)
+    if (firstMenuWithPath && firstMenuWithPath.path) {
+      return next({ path: firstMenuWithPath.path, replace: true })
+    }
   }
 
   if (to.meta.requiresAuth) {

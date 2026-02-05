@@ -8,6 +8,21 @@ export const useMenuStore = defineStore('menu', {
     routesLoaded: false,
   }),
 
+  getters: {
+    flatMenus(state): AuthMenuSchema[] {
+      const flatten = (menus: AuthMenuSchema[]): AuthMenuSchema[] => {
+        return menus.reduce((acc, menu) => {
+          acc.push(menu)
+          if (menu.children && menu.children.length > 0) {
+            acc.push(...flatten(menu.children))
+          }
+          return acc
+        }, [] as AuthMenuSchema[])
+      }
+      return flatten(state.menus)
+    },
+  },
+
   actions: {
     async fetchMenus() {
       const menusResponse = await getAuthMenus<true>()
