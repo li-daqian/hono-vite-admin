@@ -4,7 +4,10 @@ import type { MenuItem } from '@admin/pages/home/components/AppSidebarMenu.vue'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarMenu,
+  SidebarRail,
+  SidebarTrigger,
 } from '@admin/components/ui/sidebar'
 import AppSidebarMenu from '@admin/pages/home/components/AppSidebarMenu.vue'
 import router from '@admin/router'
@@ -31,7 +34,7 @@ const menusWithIcons = computed(() => enrichMenusWithIcons(menuStore.menus))
 </script>
 
 <template>
-  <Sidebar class="top-(--header-height) h-[calc(100svh-var(--header-height))]!">
+  <Sidebar collapsible="icon" class="top-(--header-height) h-[calc(100svh-var(--header-height))]!">
     <SidebarContent class="px-2 py-4">
       <SidebarMenu>
         <AppSidebarMenu
@@ -41,5 +44,9 @@ const menusWithIcons = computed(() => enrichMenusWithIcons(menuStore.menus))
         />
       </SidebarMenu>
     </SidebarContent>
+    <SidebarFooter>
+      <SidebarTrigger class="cursor-pointer" />
+    </SidebarFooter>
+    <SidebarRail />
   </Sidebar>
 </template>
