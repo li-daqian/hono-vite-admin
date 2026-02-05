@@ -9,17 +9,20 @@ export const useMenuStore = defineStore('menu', {
   }),
 
   getters: {
-    flatMenus(state): AuthMenuSchema[] {
-      const flatten = (menus: AuthMenuSchema[]): AuthMenuSchema[] => {
-        return menus.reduce((acc, menu) => {
-          acc.push(menu)
+    findFirstMenuWithPath(state): AuthMenuSchema | undefined {
+      const find = (menus: AuthMenuSchema[]): AuthMenuSchema | undefined => {
+        for (const menu of menus) {
+          if (menu.path)
+            return menu
           if (menu.children && menu.children.length > 0) {
-            acc.push(...flatten(menu.children))
+            const found = find(menu.children)
+            if (found)
+              return found
           }
-          return acc
-        }, [] as AuthMenuSchema[])
+        }
+        return undefined
       }
-      return flatten(state.menus)
+      return find(state.menus)
     },
   },
 
