@@ -8,7 +8,6 @@ import {
   CollapsibleTrigger,
 } from '@admin/components/ui/collapsible'
 import {
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -31,39 +30,35 @@ defineProps<{
 <template>
   <Collapsible as-child :default-open="menu.isActive">
     <SidebarMenuItem>
-      <SidebarMenuButton as-child :tooltip="menu.name">
-        <!-- Main button -->
-        <template v-if="menu.path">
+      <!-- Main button -->
+      <template v-if="menu.path">
+        <SidebarMenuButton as-child :tooltip="menu.name">
           <RouterLink :to="menu.path">
             <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" />
           </RouterLink>
-        </template>
-        <!-- Children -->
-        <template v-if="menu.children?.length">
-          <CollapsibleTrigger as-child>
-            <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" class="cursor-pointer" />
-          </CollapsibleTrigger>
+        </SidebarMenuButton>
+      </template>
+      <!-- Children -->
+      <template v-if="menu.children?.length">
+        <CollapsibleTrigger as-child>
+          <SidebarMenuButton :tooltip="menu.name" class="group cursor-pointer">
+            <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" />
+            <ChevronRight class="ml-auto transition-transform duration-200 group-data-[state=open]:rotate-90" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
 
-          <CollapsibleTrigger as-child>
-            <SidebarMenuAction class="data-[state=open]:rotate-90 transition-transform">
-              <ChevronRight />
-              <span class="sr-only">Toggle</span>
-            </SidebarMenuAction>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <SidebarMenuSub>
-              <SidebarMenuSubItem
-                v-for="child in menu.children"
-                :key="child.id"
-              >
-                <!-- 🔁 Recursive call -->
-                <AppSidebarMenu :menu="child" />
-              </SidebarMenuSubItem>
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </template>
-      </SidebarMenuButton>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            <SidebarMenuSubItem
+              v-for="child in menu.children"
+              :key="child.id"
+            >
+              <!-- 🔁 Recursive call -->
+              <AppSidebarMenu :menu="child" />
+            </SidebarMenuSubItem>
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </template>
     </SidebarMenuItem>
   </Collapsible>
 </template>
