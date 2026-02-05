@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next'
 import type { RouteComponent } from 'vue-router'
-import { HomeIcon, ShieldIcon } from 'lucide-vue-next'
+import { LayoutDashboard, ShieldIcon } from 'lucide-vue-next'
 
 export interface RouteMetaConfig {
   component?: RouteComponent
@@ -10,7 +10,7 @@ export interface RouteMetaConfig {
 export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
   'dashboard': {
     component: () => import('@admin/pages/DashboardPage.vue'),
-    icon: HomeIcon,
+    icon: LayoutDashboard,
   },
   'system': {
     icon: ShieldIcon,

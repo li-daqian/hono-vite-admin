@@ -17,14 +17,14 @@ import {
 import AppSidebarMenuLable from '@admin/pages/home/components/AppSidebarMenuLable.vue'
 import { ChevronRight } from 'lucide-vue-next'
 
-export type MenuProp = Omit<AuthMenuSchema, 'children'> & {
-  children?: MenuProp[]
+export type MenuItem = Omit<AuthMenuSchema, 'children'> & {
+  children?: MenuItem[]
   isActive?: boolean
   icon?: LucideIcon
 }
 
 defineProps<{
-  menu: MenuProp
+  menu: MenuItem
 }>()
 </script>
 
