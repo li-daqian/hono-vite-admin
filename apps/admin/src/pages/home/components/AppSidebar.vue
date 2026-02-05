@@ -7,6 +7,7 @@ import {
   SidebarMenu,
 } from '@admin/components/ui/sidebar'
 import AppSidebarMenu from '@admin/pages/home/components/AppSidebarMenu.vue'
+import router from '@admin/router'
 import { routeMetaConfigMap } from '@admin/router/route-meta'
 import { useMenuStore } from '@admin/stores/menu'
 import { computed } from 'vue'
@@ -19,6 +20,7 @@ function enrichMenusWithIcons(menus: AuthMenuSchema[]): MenuItem[] {
     const enrichedMenu: MenuItem = {
       ...menu,
       icon: routeMetaConfig?.icon,
+      isActive: router.currentRoute.value.path === menu.path,
       children: enrichMenusWithIcons(menu.children),
     }
     return enrichedMenu

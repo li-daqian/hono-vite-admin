@@ -28,11 +28,11 @@ defineProps<{
 </script>
 
 <template>
-  <Collapsible as-child :default-open="menu.isActive">
+  <Collapsible as-child :default-open="menu.children?.find(child => child.isActive) ? true : false">
     <SidebarMenuItem>
       <!-- Main button -->
       <template v-if="menu.path">
-        <SidebarMenuButton as-child :tooltip="menu.name">
+        <SidebarMenuButton as-child :tooltip="menu.name" :is-active="menu.isActive">
           <RouterLink :to="menu.path">
             <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" />
           </RouterLink>
@@ -41,7 +41,7 @@ defineProps<{
       <!-- Children -->
       <template v-if="menu.children?.length">
         <CollapsibleTrigger as-child>
-          <SidebarMenuButton :tooltip="menu.name" class="group cursor-pointer">
+          <SidebarMenuButton :tooltip="menu.name" :is-active="menu.isActive" class="group cursor-pointer">
             <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" />
             <ChevronRight class="ml-auto transition-transform duration-200 group-data-[state=open]:rotate-90" />
           </SidebarMenuButton>
