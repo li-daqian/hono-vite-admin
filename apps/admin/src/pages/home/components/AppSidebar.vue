@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from '@admin/components/ui/sidebar'
 import AppSidebarMenu from '@admin/pages/home/components/AppSidebarMenu.vue'
 import router from '@admin/router'
@@ -16,6 +17,7 @@ import { useMenuStore } from '@admin/stores/menu'
 import { computed } from 'vue'
 
 const menuStore = useMenuStore()
+const { isMobile } = useSidebar()
 
 function enrichMenusWithIcons(menus: AuthMenuSchema[]): MenuItem[] {
   return menus.map((menu) => {
@@ -45,7 +47,7 @@ const menusWithIcons = computed(() => enrichMenusWithIcons(menuStore.menus))
       </SidebarMenu>
     </SidebarContent>
     <SidebarFooter>
-      <SidebarTrigger class="cursor-pointer" />
+      <SidebarTrigger v-if="!isMobile" class="cursor-pointer" />
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>

@@ -2,7 +2,10 @@
 import Logo from '@admin/components/Logo.vue'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
 import { Button } from '@admin/components/ui/button'
+import { SidebarTrigger, useSidebar } from '@admin/components/ui/sidebar'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
+
+const { isMobile } = useSidebar()
 </script>
 
 <template>
@@ -11,6 +14,7 @@ import UserNav from '@admin/pages/home/components/UserNav.vue'
       <a class="flex items-center gap-2 select-none">
         <Logo />
         <span class="text-lg font-semibold">User Admin</span>
+        <SidebarTrigger v-if="isMobile" class="ml-auto cursor-pointer" />
       </a>
       <div class="flex items-center gap-2 ml-auto">
         <Button variant="ghost" size="icon" class="rounded-full cursor-pointer">
