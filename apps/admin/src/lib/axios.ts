@@ -1,38 +1,10 @@
 import type { ErrorResponse } from '@admin/client'
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { postAuthRefresh } from '@admin/client'
 import { client } from '@admin/client/client.gen'
-import { AuthManager } from '@admin/lib/auth'
 import { getEnv } from '@admin/lib/env'
 import { useAuthStore } from '@admin/stores/auth'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
-
-const refreshAccessToken = (() => {
-  let refreshPromise: Promise<void> | null = null
-
-  return async function (): Promise<void> {
-    return refreshPromise ||= (async () => {
-      try {
-        const response = await postAuthRefresh<true>({
-          body: { refreshToken: null },
-        })
-        useAuthStore().setAccessToken(response.data.accessToken)
-      }
-      finally {
-        refreshPromise = null
-      }
-    })()
-  }
-})()
-
-const logoutAndRedirect = (() => {
-  let logoutPromise: Promise<void> | null = null
-
-  return async function (): Promise<void> {
-    return logoutPromise ||= AuthManager.logout(true)
-  }
-})()
 
 /**
  * Setup custom axios interceptors for the generated API client.
@@ -69,16 +41,16 @@ function setupAxiosInterceptors() {
       // Handle 401 Unauthorized - token refresh logic
       if (response?.status === 401) {
         if (!config) {
-          await logoutAndRedirect()
+          await useAuthStore().logout()
           return Promise.reject(error)
         }
         if (config.url?.includes('/api/v1/auth/refresh')) {
           // Refresh token request itself failed, force logout
-          await logoutAndRedirect()
+          await useAuthStore().logout()
           return Promise.reject(error)
         }
 
-        await refreshAccessToken()
+        await useAuthStore().refreshAccessToken()
         return axiosInstance.request(config)
       }
       else {
