@@ -8,6 +8,12 @@ import {
   CollapsibleTrigger,
 } from '@admin/components/ui/collapsible'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@admin/components/ui/dropdown-menu'
+import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -38,12 +44,17 @@ const isActive = computed(() => {
   }
   return props.menu.isActive
 })
+
+// Check if we should show dropdown (collapsed with children)
+const showDropdown = computed(() => {
+  return state.value === 'collapsed' && props.menu.children && props.menu.children.length > 0
+})
 </script>
 
 <template>
   <Collapsible as-child :default-open="menu.children?.find(child => child.isActive) ? true : false">
     <SidebarMenuItem>
-      <!-- Main button -->
+      <!-- Main button (no children) -->
       <template v-if="menu.path">
         <SidebarMenuButton as-child :tooltip="menu.name" :is-active="menu.isActive">
           <RouterLink :to="menu.path">
@@ -51,8 +62,36 @@ const isActive = computed(() => {
           </RouterLink>
         </SidebarMenuButton>
       </template>
-      <!-- Children -->
-      <template v-if="menu.children?.length">
+
+      <!-- Children with dropdown (collapsed state) -->
+      <template v-if="showDropdown">
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <SidebarMenuButton :tooltip="menu.name" :is-active="isActive" class="cursor-pointer">
+              <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="start" class="ml-1 min-w-50">
+            <DropdownMenuItem
+              v-for="child in menu.children"
+              :key="child.id"
+              as-child
+              class="cursor-pointer"
+            >
+              <RouterLink :to="child.path!" class="flex items-center gap-2 w-full">
+                <SidebarMenuButton as-child :tooltip="child.name" :is-active="child.isActive">
+                  <RouterLink :to="child.path!">
+                    <AppSidebarMenuLable :icon="child.icon" :label="child.name" />
+                  </RouterLink>
+                </SidebarMenuButton>
+              </RouterLink>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </template>
+
+      <!-- Children with collapsible (expanded state) -->
+      <template v-if="menu.children?.length && !showDropdown">
         <CollapsibleTrigger as-child>
           <SidebarMenuButton :tooltip="menu.name" :is-active="isActive" class="group cursor-pointer">
             <AppSidebarMenuLable :icon="menu.icon" :label="menu.name" />
