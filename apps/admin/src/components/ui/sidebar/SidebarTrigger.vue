@@ -7,6 +7,7 @@ import { useSidebar } from './utils'
 
 const props = defineProps<{
   class?: HTMLAttributes['class']
+  size?: number
 }>()
 
 const { toggleSidebar } = useSidebar()
@@ -21,7 +22,7 @@ const { toggleSidebar } = useSidebar()
     :class="cn('h-7 w-7', props.class)"
     @click="toggleSidebar"
   >
-    <PanelLeft />
+    <PanelLeft :size="props.size" />
     <span class="sr-only">Toggle Sidebar</span>
   </Button>
 </template>
