@@ -1,7 +1,6 @@
 import type { AuthActionSchema } from '@admin/client'
 import type { RouteRecordRaw } from 'vue-router'
 import NProgress from '@admin/lib/nprogress'
-import { loadDynamicRoutes } from '@admin/router/dynamic-routes'
 import { ROUTE_NAMES } from '@admin/router/route-meta'
 import { useAuthStore } from '@admin/stores/auth'
 import { useMenuStore } from '@admin/stores/menu'
@@ -40,10 +39,6 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
   NProgress.start()
-
-  if (loadDynamicRoutes(router)) {
-    return next({ ...to, replace: true })
-  }
 
   if (to.name === ROUTE_NAMES.HOME) {
     // Redirect to first menu path.

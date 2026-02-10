@@ -5,7 +5,6 @@ import { defineStore } from 'pinia'
 export const useMenuStore = defineStore('menu', {
   state: () => ({
     menus: [] as AuthMenuSchema[],
-    routesLoaded: false,
   }),
 
   getters: {
@@ -32,13 +31,8 @@ export const useMenuStore = defineStore('menu', {
       this.menus = menusResponse.data
     },
 
-    setRoutesLoaded(loaded: boolean) {
-      this.routesLoaded = loaded
-    },
-
     reset() {
       this.menus = []
-      this.routesLoaded = false
     },
   },
 

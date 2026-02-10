@@ -31,12 +31,8 @@ function buildRoutesFromMenus(menus: AuthMenuSchema[]): RouteRecordRaw[] {
     })
 }
 
-export function loadDynamicRoutes(router: Router): boolean {
+export function loadDynamicRoutes(router: Router) {
   const useMenu = useMenuStore()
-
-  if (useMenu.routesLoaded) {
-    return false
-  }
 
   const newRoutes = buildRoutesFromMenus(useMenu.menus)
   newRoutes.forEach((route) => {
@@ -51,8 +47,4 @@ export function loadDynamicRoutes(router: Router): boolean {
       requiresAuth: true,
     },
   })
-
-  useMenu.setRoutesLoaded(true)
-
-  return true
 }
