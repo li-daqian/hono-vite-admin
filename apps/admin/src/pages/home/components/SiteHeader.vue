@@ -2,34 +2,24 @@
 import Logo from '@admin/components/Logo.vue'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
 import { Button } from '@admin/components/ui/button'
-import { SidebarTrigger, useSidebar } from '@admin/components/ui/sidebar'
+import { SidebarTrigger } from '@admin/components/ui/sidebar'
 import { SIDEBAR_WIDTH } from '@admin/components/ui/sidebar/utils'
+import { cn } from '@admin/lib/utils'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
-import { ROUTE_NAMES } from '@admin/router/route-meta'
-import { computed } from 'vue'
-
-const { isMobile } = useSidebar()
-const logoAreaWidth = computed(() => {
-  if (isMobile.value) {
-    return ''
-  }
-  return `w-[${SIDEBAR_WIDTH}]`
-})
 </script>
 
 <template>
   <div class="flex items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b px-4">
-    <div :class="`${logoAreaWidth}`" class="shrink-0">
-      <a class="flex items-center gap-2 select-none whitespace-nowrap">
-        <RouterLink :to="{ name: ROUTE_NAMES.HOME }">
-          <Logo />
-        </RouterLink>
-        <span class="text-lg font-semibold">User Admin</span>
+    <div :class="cn('shrink-0', `w-[${SIDEBAR_WIDTH}]`)">
+      <a class="flex items-center gap-4">
+        <SidebarTrigger :size="18" class="rounded-lg cursor-pointer" />
+        <div class="flex items-center justify-center gap-2">
+          <Logo class="size-6" />
+          <span class="text-lg font-semibold">User Admin</span>
+        </div>
       </a>
     </div>
-    <div>
-      <SidebarTrigger :size="18" class="rounded-lg cursor-pointer size-8" />
-    </div>
+    <div />
     <div class="flex items-center gap-2 ml-auto">
       <Button variant="ghost" size="icon" class="rounded-full cursor-pointer">
         <ToggleTheme class="text-lg" />
