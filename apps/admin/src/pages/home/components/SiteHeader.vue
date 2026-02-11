@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import AppLogo from '@admin/components/AppLogo.vue'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
 import { Button } from '@admin/components/ui/button'
 import { SidebarTrigger } from '@admin/components/ui/sidebar'
 import { SIDEBAR_WIDTH } from '@admin/components/ui/sidebar/utils'
 import { cn } from '@admin/lib/utils'
-import AppLogo from '@admin/pages/home/components/AppLogo.vue'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
 </script>
 
