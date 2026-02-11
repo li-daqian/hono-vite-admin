@@ -5,6 +5,7 @@ import { Button } from '@admin/components/ui/button'
 import { SidebarTrigger, useSidebar } from '@admin/components/ui/sidebar'
 import { SIDEBAR_WIDTH } from '@admin/components/ui/sidebar/utils'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
+import { ROUTE_NAMES } from '@admin/router/route-meta'
 import { computed } from 'vue'
 
 const { isMobile } = useSidebar()
@@ -20,7 +21,9 @@ const logoAreaWidth = computed(() => {
   <div class="flex items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b px-4">
     <div :class="`${logoAreaWidth}`" class="shrink-0">
       <a class="flex items-center gap-2 select-none whitespace-nowrap">
-        <Logo />
+        <RouterLink :to="{ name: ROUTE_NAMES.HOME }">
+          <Logo />
+        </RouterLink>
         <span class="text-lg font-semibold">User Admin</span>
       </a>
     </div>
