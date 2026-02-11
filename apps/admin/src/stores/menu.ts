@@ -6,6 +6,7 @@ import { defineStore } from 'pinia'
 export const useMenuStore = defineStore('menu', {
   state: () => ({
     menus: [] as AuthMenuSchema[],
+    currentPath: '',
   }),
 
   getters: {
@@ -28,8 +29,8 @@ export const useMenuStore = defineStore('menu', {
     /**
      * based on current path build breadcrumb list
      */
-    buildBreadcrumb: state => (currentPath: string): BreadcrumbItemType[] => {
-      if (!currentPath) {
+    breadcrumb(state): BreadcrumbItemType[] {
+      if (!state.currentPath) {
         return []
       }
 
@@ -43,7 +44,7 @@ export const useMenuStore = defineStore('menu', {
           const newParents = [...parents, menu]
 
           // find the menu with current path
-          if (menu.path === currentPath) {
+          if (menu.path === state.currentPath) {
             pathStack.push(...newParents)
             return true
           }

@@ -40,9 +40,10 @@ const router = createRouter({
 router.beforeEach(async (to, _from, next) => {
   NProgress.start()
 
+  const menuStore = useMenuStore()
+
   if (to.name === ROUTE_NAMES.HOME) {
     // Redirect to first menu path.
-    const menuStore = useMenuStore()
     const firstMenuWithPath = menuStore.findFirstMenuWithPath
     if (firstMenuWithPath && firstMenuWithPath.path) {
       return next({ path: firstMenuWithPath.path, replace: true })
@@ -52,6 +53,8 @@ router.beforeEach(async (to, _from, next) => {
   if (to.meta.requiresAuth) {
     await useAuthStore().fetchMe()
   }
+
+  menuStore.currentPath = to.path
 
   next()
 })

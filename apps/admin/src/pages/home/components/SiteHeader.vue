@@ -9,16 +9,13 @@ import AppBreadcrumb from '@admin/pages/home/components/AppBreadcrumb.vue'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
 import { useMenuStore } from '@admin/stores/menu'
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
 
-const route = useRoute()
 const menuStore = useMenuStore()
-const currentPath = route.path
 
 const logAreaWidth = `${SIDEBAR_WIDTH}`
 
 const breadcrumb = computed(() => {
-  return menuStore.buildBreadcrumb(currentPath)
+  return menuStore.breadcrumb
 })
 </script>
 
