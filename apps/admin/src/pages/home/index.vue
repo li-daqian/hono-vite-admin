@@ -8,9 +8,9 @@ import SiteHeader from '@admin/pages/home/components/SiteHeader.vue'
   <div class="[--header-height:calc(--spacing(14))]">
     <SidebarProvider class="flex flex-col">
       <SiteHeader />
-      <div class="flex flex-1">
+      <div class="flex">
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset class="p-4">
           <RouterView />
         </SidebarInset>
       </div>
