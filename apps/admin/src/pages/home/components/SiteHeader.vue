@@ -9,9 +9,9 @@ import UserNav from '@admin/pages/home/components/UserNav.vue'
 </script>
 
 <template>
-  <div class="flex items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b px-4">
+  <div class="flex items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b">
     <div :class="cn('shrink-0', `w-[${SIDEBAR_WIDTH}]`)">
-      <a class="flex items-center gap-4">
+      <a class="flex items-center gap-4 px-4">
         <SidebarTrigger :size="18" class="rounded-lg cursor-pointer" />
         <div class="flex items-center justify-center gap-2">
           <Logo class="size-6" />
@@ -19,8 +19,7 @@ import UserNav from '@admin/pages/home/components/UserNav.vue'
         </div>
       </a>
     </div>
-    <div />
-    <div class="flex items-center gap-2 ml-auto">
+    <div class="flex items-center gap-2 ml-auto px-4">
       <Button variant="ghost" size="icon" class="rounded-full cursor-pointer">
         <ToggleTheme class="text-lg" />
       </Button>
