@@ -44,7 +44,7 @@ router.beforeEach(async (to, _from, next) => {
 
   if (to.name === ROUTE_NAMES.HOME) {
     // Redirect to first menu path.
-    const firstMenuWithPath = menuStore.findFirstMenuWithPath
+    const firstMenuWithPath = menuStore.firstPathMenu
     if (firstMenuWithPath && firstMenuWithPath.path) {
       return next({ path: firstMenuWithPath.path, replace: true })
     }

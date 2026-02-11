@@ -10,7 +10,7 @@ export const useMenuStore = defineStore('menu', {
   }),
 
   getters: {
-    findFirstMenuWithPath(state): AuthMenuSchema | undefined {
+    firstPathMenu(state): AuthMenuSchema | undefined {
       const find = (menus: AuthMenuSchema[]): AuthMenuSchema | undefined => {
         for (const menu of menus) {
           if (menu.path)
