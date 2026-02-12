@@ -32,7 +32,7 @@ const menusWithIcons = computed(() => enrichMenusWithIcons(menuStore.menus))
 </script>
 
 <template>
-  <Sidebar collapsible="icon" class="top-(--header-height) h-[calc(100svh-var(--header-height))]!">
+  <Sidebar collapsible="offcanvas" class="top-(--header-height) h-[calc(100svh-var(--header-height))]!">
     <SidebarContent class="px-2 py-4">
       <SidebarMenu>
         <AppSidebarMenu
