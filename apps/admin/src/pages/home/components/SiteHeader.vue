@@ -4,15 +4,12 @@ import ToggleTheme from '@admin/components/ToggleTheme.vue'
 import { Button } from '@admin/components/ui/button'
 import { SidebarTrigger } from '@admin/components/ui/sidebar'
 import { SIDEBAR_WIDTH } from '@admin/components/ui/sidebar/utils'
-import { cn } from '@admin/lib/utils'
 import AppBreadcrumb from '@admin/pages/home/components/AppBreadcrumb.vue'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
 import { useMenuStore } from '@admin/stores/menu'
 import { computed } from 'vue'
 
 const menuStore = useMenuStore()
-
-const logAreaWidth = `${SIDEBAR_WIDTH}`
 
 const breadcrumb = computed(() => {
   return menuStore.breadcrumb
@@ -21,7 +18,7 @@ const breadcrumb = computed(() => {
 
 <template>
   <div class="flex items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b shrink-0 text-nowrap">
-    <div :class="cn('flex shrink-0 items-center gap-4 px-4 ', `w-[${logAreaWidth}]`)">
+    <div :style="{ width: SIDEBAR_WIDTH }" class="flex shrink-0 items-center gap-4 px-4">
       <SidebarTrigger :size="18" class="rounded-lg cursor-pointer" />
       <div class="flex items-center justify-center gap-2">
         <AppLogo class="size-6" />
