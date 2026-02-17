@@ -35,4 +35,3 @@ export function PaginatedResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
     description: 'Standard paginated response envelope',
   })
 }
-export type PaginatedResponse<T extends z.ZodTypeAny> = z.infer<ReturnType<typeof PaginatedResponseSchema<T>>>
