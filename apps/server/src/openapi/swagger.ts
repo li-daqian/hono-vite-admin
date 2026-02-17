@@ -2,7 +2,7 @@ import type { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { API_V1_BASE_PATH } from '@server/src/common/constant'
 import { getEnv } from '@server/src/lib/env'
-import { ErrorResponseSchema } from '@server/src/schemas/error.schema'
+import { ErrorResponseSchema } from '@server/src/schemas/basic.schema'
 
 export function setUpSwagger(api: OpenAPIHono) {
   if (!getEnv().isProduction) {

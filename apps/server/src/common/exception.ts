@@ -1,4 +1,4 @@
-import type { ErrorResponse } from '@server/src/schemas/error.schema'
+import type { ErrorResponse } from '@server/src/schemas/basic.schema'
 import type { Context } from 'hono'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { getRequestId } from '@server/src/middleware/requestId.middleware'
