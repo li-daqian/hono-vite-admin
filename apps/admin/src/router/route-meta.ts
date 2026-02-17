@@ -12,13 +12,13 @@ export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
     component: () => import('@admin/pages/DashboardPage.vue'),
     icon: LayoutDashboard,
   },
-  'system': {
+  'access': {
     icon: ShieldIcon,
   },
-  'system.user': {
+  'access.users': {
     component: () => import('@admin/pages/DashboardPage.vue'),
   },
-  'system.role': {
+  'access.roles': {
     component: () => import('@admin/pages/DashboardPage.vue'),
   },
 }
