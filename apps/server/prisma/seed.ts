@@ -13,14 +13,14 @@ const menus = [
     order: 1,
   },
   {
-    code: 'system',
-    name: 'System Management',
+    code: 'access',
+    name: 'Access',
     order: 2,
     children: [
       {
-        code: 'user',
-        name: 'User Management',
-        path: '/system/users',
+        code: 'users',
+        name: 'Users',
+        path: '/access/users',
         order: 1,
         actions: [
           { code: 'create', name: 'Create', description: 'Create user' },
@@ -29,9 +29,9 @@ const menus = [
         ],
       },
       {
-        code: 'role',
-        name: 'Role Management',
-        path: '/system/roles',
+        code: 'roles',
+        name: 'Roles',
+        path: '/access/roles',
         order: 2,
         actions: [
           { code: 'create', name: 'Create', description: 'Create role' },
