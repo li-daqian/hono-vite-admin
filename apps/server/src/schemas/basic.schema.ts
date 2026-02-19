@@ -17,6 +17,7 @@ export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 export const PaginationQuerySchema = z.object({
   page: z.number().int().min(1).default(1).openapi({ description: 'Page number for pagination', example: 1 }),
   pageSize: z.number().int().min(1).max(100).default(10).openapi({ description: 'Number of items per page', example: 10 }),
+  sort: z.string().nullable().openapi({ description: 'Sorting criteria in the format "field direction", e.g. "createdAt desc"', example: 'createdAt desc' }),
 })
 export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
 
@@ -24,14 +25,19 @@ export const PaginationMetaSchema = z.object({
   total: z.number().int().openapi({ description: 'Total number of items', example: 100 }),
   page: z.number().int().openapi({ description: 'Current page number', example: 1 }),
   pageSize: z.number().int().openapi({ description: 'Number of items per page', example: 10 }),
+  hasNext: z.boolean().openapi({ description: 'Indicates if there is a next page', example: true }),
+  hasPrevious: z.boolean().openapi({ description: 'Indicates if there is a previous page', example: false }),
+  sort: z.string().nullable().openapi({ description: 'Sorting criteria used for the current page', example: 'createdAt desc' }),
 })
 export type PaginationMeta = z.infer<typeof PaginationMetaSchema>
 
 export function PaginatedResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
   return z.object({
-    data: z.array(itemSchema).openapi({ description: 'List of items for the current page' }),
+    items: z.array(itemSchema).openapi({ description: 'List of items for the current page' }),
     meta: PaginationMetaSchema,
   }).openapi({
     description: 'Standard paginated response envelope',
   })
 }
+
+export type PaginatedResponse<T> = z.infer<ReturnType<typeof PaginatedResponseSchema<z.ZodType<T>>>>
