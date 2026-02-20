@@ -21,7 +21,7 @@ export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 export const PaginationQuerySchema = z.object({
   page: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).default(1)).openapi({ description: 'Page number for pagination', example: 1 }),
   pageSize: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).max(100).default(10)).openapi({ description: 'Number of items per page', example: 10 }),
-  sort: z.preprocess(emptyStringToUndefined, z.string().nullable().default(null)).openapi({ description: 'Sorting criteria in the format "field direction", e.g. "createdAt desc"', example: 'createdAt desc' }),
+  sort: z.preprocess(emptyStringToUndefined, z.string().nullable().default(null)).openapi({ description: 'Sorting criteria in the format "field direction" or "field direction, field direction", e.g. "createdAt desc, username asc"', example: 'createdAt desc, username asc' }),
 })
 export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
 
@@ -31,7 +31,7 @@ export const PaginationMetaSchema = z.object({
   pageSize: z.number().int().openapi({ description: 'Number of items per page', example: 10 }),
   hasNext: z.boolean().openapi({ description: 'Indicates if there is a next page', example: true }),
   hasPrevious: z.boolean().openapi({ description: 'Indicates if there is a previous page', example: false }),
-  sort: z.string().nullable().openapi({ description: 'Sorting criteria used for the current page', example: 'createdAt desc' }),
+  sort: z.string().nullable().openapi({ description: 'Sorting criteria used for the current page', example: 'createdAt desc, username asc' }),
 })
 export type PaginationMeta = z.infer<typeof PaginationMetaSchema>
 
