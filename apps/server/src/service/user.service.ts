@@ -1,6 +1,7 @@
-import type { UserCreateRequest, UserCreateResponse, UserProfileResponse } from '@server/src/schemas/user.schema'
+import type { UserCreateRequest, UserCreateResponse, UserPaginationRequest, UserPaginationResponse, UserProfileResponse } from '@server/src/schemas/user.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
+import { paginate } from '@server/src/utils/pagination'
 import bcrypt from 'bcryptjs'
 
 class UserService {
@@ -48,6 +49,95 @@ class UserService {
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }
+  }
+
+  async getUserPage(query: UserPaginationRequest): Promise<UserPaginationResponse> {
+    const { page, pageSize, search, status, sort } = query
+    const skip = (page - 1) * pageSize
+
+    const where = {
+      ...(status ? { status } : {}),
+      ...(search
+        ? {
+            OR: [
+              { username: { contains: search, mode: 'insensitive' as const } },
+              { email: { contains: search, mode: 'insensitive' as const } },
+              { displayName: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    }
+
+    let orderBy:
+      | { username: 'asc' | 'desc' }
+      | { email: 'asc' | 'desc' }
+      | { displayName: 'asc' | 'desc' }
+      | { status: 'asc' | 'desc' }
+      | { createdAt: 'asc' | 'desc' }
+      | { updatedAt: 'asc' | 'desc' } = { createdAt: 'desc' }
+
+    if (sort) {
+      const [field, direction, ...rest] = sort.trim().split(/\s+/)
+      if (!field || !direction || rest.length > 0) {
+        throw BusinessError.BadRequest('Invalid sort format. Use "field direction", e.g. "createdAt desc"', 'InvalidSort')
+      }
+
+      const normalizedDirection = direction.toLowerCase()
+      if (normalizedDirection !== 'asc' && normalizedDirection !== 'desc') {
+        throw BusinessError.BadRequest('Invalid sort direction. Use "asc" or "desc"', 'InvalidSortDirection')
+      }
+
+      switch (field) {
+        case 'username':
+          orderBy = { username: normalizedDirection }
+          break
+        case 'email':
+          orderBy = { email: normalizedDirection }
+          break
+        case 'displayName':
+          orderBy = { displayName: normalizedDirection }
+          break
+        case 'status':
+          orderBy = { status: normalizedDirection }
+          break
+        case 'createdAt':
+          orderBy = { createdAt: normalizedDirection }
+          break
+        case 'updatedAt':
+          orderBy = { updatedAt: normalizedDirection }
+          break
+        default:
+          throw BusinessError.BadRequest('Invalid sort field. Allowed fields: username, email, displayName, status, createdAt, updatedAt', 'InvalidSortField')
+      }
+    }
+
+    const [total, users] = await prisma.$transaction([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy,
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          phone: true,
+          displayName: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    ])
+
+    const items = users.map(user => ({
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }))
+
+    return paginate(items, total, query)
   }
 
   private async isUsernameUnique(username: string): Promise<boolean> {

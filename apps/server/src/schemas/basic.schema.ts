@@ -1,5 +1,9 @@
 import { z } from '@hono/zod-openapi'
 
+function emptyStringToUndefined(value: unknown) {
+  return value === '' ? undefined : value
+}
+
 export const ErrorResponseSchema = z.object({
   code: z.string().optional(),
   message: z.string(),
@@ -15,9 +19,9 @@ export const ErrorResponseSchema = z.object({
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 
 export const PaginationQuerySchema = z.object({
-  page: z.number().int().min(1).default(1).openapi({ description: 'Page number for pagination', example: 1 }),
-  pageSize: z.number().int().min(1).max(100).default(10).openapi({ description: 'Number of items per page', example: 10 }),
-  sort: z.string().nullable().openapi({ description: 'Sorting criteria in the format "field direction", e.g. "createdAt desc"', example: 'createdAt desc' }),
+  page: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).default(1)).openapi({ description: 'Page number for pagination', example: 1 }),
+  pageSize: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).max(100).default(10)).openapi({ description: 'Number of items per page', example: 10 }),
+  sort: z.preprocess(emptyStringToUndefined, z.string().nullable().default(null)).openapi({ description: 'Sorting criteria in the format "field direction", e.g. "createdAt desc"', example: 'createdAt desc' }),
 })
 export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
 

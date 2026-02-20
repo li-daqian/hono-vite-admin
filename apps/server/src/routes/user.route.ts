@@ -2,7 +2,7 @@ import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { UserCreateRequest } from '@server/src/schemas/user.schema'
 import { createRoute } from '@hono/zod-openapi'
 import { authMiddleware, getLoginUser } from '@server/src/middleware/auth.middleware'
-import { UserCreateRequestSchema, UserCreateResponseSchema, UserProfileResponseSchema } from '@server/src/schemas/user.schema'
+import { UserCreateRequestSchema, UserCreateResponseSchema, UserPaginationRequestSchema, UserPaginationResponseSchema, UserProfileResponseSchema } from '@server/src/schemas/user.schema'
 import { userService } from '@server/src/service/user.service'
 
 export function userRoute(api: OpenAPIHono) {
@@ -37,5 +37,24 @@ export function userRoute(api: OpenAPIHono) {
     const { userId } = getLoginUser(c)
     const userProfile = await userService.getUserProfile(userId)
     return c.json(userProfile, 200)
+  })
+
+  api.openapi(createRoute({
+    path: '/user/page',
+    method: 'get',
+    description: 'Get paginated list of users',
+    request: {
+      query: UserPaginationRequestSchema,
+    },
+    responses: {
+      200: { description: 'User list retrieved successfully', content: { 'application/json': { schema: UserPaginationResponseSchema } } },
+    },
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware],
+    tags: ['User'],
+  }), async (c) => {
+    const query = c.req.valid('query')
+    const userPage = await userService.getUserPage(query)
+    return c.json(userPage, 200)
   })
 }

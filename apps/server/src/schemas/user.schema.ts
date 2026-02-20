@@ -1,5 +1,10 @@
 import { z } from '@hono/zod-openapi'
 import { UserStatus } from '@server/generated/prisma/enums'
+import { PaginatedResponseSchema, PaginationQuerySchema } from '@server/src/schemas/basic.schema'
+
+function emptyStringToUndefined(value: unknown) {
+  return value === '' ? undefined : value
+}
 
 export const UserCreateRequestSchema = z.object({
   username: z.string().min(3).max(30).openapi({ description: 'Unique username for the user', example: 'johndoe' }),
@@ -31,3 +36,11 @@ export const UserProfileResponseSchema = z.object({
   updatedAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was last updated', example: '2024-01-02T12:00:00Z' }),
 })
 export type UserProfileResponse = z.infer<typeof UserProfileResponseSchema>
+
+export const UserPaginationRequestSchema = PaginationQuerySchema.extend({
+  search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering users by username, email, or display name', example: 'john' }),
+  status: z.preprocess(emptyStringToUndefined, z.enum(Object.values(UserStatus)).nullable().default(null)).openapi({ description: 'Filter users by account status', example: UserStatus.ACTIVE }),
+})
+export type UserPaginationRequest = z.infer<typeof UserPaginationRequestSchema>
+export const UserPaginationResponseSchema = PaginatedResponseSchema(UserProfileResponseSchema)
+export type UserPaginationResponse = z.infer<typeof UserPaginationResponseSchema>
