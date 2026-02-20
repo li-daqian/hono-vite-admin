@@ -1,3 +1,21 @@
-pnpm test
+#!/usr/bin/env sh
+set -e
 
-pnpm lint-staged
+if ! command -v pnpm >/dev/null 2>&1; then
+	for candidate in "$HOME/.nvm/versions/node"/*/bin "$HOME/.local/share/pnpm" "$HOME/.volta/bin"; do
+		if [ -d "$candidate" ]; then
+			PATH="$candidate:$PATH"
+		fi
+	done
+fi
+
+if command -v pnpm >/dev/null 2>&1; then
+	pnpm test
+	pnpm exec lint-staged
+elif command -v corepack >/dev/null 2>&1; then
+	corepack pnpm test
+	corepack pnpm exec lint-staged
+else
+	echo "pre-commit: pnpm not found. Install pnpm or expose it in PATH." >&2
+	exit 127
+fi
