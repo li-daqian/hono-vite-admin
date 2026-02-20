@@ -1,7 +1,7 @@
 import type { UserCreateRequest, UserCreateResponse, UserPaginationRequest, UserPaginationResponse, UserProfileResponse } from '@server/src/schemas/user.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
-import { paginate } from '@server/src/utils/pagination'
+import { buildOrderBy, paginate } from '@server/src/utils/pagination'
 import bcrypt from 'bcryptjs'
 
 class UserService {
@@ -68,48 +68,11 @@ class UserService {
         : {}),
     }
 
-    let orderBy:
-      | { username: 'asc' | 'desc' }
-      | { email: 'asc' | 'desc' }
-      | { displayName: 'asc' | 'desc' }
-      | { status: 'asc' | 'desc' }
-      | { createdAt: 'asc' | 'desc' }
-      | { updatedAt: 'asc' | 'desc' } = { createdAt: 'desc' }
-
-    if (sort) {
-      const [field, direction, ...rest] = sort.trim().split(/\s+/)
-      if (!field || !direction || rest.length > 0) {
-        throw BusinessError.BadRequest('Invalid sort format. Use "field direction", e.g. "createdAt desc"', 'InvalidSort')
-      }
-
-      const normalizedDirection = direction.toLowerCase()
-      if (normalizedDirection !== 'asc' && normalizedDirection !== 'desc') {
-        throw BusinessError.BadRequest('Invalid sort direction. Use "asc" or "desc"', 'InvalidSortDirection')
-      }
-
-      switch (field) {
-        case 'username':
-          orderBy = { username: normalizedDirection }
-          break
-        case 'email':
-          orderBy = { email: normalizedDirection }
-          break
-        case 'displayName':
-          orderBy = { displayName: normalizedDirection }
-          break
-        case 'status':
-          orderBy = { status: normalizedDirection }
-          break
-        case 'createdAt':
-          orderBy = { createdAt: normalizedDirection }
-          break
-        case 'updatedAt':
-          orderBy = { updatedAt: normalizedDirection }
-          break
-        default:
-          throw BusinessError.BadRequest('Invalid sort field. Allowed fields: username, email, displayName, status, createdAt, updatedAt', 'InvalidSortField')
-      }
-    }
+    const orderBy = buildOrderBy(
+      sort,
+      ['username', 'email', 'displayName', 'status', 'createdAt', 'updatedAt'] as const,
+      { createdAt: 'desc' },
+    )
 
     const [total, users] = await prisma.$transaction([
       prisma.user.count({ where }),

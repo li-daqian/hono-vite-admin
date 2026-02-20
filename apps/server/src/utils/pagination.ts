@@ -1,4 +1,65 @@
 import type { PaginatedResponse, PaginationQuery } from '@server/src/schemas/basic.schema'
+import { BusinessError } from '@server/src/common/exception'
+
+type SortDirection = 'asc' | 'desc'
+
+/**
+ * Builds a validated Prisma-style orderBy object from a sort string.
+ *
+ * Accepts sort input in the format "field direction" (for example: "createdAt desc").
+ * If sort is null/empty, returns the provided default order.
+ *
+ * @typeParam TField - Union of allowed sortable field names.
+ * @param sort - Raw sort string from request query.
+ * @param allowedFields - Whitelist of sortable fields.
+ * @param defaultOrder - Fallback order when sort is not provided.
+ * @returns A partial orderBy object containing one validated sort field and direction,
+ * or defaultOrder when sort is absent.
+ * @throws BusinessError.BadRequest - When sort format is invalid.
+ * @throws BusinessError.BadRequest - When sort direction is not "asc" or "desc".
+ * @throws BusinessError.BadRequest - When sort field is not in allowedFields.
+ */
+export function buildOrderBy<TField extends string>(
+  sort: string | null,
+  allowedFields: readonly TField[],
+  defaultOrder: Partial<Record<TField, SortDirection>>,
+): Partial<Record<TField, SortDirection>> {
+  if (!sort) {
+    return defaultOrder
+  }
+
+  const [field, direction, ...rest] = sort.trim().split(/\s+/)
+
+  if (!field || !direction || rest.length > 0) {
+    throw BusinessError.BadRequest(
+      'Invalid sort format. Use "field direction", e.g. "createdAt desc"',
+      'InvalidSort',
+    )
+  }
+
+  const normalizedDirection = direction.toLowerCase()
+
+  if (normalizedDirection !== 'asc' && normalizedDirection !== 'desc') {
+    throw BusinessError.BadRequest(
+      'Invalid sort direction. Use "asc" or "desc"',
+      'InvalidSortDirection',
+    )
+  }
+
+  if (!allowedFields.includes(field as TField)) {
+    throw BusinessError.BadRequest(
+      `Invalid sort field. Allowed fields: ${allowedFields.join(', ')}`,
+      'InvalidSortField',
+    )
+  }
+
+  const typedField = field as TField
+  const orderBy = {
+    [typedField]: normalizedDirection,
+  } as Partial<Record<TField, SortDirection>>
+
+  return orderBy
+}
 
 /**
  * Utility function to paginate an array of items based on the provided pagination query.
