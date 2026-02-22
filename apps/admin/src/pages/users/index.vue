@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GetUserPageResponse } from '@admin/client'
-import type { Column, ColumnOrderState, ColumnPinningState, VisibilityState } from '@tanstack/vue-table'
+import type { Column, ColumnDef, ColumnOrderState, ColumnPinningState, VisibilityState } from '@tanstack/vue-table'
 import { getUserPage } from '@admin/client'
 import { Button } from '@admin/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@admin/components/ui/card'
@@ -25,9 +25,31 @@ import {
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { ref } from 'vue'
-import { columns } from './components/columns'
 
 type UserPageItem = GetUserPageResponse['items'][number]
+
+const columns: ColumnDef<UserPageItem>[] = [
+  {
+    header: 'Username',
+    accessorKey: 'username',
+  },
+  {
+    header: 'Display Name',
+    accessorKey: 'displayName',
+  },
+  {
+    header: 'Phone',
+    accessorKey: 'phone',
+  },
+  {
+    header: 'Email',
+    accessorKey: 'email',
+  },
+  {
+    header: 'Status',
+    accessorKey: 'status',
+  },
+]
 
 const users = ref<UserPageItem[]>([])
 const loading = ref(false)
