@@ -296,15 +296,15 @@ export type GetUserProfileResponse = GetUserProfileResponses[keyof GetUserProfil
 export type GetUserPageData = {
     body?: never;
     path?: never;
-    query?: {
+    query: {
         /**
          * Page number for pagination
          */
-        page?: number;
+        page: number;
         /**
          * Number of items per page
          */
-        pageSize?: number;
+        pageSize: number;
         /**
          * Sorting criteria in the format "field direction" or "field direction, field direction", e.g. "createdAt desc, username asc"
          */

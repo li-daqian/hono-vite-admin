@@ -121,7 +121,7 @@ export const getUserProfile = <ThrowOnError extends boolean = false>(options?: O
 /**
  * Get paginated list of users
  */
-export const getUserPage = <ThrowOnError extends boolean = false>(options?: Options<GetUserPageData, ThrowOnError>) => (options?.client ?? client).get<GetUserPageResponses, unknown, ThrowOnError>({
+export const getUserPage = <ThrowOnError extends boolean = false>(options: Options<GetUserPageData, ThrowOnError>) => (options.client ?? client).get<GetUserPageResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zGetUserPageData.parseAsync(data),
     responseTransformer: getUserPageResponseTransformer,
     responseType: 'json',

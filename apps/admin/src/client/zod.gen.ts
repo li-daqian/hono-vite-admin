@@ -177,8 +177,8 @@ export const zGetUserPageData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: z.object({
-        page: z.number().int().gte(1).describe('Page number for pagination').optional().default(1),
-        pageSize: z.number().int().gte(1).lte(100).describe('Number of items per page').optional().default(10),
+        page: z.number().int().gte(1).describe('Page number for pagination'),
+        pageSize: z.number().int().gte(1).lte(100).describe('Number of items per page'),
         sort: z.union([
             z.string(),
             z.null()
@@ -188,7 +188,7 @@ export const zGetUserPageData = z.object({
             z.null()
         ]).optional().default(null),
         status: z.enum(['ACTIVE', 'DISABLED']).describe('Filter users by account status').optional()
-    }).optional()
+    })
 });
 
 /**
