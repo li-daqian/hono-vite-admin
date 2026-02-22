@@ -292,3 +292,104 @@ export type GetUserProfileResponses = {
 };
 
 export type GetUserProfileResponse = GetUserProfileResponses[keyof GetUserProfileResponses];
+
+export type GetUserPageData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page number for pagination
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         */
+        pageSize?: number;
+        /**
+         * Sorting criteria in the format "field direction" or "field direction, field direction", e.g. "createdAt desc, username asc"
+         */
+        sort?: string | null;
+        /**
+         * Search term for filtering users by username, email, or display name
+         */
+        search?: string | null;
+        /**
+         * Filter users by account status
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+    };
+    url: '/user/page';
+};
+
+export type GetUserPageResponses = {
+    /**
+     * Standard paginated response envelope
+     */
+    200: {
+        /**
+         * List of items for the current page
+         */
+        items: Array<{
+            /**
+             * Unique identifier for the user
+             */
+            id: string;
+            /**
+             * Unique username for the user
+             */
+            username: string;
+            /**
+             * Email address of the user
+             */
+            email: string | null;
+            /**
+             * Phone number of the user
+             */
+            phone: string | null;
+            /**
+             * Display name of the user
+             */
+            displayName: string | null;
+            /**
+             * Status of the user account
+             */
+            status: 'ACTIVE' | 'DISABLED';
+            /**
+             * Timestamp when the user was created
+             */
+            createdAt: Date;
+            /**
+             * Timestamp when the user was last updated
+             */
+            updatedAt: Date;
+        }>;
+        meta: {
+            /**
+             * Total number of items
+             */
+            total: number;
+            /**
+             * Current page number
+             */
+            page: number;
+            /**
+             * Number of items per page
+             */
+            pageSize: number;
+            /**
+             * Indicates if there is a next page
+             */
+            hasNext: boolean;
+            /**
+             * Indicates if there is a previous page
+             */
+            hasPrevious: boolean;
+            /**
+             * Sorting criteria used for the current page
+             */
+            sort: string | null;
+        };
+    };
+};
+
+export type GetUserPageResponse = GetUserPageResponses[keyof GetUserPageResponses];

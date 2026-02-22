@@ -172,3 +172,57 @@ export const zGetUserProfileResponse = z.object({
     createdAt: z.string().datetime().describe('Timestamp when the user was created'),
     updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 }).describe('User profile retrieved successfully');
+
+export const zGetUserPageData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        page: z.number().int().gte(1).describe('Page number for pagination').optional().default(1),
+        pageSize: z.number().int().gte(1).lte(100).describe('Number of items per page').optional().default(10),
+        sort: z.union([
+            z.string(),
+            z.null()
+        ]).optional().default(null),
+        search: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Filter users by account status').optional()
+    }).optional()
+});
+
+/**
+ * Standard paginated response envelope
+ */
+export const zGetUserPageResponse = z.object({
+    items: z.array(z.object({
+        id: z.string().describe('Unique identifier for the user'),
+        username: z.string().describe('Unique username for the user'),
+        email: z.union([
+            z.string().email(),
+            z.null()
+        ]),
+        phone: z.union([
+            z.string(),
+            z.null()
+        ]),
+        displayName: z.union([
+            z.string(),
+            z.null()
+        ]),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
+        createdAt: z.string().datetime().describe('Timestamp when the user was created'),
+        updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
+    })).describe('List of items for the current page'),
+    meta: z.object({
+        total: z.number().int().describe('Total number of items'),
+        page: z.number().int().describe('Current page number'),
+        pageSize: z.number().int().describe('Number of items per page'),
+        hasNext: z.boolean().describe('Indicates if there is a next page'),
+        hasPrevious: z.boolean().describe('Indicates if there is a previous page'),
+        sort: z.union([
+            z.string(),
+            z.null()
+        ])
+    })
+}).describe('Standard paginated response envelope');
