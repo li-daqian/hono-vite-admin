@@ -215,9 +215,18 @@ export const zGetUserPageResponse = z.object({
         updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
     })).describe('List of items for the current page'),
     meta: z.object({
-        total: z.number().int().describe('Total number of items'),
+        totalItem: z.number().int().describe('Total number of items'),
+        totalPage: z.number().int().describe('Total number of pages'),
         page: z.number().int().describe('Current page number'),
         pageSize: z.number().int().describe('Number of items per page'),
+        nextPage: z.union([
+            z.number().int(),
+            z.null()
+        ]),
+        previousPage: z.union([
+            z.number().int(),
+            z.null()
+        ]),
         hasNext: z.boolean().describe('Indicates if there is a next page'),
         hasPrevious: z.boolean().describe('Indicates if there is a previous page'),
         sort: z.union([

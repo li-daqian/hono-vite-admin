@@ -367,7 +367,11 @@ export type GetUserPageResponses = {
             /**
              * Total number of items
              */
-            total: number;
+            totalItem: number;
+            /**
+             * Total number of pages
+             */
+            totalPage: number;
             /**
              * Current page number
              */
@@ -376,6 +380,14 @@ export type GetUserPageResponses = {
              * Number of items per page
              */
             pageSize: number;
+            /**
+             * Next page number, null if current page is the last
+             */
+            nextPage: number | null;
+            /**
+             * Previous page number, null if current page is the first
+             */
+            previousPage: number | null;
             /**
              * Indicates if there is a next page
              */

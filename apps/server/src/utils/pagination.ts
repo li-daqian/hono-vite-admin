@@ -83,22 +83,27 @@ export function buildOrderBy<TField extends string>(
  * and returns a paginated response object containing the current page of items and pagination metadata.
  *
  * @param items - The array of items to paginate (should already be sliced according to the page and pageSize).
- * @param total - The total number of items available (before pagination).
+ * @param totalItem - The total number of items available (before pagination).
  * @param query - The pagination query containing page, pageSize, and sort information.
  * @returns A paginated response object containing the paginated items and metadata.
  */
-export function paginate<T>(items: T[], total: number, query: PaginationQuery): PaginatedResponse<T> {
+export function paginate<T>(items: T[], totalItem: number, query: PaginationQuery): PaginatedResponse<T> {
   const { page, pageSize, sort } = query
-  const totalPages = Math.ceil(total / pageSize)
+  const totalPages = Math.ceil(totalItem / pageSize)
   const hasNext = page < totalPages
   const hasPrevious = page > 1
+  const nextPage = hasNext ? page + 1 : null
+  const previousPage = hasPrevious ? page - 1 : null
 
   return {
     items,
     meta: {
-      total,
+      totalItem,
+      totalPage: totalPages,
       page,
       pageSize,
+      nextPage,
+      previousPage,
       hasNext,
       hasPrevious,
       sort,

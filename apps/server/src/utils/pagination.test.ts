@@ -65,9 +65,12 @@ describe('paginate', () => {
     expect(result).toEqual({
       items: ['a', 'b'],
       meta: {
-        total: 10,
+        totalItem: 10,
+        totalPage: 5,
         page: 2,
         pageSize: 2,
+        nextPage: 3,
+        previousPage: 1,
         hasNext: true,
         hasPrevious: true,
         sort: 'createdAt desc',
@@ -83,9 +86,12 @@ describe('paginate', () => {
     })
 
     expect(first.meta).toEqual({
-      total: 1,
+      totalItem: 1,
+      totalPage: 1,
       page: 1,
       pageSize: 1,
+      nextPage: null,
+      previousPage: null,
       hasNext: false,
       hasPrevious: false,
       sort: null,

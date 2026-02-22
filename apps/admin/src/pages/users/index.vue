@@ -24,7 +24,7 @@ import {
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { columns } from './components/columns'
 
 type UserPageItem = GetUserPageResponse['items'][number]
@@ -36,12 +36,13 @@ const errorMessage = ref<string | null>(null)
 const page = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const totalPages = ref(1)
+const nextPage = ref<number | null>(null)
+const previousPage = ref<number | null>(null)
 
 const columnVisibility = ref<VisibilityState>({})
 const columnOrder = ref<ColumnOrderState>([])
 const columnPinning = ref<ColumnPinningState>({})
-
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 
 const table = useVueTable({
   get data() {
@@ -140,12 +141,18 @@ async function fetchUsers() {
     })
 
     users.value = res.data.items
-    total.value = res.data.meta.total
+    total.value = res.data.meta.totalItem
+    totalPages.value = Math.max(1, res.data.meta.totalPage)
+    nextPage.value = res.data.meta.nextPage
+    previousPage.value = res.data.meta.previousPage
   }
   catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Failed to load users.'
     users.value = []
     total.value = 0
+    totalPages.value = 1
+    nextPage.value = null
+    previousPage.value = null
   }
   finally {
     loading.value = false
@@ -153,18 +160,18 @@ async function fetchUsers() {
 }
 
 function goToPreviousPage() {
-  if (page.value <= 1 || loading.value)
+  if (previousPage.value == null || loading.value)
     return
 
-  page.value -= 1
+  page.value = previousPage.value
   fetchUsers()
 }
 
 function goToNextPage() {
-  if (page.value >= totalPages.value || loading.value)
+  if (nextPage.value == null || loading.value)
     return
 
-  page.value += 1
+  page.value = nextPage.value
   fetchUsers()
 }
 

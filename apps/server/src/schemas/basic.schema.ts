@@ -26,9 +26,12 @@ export const PaginationQuerySchema = z.object({
 export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
 
 export const PaginationMetaSchema = z.object({
-  total: z.number().int().openapi({ description: 'Total number of items', example: 100 }),
+  totalItem: z.number().int().openapi({ description: 'Total number of items', example: 100 }),
+  totalPage: z.number().int().openapi({ description: 'Total number of pages', example: 10 }),
   page: z.number().int().openapi({ description: 'Current page number', example: 1 }),
   pageSize: z.number().int().openapi({ description: 'Number of items per page', example: 10 }),
+  nextPage: z.number().int().nullable().openapi({ description: 'Next page number, null if current page is the last', example: 2 }),
+  previousPage: z.number().int().nullable().openapi({ description: 'Previous page number, null if current page is the first', example: null }),
   hasNext: z.boolean().openapi({ description: 'Indicates if there is a next page', example: true }),
   hasPrevious: z.boolean().openapi({ description: 'Indicates if there is a previous page', example: false }),
   sort: z.string().nullable().openapi({ description: 'Sorting criteria used for the current page', example: 'createdAt desc, username asc' }),
