@@ -16,7 +16,7 @@ export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
     icon: ShieldIcon,
   },
   'access.users': {
-    component: () => import('@admin/pages/DashboardPage.vue'),
+    component: () => import('@admin/pages/users/index.vue'),
   },
   'access.roles': {
     component: () => import('@admin/pages/DashboardPage.vue'),
