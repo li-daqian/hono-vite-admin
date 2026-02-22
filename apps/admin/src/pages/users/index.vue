@@ -14,6 +14,14 @@ import {
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '@admin/components/ui/pagination'
+import {
   Table,
   TableBody,
   TableCell,
@@ -181,19 +189,20 @@ async function fetchUsers() {
   }
 }
 
-function goToPreviousPage() {
-  if (previousPage.value == null || loading.value)
+function handlePageChange(nextPageValue: number) {
+  if (loading.value)
     return
 
-  page.value = previousPage.value
-  fetchUsers()
-}
-
-function goToNextPage() {
-  if (nextPage.value == null || loading.value)
+  if (!Number.isInteger(nextPageValue))
     return
 
-  page.value = nextPage.value
+  if (nextPageValue < 1 || nextPageValue > totalPages.value)
+    return
+
+  if (nextPageValue === page.value)
+    return
+
+  page.value = nextPageValue
   fetchUsers()
 }
 
@@ -351,14 +360,35 @@ fetchUsers()
               50
             </option>
           </select>
-          <Button variant="outline" size="sm" :disabled="page <= 1 || loading" @click="goToPreviousPage">
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" :disabled="page >= totalPages || loading" @click="goToNextPage">
-            Next
-          </Button>
         </div>
       </div>
+
+      <Pagination
+        v-slot="{ page: currentPage }"
+        :page="page"
+        :items-per-page="pageSize"
+        :total="total"
+        :sibling-count="1"
+        :disabled="loading"
+        @update:page="handlePageChange"
+      >
+        <PaginationContent v-slot="{ items }">
+          <PaginationPrevious />
+
+          <template v-for="(item, index) in items" :key="`page-item-${index}`">
+            <PaginationItem
+              v-if="item.type === 'page'"
+              :value="item.value"
+              :is-active="item.value === currentPage"
+            >
+              {{ item.value }}
+            </PaginationItem>
+            <PaginationEllipsis v-else :index="index" />
+          </template>
+
+          <PaginationNext />
+        </PaginationContent>
+      </Pagination>
     </CardContent>
   </Card>
 </template>
