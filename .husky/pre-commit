@@ -3,3 +3,5 @@
 pnpm test
 
 pnpm lint-staged
+
+echo "Pre-commit checks passed!"
