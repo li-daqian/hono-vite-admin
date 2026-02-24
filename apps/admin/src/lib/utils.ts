@@ -72,7 +72,7 @@ export function toggleDark(event: MouseEvent) {
  */
 export function getPageNumbers(currentPage: number, totalPages: number) {
   const maxVisiblePages = 5
-  const rangeWithDots = []
+  const rangeWithDots: Array<number | '...'> = []
 
   if (totalPages <= maxVisiblePages) {
     // If total pages is 5 or less, show all pages
@@ -109,4 +109,6 @@ export function getPageNumbers(currentPage: number, totalPages: number) {
       rangeWithDots.push(totalPages)
     }
   }
+
+  return rangeWithDots
 }

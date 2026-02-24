@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import type { GetUserPageResponse } from '@admin/client'
-import type { Column, ColumnDef, ColumnOrderState, ColumnPinningState, VisibilityState } from '@tanstack/vue-table'
+import type {
+  Column,
+  ColumnDef,
+  ColumnOrderState,
+  ColumnPinningState,
+  PaginationState,
+  Updater,
+  VisibilityState,
+} from '@tanstack/vue-table'
 import { getUserPage } from '@admin/client'
+import DataTablePagination from '@admin/components/data-table/pagination.vue'
 import { Button } from '@admin/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@admin/components/ui/card'
 import {
@@ -13,14 +22,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from '@admin/components/ui/pagination'
 import {
   Table,
   TableBody,
@@ -63,12 +64,11 @@ const users = ref<UserPageItem[]>([])
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
 
-const page = ref(1)
-const pageSize = ref(10)
-const total = ref(0)
+const pagination = ref<PaginationState>({
+  pageIndex: 0,
+  pageSize: 10,
+})
 const totalPages = ref(1)
-const nextPage = ref<number | null>(null)
-const previousPage = ref<number | null>(null)
 
 const columnVisibility = ref<VisibilityState>({})
 const columnOrder = ref<ColumnOrderState>([])
@@ -90,10 +90,18 @@ const table = useVueTable({
     get columnPinning() {
       return columnPinning.value
     },
+    get pagination() {
+      return pagination.value
+    },
+  },
+  manualPagination: true,
+  get pageCount() {
+    return totalPages.value
   },
   onColumnVisibilityChange: updaterOrValue => valueUpdater(updaterOrValue, columnVisibility),
   onColumnOrderChange: updaterOrValue => valueUpdater(updaterOrValue, columnOrder),
   onColumnPinningChange: updaterOrValue => valueUpdater(updaterOrValue, columnPinning),
+  onPaginationChange: handlePaginationChange,
 })
 
 function getOrderedColumnIds() {
@@ -165,55 +173,44 @@ async function fetchUsers() {
   try {
     const res = await getUserPage<true>({
       query: {
-        page: page.value,
-        pageSize: pageSize.value,
+        page: pagination.value.pageIndex + 1,
+        pageSize: pagination.value.pageSize,
       },
     })
 
     users.value = res.data.items
-    total.value = res.data.meta.totalItem
     totalPages.value = Math.max(1, res.data.meta.totalPage)
-    nextPage.value = res.data.meta.nextPage
-    previousPage.value = res.data.meta.previousPage
   }
   catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Failed to load users.'
     users.value = []
-    total.value = 0
     totalPages.value = 1
-    nextPage.value = null
-    previousPage.value = null
   }
   finally {
     loading.value = false
   }
 }
 
-function handlePageChange(nextPageValue: number) {
+function handlePaginationChange(updaterOrValue: Updater<PaginationState>) {
   if (loading.value)
     return
 
-  if (!Number.isInteger(nextPageValue))
+  const previous = pagination.value
+  valueUpdater(updaterOrValue, pagination)
+  const next = pagination.value
+
+  if (previous.pageIndex === next.pageIndex && previous.pageSize === next.pageSize)
     return
 
-  if (nextPageValue < 1 || nextPageValue > totalPages.value)
+  if (next.pageIndex < 0)
     return
 
-  if (nextPageValue === page.value)
+  if (next.pageIndex >= totalPages.value)
     return
 
-  page.value = nextPageValue
-  fetchUsers()
-}
-
-function updatePageSize(event: Event) {
-  const target = event.target as HTMLSelectElement
-  const nextSize = Number(target.value)
-  if (!Number.isFinite(nextSize) || nextSize <= 0)
+  if (next.pageSize <= 0)
     return
 
-  pageSize.value = nextSize
-  page.value = 1
   fetchUsers()
 }
 
@@ -338,57 +335,7 @@ fetchUsers()
         </TableBody>
       </Table>
 
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="text-sm text-muted-foreground">
-          Total {{ total }} users · Page {{ page }} / {{ totalPages }}
-        </div>
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-muted-foreground" for="user-page-size">Page size</label>
-          <select
-            id="user-page-size"
-            :value="pageSize"
-            class="h-9 rounded-md border border-input bg-background px-2 text-sm"
-            @change="updatePageSize"
-          >
-            <option :value="10">
-              10
-            </option>
-            <option :value="20">
-              20
-            </option>
-            <option :value="50">
-              50
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <Pagination
-        v-slot="{ page: currentPage }"
-        :page="page"
-        :items-per-page="pageSize"
-        :total="total"
-        :sibling-count="1"
-        :disabled="loading"
-        @update:page="handlePageChange"
-      >
-        <PaginationContent v-slot="{ items }">
-          <PaginationPrevious />
-
-          <template v-for="(item, index) in items" :key="`page-item-${index}`">
-            <PaginationItem
-              v-if="item.type === 'page'"
-              :value="item.value"
-              :is-active="item.value === currentPage"
-            >
-              {{ item.value }}
-            </PaginationItem>
-            <PaginationEllipsis v-else :index="index" />
-          </template>
-
-          <PaginationNext />
-        </PaginationContent>
-      </Pagination>
+      <DataTablePagination :table="table" />
     </CardContent>
   </Card>
 </template>
