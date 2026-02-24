@@ -36,6 +36,10 @@ function setupAxiosInterceptors() {
       return response
     },
     async (error: AxiosError) => {
+      if (axios.isCancel(error) || error.code === 'ERR_CANCELED') {
+        return Promise.reject(error)
+      }
+
       const { response, config } = error
 
       // Handle 401 Unauthorized - token refresh logic

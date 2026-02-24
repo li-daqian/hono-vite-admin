@@ -33,7 +33,7 @@ import {
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 
 type UserPageItem = GetUserPageResponse['items'][number]
 
@@ -63,6 +63,8 @@ const columns: ColumnDef<UserPageItem>[] = [
 const users = ref<UserPageItem[]>([])
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
+const activeRequestController = ref<AbortController | null>(null)
+const requestSequence = ref(0)
 
 const pagination = ref<PaginationState>({
   pageIndex: 0,
@@ -167,6 +169,13 @@ function getPinnedStyle(column: Column<UserPageItem>) {
 }
 
 async function fetchUsers() {
+  const requestId = requestSequence.value + 1
+  requestSequence.value = requestId
+
+  activeRequestController.value?.abort()
+  const controller = new AbortController()
+  activeRequestController.value = controller
+
   loading.value = true
   errorMessage.value = null
 
@@ -176,45 +185,77 @@ async function fetchUsers() {
         page: pagination.value.pageIndex + 1,
         pageSize: pagination.value.pageSize,
       },
+      signal: controller.signal,
     })
+
+    if (requestId !== requestSequence.value)
+      return
 
     users.value = res.data.items
     totalPages.value = Math.max(1, res.data.meta.totalPage)
   }
   catch (error) {
+    if (isRequestCanceled(error))
+      return
+
+    if (requestId !== requestSequence.value)
+      return
+
     errorMessage.value = error instanceof Error ? error.message : 'Failed to load users.'
     users.value = []
     totalPages.value = 1
   }
   finally {
-    loading.value = false
+    if (requestId === requestSequence.value)
+      loading.value = false
   }
 }
 
-function handlePaginationChange(updaterOrValue: Updater<PaginationState>) {
-  if (loading.value)
-    return
+function isRequestCanceled(error: unknown) {
+  if (!(error instanceof Error))
+    return false
 
+  const maybeError = error as Error & { code?: string }
+  return maybeError.name === 'CanceledError' || maybeError.code === 'ERR_CANCELED'
+}
+
+function handlePaginationChange(updaterOrValue: Updater<PaginationState>) {
   const previous = pagination.value
   valueUpdater(updaterOrValue, pagination)
   const next = pagination.value
 
-  if (previous.pageIndex === next.pageIndex && previous.pageSize === next.pageSize)
-    return
+  const pageSizeChanged = previous.pageSize !== next.pageSize
+  const normalizedPageSize = next.pageSize > 0
+    ? next.pageSize
+    : Math.max(1, previous.pageSize)
+  const maxPageIndex = Math.max(totalPages.value - 1, 0)
 
-  if (next.pageIndex < 0)
-    return
+  let normalizedPageIndex = next.pageIndex
+  if (pageSizeChanged)
+    normalizedPageIndex = 0
 
-  if (next.pageIndex >= totalPages.value)
-    return
+  normalizedPageIndex = Math.min(Math.max(normalizedPageIndex, 0), maxPageIndex)
 
-  if (next.pageSize <= 0)
-    return
-
-  fetchUsers()
+  if (normalizedPageIndex !== next.pageIndex || normalizedPageSize !== next.pageSize) {
+    pagination.value = {
+      ...next,
+      pageIndex: normalizedPageIndex,
+      pageSize: normalizedPageSize,
+    }
+  }
 }
 
-fetchUsers()
+watch(
+  () => [pagination.value.pageIndex, pagination.value.pageSize],
+  () => {
+    void fetchUsers()
+  },
+  { immediate: true },
+)
+
+onUnmounted(() => {
+  activeRequestController.value?.abort()
+})
 </script>
 
 <template>
