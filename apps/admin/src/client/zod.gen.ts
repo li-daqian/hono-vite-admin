@@ -27,6 +27,27 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
     actions: z.array(zAuthActionSchema).describe('Menu actions')
 });
 
+export const zPaginationMetaSchema = z.object({
+    totalItem: z.number().int().describe('Total number of items'),
+    totalPage: z.number().int().describe('Total number of pages'),
+    page: z.number().int().describe('Current page number'),
+    pageSize: z.number().int().describe('Number of items per page'),
+    nextPage: z.union([
+        z.number().int(),
+        z.null()
+    ]),
+    previousPage: z.union([
+        z.number().int(),
+        z.null()
+    ]),
+    hasNext: z.boolean().describe('Indicates if there is a next page'),
+    hasPrevious: z.boolean().describe('Indicates if there is a previous page'),
+    sort: z.union([
+        z.string(),
+        z.null()
+    ])
+});
+
 export const zGetAuthPrefillData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -214,24 +235,5 @@ export const zGetUserPageResponse = z.object({
         createdAt: z.string().datetime().describe('Timestamp when the user was created'),
         updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
     })).describe('List of items for the current page'),
-    meta: z.object({
-        totalItem: z.number().int().describe('Total number of items'),
-        totalPage: z.number().int().describe('Total number of pages'),
-        page: z.number().int().describe('Current page number'),
-        pageSize: z.number().int().describe('Number of items per page'),
-        nextPage: z.union([
-            z.number().int(),
-            z.null()
-        ]),
-        previousPage: z.union([
-            z.number().int(),
-            z.null()
-        ]),
-        hasNext: z.boolean().describe('Indicates if there is a next page'),
-        hasPrevious: z.boolean().describe('Indicates if there is a previous page'),
-        sort: z.union([
-            z.string(),
-            z.null()
-        ])
-    })
+    meta: zPaginationMetaSchema
 }).describe('Standard paginated response envelope');

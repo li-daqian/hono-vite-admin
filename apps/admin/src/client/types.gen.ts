@@ -47,6 +47,45 @@ export type AuthMenuSchema = {
     actions: Array<AuthActionSchema>;
 };
 
+export type PaginationMetaSchema = {
+    /**
+     * Total number of items
+     */
+    totalItem: number;
+    /**
+     * Total number of pages
+     */
+    totalPage: number;
+    /**
+     * Current page number
+     */
+    page: number;
+    /**
+     * Number of items per page
+     */
+    pageSize: number;
+    /**
+     * Next page number, null if current page is the last
+     */
+    nextPage: number | null;
+    /**
+     * Previous page number, null if current page is the first
+     */
+    previousPage: number | null;
+    /**
+     * Indicates if there is a next page
+     */
+    hasNext: boolean;
+    /**
+     * Indicates if there is a previous page
+     */
+    hasPrevious: boolean;
+    /**
+     * Sorting criteria used for the current page
+     */
+    sort: string | null;
+};
+
 export type GetAuthPrefillData = {
     body?: never;
     path?: never;
@@ -363,44 +402,7 @@ export type GetUserPageResponses = {
              */
             updatedAt: Date;
         }>;
-        meta: {
-            /**
-             * Total number of items
-             */
-            totalItem: number;
-            /**
-             * Total number of pages
-             */
-            totalPage: number;
-            /**
-             * Current page number
-             */
-            page: number;
-            /**
-             * Number of items per page
-             */
-            pageSize: number;
-            /**
-             * Next page number, null if current page is the last
-             */
-            nextPage: number | null;
-            /**
-             * Previous page number, null if current page is the first
-             */
-            previousPage: number | null;
-            /**
-             * Indicates if there is a next page
-             */
-            hasNext: boolean;
-            /**
-             * Indicates if there is a previous page
-             */
-            hasPrevious: boolean;
-            /**
-             * Sorting criteria used for the current page
-             */
-            sort: string | null;
-        };
+        meta: PaginationMetaSchema;
     };
 };
 

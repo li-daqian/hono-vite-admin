@@ -35,7 +35,7 @@ export const PaginationMetaSchema = z.object({
   hasNext: z.boolean().openapi({ description: 'Indicates if there is a next page', example: true }),
   hasPrevious: z.boolean().openapi({ description: 'Indicates if there is a previous page', example: false }),
   sort: z.string().nullable().openapi({ description: 'Sorting criteria used for the current page', example: 'createdAt desc, username asc' }),
-})
+}).openapi('PaginationMetaSchema')
 export type PaginationMeta = z.infer<typeof PaginationMetaSchema>
 
 export function PaginatedResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
