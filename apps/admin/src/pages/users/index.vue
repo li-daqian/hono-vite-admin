@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { GetUserPageResponse } from '@admin/client'
-import type { DataTableColumn, DataTableSearchField } from '@admin/components/data-table'
+import type { DataTableColumn, DataTableSearchField, FetchRequest } from '@admin/components/data-table'
+import { getUserPage } from '@admin/client'
 import { DataTable, SearchFieldType } from '@admin/components/data-table'
 import { Button } from '@admin/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@admin/components/ui/card'
@@ -33,7 +34,7 @@ const columns: DataTableColumn<UserPageItem>[] = [
     header: 'Status',
     key: 'status',
     sortable: true,
-    cell: (_row, value) => h('div', { class: 'text-center' }, value ?? ''),
+    cell: (_row, value) => h('div', { class: 'text-center' }, (value as string) ?? ''),
   },
 ]
 
@@ -55,6 +56,11 @@ const searchConfig: DataTableSearchField[] = [
     ],
   },
 ]
+
+const fetchUsers: FetchRequest<UserPageItem> = async (params) => {
+  const response = await getUserPage<true>({ query: params })
+  return response.data
+}
 </script>
 
 <template>
@@ -65,7 +71,7 @@ const searchConfig: DataTableSearchField[] = [
 
     <CardContent>
       <DataTable
-        request-url="/user/page"
+        :request="fetchUsers"
         :columns="columns"
         :search="searchConfig"
         :operations="{ header: 'Actions', pin: 'right' }"

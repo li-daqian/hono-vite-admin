@@ -34,3 +34,24 @@ export interface DataTableOperations {
   header?: string
   pin?: 'left' | 'right'
 }
+
+export interface PaginatedResponse<TItem> {
+  items: TItem[]
+  meta: {
+    totalItem: number
+    totalPage: number
+    page: number
+    pageSize: number
+    sort?: string | null
+  }
+}
+
+export type FetchRequestParams = Record<string, unknown> & {
+  page: number
+  pageSize: number
+  sort?: string | null
+}
+
+export type FetchRequest<TItem> = (
+  params: FetchRequestParams,
+) => Promise<PaginatedResponse<TItem>>

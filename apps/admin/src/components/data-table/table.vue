@@ -9,8 +9,7 @@ import type {
   VisibilityState,
 } from '@tanstack/vue-table'
 import type { HTMLAttributes } from 'vue'
-import type { DataTableColumn, DataTableOperations, DataTableSearchField } from './types'
-import { client } from '@admin/client/client.gen'
+import type { DataTableColumn, DataTableOperations, DataTableSearchField, FetchRequest } from './types'
 import { Button } from '@admin/components/ui/button'
 import {
   DropdownMenu,
@@ -46,17 +45,6 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import DataTablePagination from './pagination.vue'
 import { SearchFieldType } from './types'
 
-interface PaginatedResponse<TItem> {
-  items: TItem[]
-  meta: {
-    totalItem: number
-    totalPage: number
-    page: number
-    pageSize: number
-    sort?: string | null
-  }
-}
-
 type SearchValue = string | string[] | null
 
 interface DataTableSlots<TItem> {
@@ -64,7 +52,7 @@ interface DataTableSlots<TItem> {
 }
 
 const props = withDefaults(defineProps<{
-  requestUrl: string
+  request: FetchRequest<TData>
   columns: DataTableColumn<TData>[]
   search?: DataTableSearchField[]
   operations?: DataTableOperations
@@ -359,16 +347,13 @@ async function fetchData() {
   }
 
   try {
-    const res = await client.instance.get<PaginatedResponse<TData>>(props.requestUrl, {
-      params: query,
-      signal: controller.signal,
-    })
+    const res = await props.request(query)
 
     if (requestId !== requestSequence.value)
       return
 
-    tableData.value = res.data.items
-    totalPages.value = Math.max(1, res.data.meta.totalPage)
+    tableData.value = res.items
+    totalPages.value = Math.max(1, res.meta.totalPage)
   }
   catch (error) {
     if (isRequestCanceled(error))
