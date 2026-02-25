@@ -1,3 +1,5 @@
+import type { PaginationMetaSchema } from '@admin/client'
+
 export const SearchFieldType = {
   Input: 1,
   Single: 2,
@@ -37,13 +39,7 @@ export interface DataTableOperations {
 
 export interface PaginatedResponse<TItem> {
   items: TItem[]
-  meta: {
-    totalItem: number
-    totalPage: number
-    page: number
-    pageSize: number
-    sort?: string | null
-  }
+  meta: PaginationMetaSchema
 }
 
 export type FetchRequestParams = Record<string, unknown> & {
