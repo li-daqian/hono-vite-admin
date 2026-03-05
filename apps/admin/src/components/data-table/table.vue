@@ -41,7 +41,7 @@ import {
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown } from 'lucide-vue-next'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, shallowRef, watch } from 'vue'
 import DataTablePagination from './pagination.vue'
 import { SearchFieldType } from './types'
 
@@ -70,7 +70,7 @@ const props = withDefaults(defineProps<{
 
 const slots = defineSlots<DataTableSlots<TData>>()
 
-const tableData = ref<TData[]>([])
+const tableData = shallowRef<TData[]>([])
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
 const activeRequestController = ref<AbortController | null>(null)
