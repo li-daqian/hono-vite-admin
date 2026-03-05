@@ -86,7 +86,7 @@ const columnVisibility = ref<VisibilityState>({})
 const columnPinning = ref<ColumnPinningState>({})
 const sorting = ref<SortingState>([])
 
-const operationColumnId = 'operations'
+const operationColumnId = crypto.randomUUID()
 
 const tableColumns = computed<ColumnDef<TData>[]>(() => {
   const baseColumns = props.columns.map((column) => {
@@ -112,11 +112,12 @@ const tableColumns = computed<ColumnDef<TData>[]>(() => {
   if (slots.operations) {
     baseColumns.push({
       id: operationColumnId,
-      header: props.operations?.header ?? 'Actions',
+      accessorKey: operationColumnId,
+      header: '',
       enableSorting: false,
       enableHiding: false,
       meta: {
-        title: props.operations?.header ?? 'Actions',
+        title: '',
         configurable: false,
       },
       cell: ({ row }) => slots.operations?.({ row: row.original }) ?? null,
