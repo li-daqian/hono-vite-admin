@@ -8,6 +8,7 @@ import type {
   Updater,
   VisibilityState,
 } from '@tanstack/vue-table'
+import type { AcceptableValue } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import type { DataTableColumn, DataTableOperations, DataTableSearchField, FetchRequest } from './types'
 import { Button } from '@admin/components/ui/button'
@@ -221,7 +222,7 @@ function getSingleValue(fieldKey: string) {
   return typeof value === 'string' ? value : ''
 }
 
-function updateSingleValue(fieldKey: string, value: string | number | null) {
+function updateSingleValue(fieldKey: string, value: AcceptableValue) {
   if (value === null) {
     searchState.value = {
       ...searchState.value,
