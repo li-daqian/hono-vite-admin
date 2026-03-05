@@ -356,14 +356,7 @@ async function fetchData() {
     tableData.value = res.items
     totalPages.value = Math.max(1, res.meta.totalPage)
   }
-  catch (error) {
-    if (isRequestCanceled(error))
-      return
-
-    if (requestId !== requestSequence.value)
-      return
-
-    errorMessage.value = error instanceof Error ? error.message : 'Failed to load data.'
+  catch {
     tableData.value = []
     totalPages.value = 1
   }
@@ -371,14 +364,6 @@ async function fetchData() {
     if (requestId === requestSequence.value)
       loading.value = false
   }
-}
-
-function isRequestCanceled(error: unknown) {
-  if (!(error instanceof Error))
-    return false
-
-  const maybeError = error as Error & { code?: string }
-  return maybeError.name === 'CanceledError' || maybeError.code === 'ERR_CANCELED'
 }
 
 function pinColumn(columnId: string, position: 'left' | 'right' | false) {
