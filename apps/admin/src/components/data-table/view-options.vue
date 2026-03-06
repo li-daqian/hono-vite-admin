@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
-import { Settings2 } from 'lucide-vue-next' // 替代 MixerHorizontalIcon
+import { Settings2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
