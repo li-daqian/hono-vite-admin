@@ -130,7 +130,7 @@ async function fetchData() {
 }
 
 // 监听触发刷新
-let timer: any
+let timer: number
 watch([pagination, sorting, searchState], () => {
   clearTimeout(timer)
   timer = setTimeout(fetchData, 300)
