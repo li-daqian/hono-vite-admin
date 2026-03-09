@@ -8,7 +8,7 @@ import type {
   SortingState,
   VisibilityState,
 } from '@tanstack/vue-table'
-import type { DataTableColumn, DataTableOperations, DataTableSearchField, FetchRequest } from './types'
+import type { DataTableColumn, DataTableOperations, DataTableSearchField, FetchRequest, FetchRequestParams } from './types'
 import {
   Table,
   TableBody,
@@ -109,13 +109,21 @@ const table = useVueTable({
 // 数据获取逻辑
 async function fetchData() {
   loading.value = true
-  const query = {
+  const query: FetchRequestParams = {
     ...props.requestParams,
     ...searchState.value, // 这里的逻辑可以根据你的 buildSearchParams 进一步细化
     page: pagination.value.pageIndex + 1,
     pageSize: pagination.value.pageSize,
     sort: sorting.value.map(s => `${s.id} ${s.desc ? 'desc' : 'asc'}`).join(',') || undefined,
-  }
+  };
+
+  // 遍历并删除空值键
+  (Object.keys(query) as Array<keyof FetchRequestParams>).forEach((key) => {
+    if (query[key] === '' || query[key] === null || query[key] === undefined) {
+      delete query[key]
+    }
+  })
+
   try {
     const res = await props.request(query)
     tableData.value = res.items
