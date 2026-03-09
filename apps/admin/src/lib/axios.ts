@@ -5,6 +5,7 @@ import { getEnv } from '@admin/lib/env'
 import { useAuthStore } from '@admin/stores/auth'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
+import { ZodError } from 'zod/v3'
 
 /**
  * Setup custom axios interceptors for the generated API client.
@@ -77,6 +78,29 @@ function setupAxiosInterceptors() {
   )
 }
 
+function wrapWithValidationHandler(originalMethod: any) {
+  return async (...args: any[]) => {
+    try {
+      return await originalMethod(...args)
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        toast.error(error.errors.map(e => e.message).join(', '))
+      }
+      throw error
+    }
+  }
+}
+
+function injectValidationLogic() {
+  const methods: Array<keyof typeof client> = ['get', 'post', 'put', 'delete', 'patch']
+  methods.forEach((m) => {
+    if (typeof client[m] === 'function') {
+      (client as any)[m] = wrapWithValidationHandler(client[m])
+    }
+  })
+}
+
 export function setupAxios() {
   const apiBaseURL = `${getEnv().apiBaseUrl}/api/v1`
   client.setConfig({
@@ -86,4 +110,6 @@ export function setupAxios() {
   })
 
   setupAxiosInterceptors()
+
+  injectValidationLogic()
 }
