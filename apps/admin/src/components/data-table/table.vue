@@ -9,21 +9,18 @@ import type {
   VisibilityState,
 } from '@tanstack/vue-table'
 import type { DataTableColumn, DataTableOperations, DataTableSearchField, FetchRequest } from './types'
-import { Button } from '@admin/components/ui/button'
 import {
   Table,
   TableBody,
   TableCell,
   TableEmpty,
-  TableHead,
-  TableHeader,
   TableRow,
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
 
 import { computed, ref, shallowRef, watch } from 'vue'
+import DataTableColumnHeader from './column-header.vue'
 import DataTablePagination from './pagination.vue'
 import DataTableToolbar from './toolbar.vue'
 import { SearchFieldType } from './types'
@@ -139,12 +136,6 @@ watch([pagination, sorting, searchState], () => {
   timer = setTimeout(fetchData, 300)
 }, { deep: true, immediate: true })
 
-// 辅助函数
-function getSortIcon(column: Column<TData>) {
-  const s = column.getIsSorted()
-  return s === 'asc' ? ArrowUp : s === 'desc' ? ArrowDown : ArrowUpDown
-}
-
 function getPinnedStyle(column: Column<TData>): any {
   const pinned = column.getIsPinned()
   if (!pinned)
@@ -170,27 +161,7 @@ function getPinnedStyle(column: Column<TData>): any {
 
     <div class="rounded-md border overflow-hidden">
       <Table>
-        <TableHeader>
-          <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-            <TableHead
-              v-for="header in headerGroup.headers"
-              :key="header.id"
-              :style="getPinnedStyle(header.column)"
-            >
-              <Button
-                v-if="header.column.getCanSort()"
-                variant="ghost"
-                size="sm"
-                class="-ml-3 h-8"
-                @click="header.column.toggleSorting()"
-              >
-                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                <component :is="getSortIcon(header.column)" class="ml-2 size-4" />
-              </Button>
-              <FlexRender v-else :render="header.column.columnDef.header" :props="header.getContext()" />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
+        <DataTableColumnHeader :table="table" :get-pinned-style="getPinnedStyle" />
 
         <TableBody>
           <template v-if="loading">
