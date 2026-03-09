@@ -26,6 +26,7 @@ function setupAxiosInterceptors() {
       return config
     },
     (error: AxiosError) => {
+      toast.error(error.message)
       return Promise.reject(error)
     },
   )
@@ -41,6 +42,11 @@ function setupAxiosInterceptors() {
       }
 
       const { response, config } = error
+
+      if (error.request && !response) {
+        toast.error(error.message ?? 'No response received from server')
+        return Promise.reject(error)
+      }
 
       // Handle 401 Unauthorized - token refresh logic
       if (response?.status === 401) {
