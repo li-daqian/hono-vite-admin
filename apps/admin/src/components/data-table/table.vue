@@ -43,7 +43,6 @@ const slots = defineSlots<{ operations?: (props: { row: TData }) => any }>()
 
 // 状态管理
 const tableData = shallowRef<TData[]>([])
-const loading = ref(false)
 const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: props.pageSize })
 const totalPages = ref(1)
 const columnVisibility = ref<VisibilityState>({})
@@ -108,7 +107,6 @@ const table = useVueTable({
 
 // 数据获取逻辑
 async function fetchData() {
-  loading.value = true
   const query: FetchRequestParams = {
     ...props.requestParams,
     ...searchState.value, // 这里的逻辑可以根据你的 buildSearchParams 进一步细化
@@ -131,9 +129,6 @@ async function fetchData() {
   }
   catch {
     tableData.value = []
-  }
-  finally {
-    loading.value = false
   }
 }
 
@@ -172,12 +167,7 @@ function getPinnedStyle(column: Column<TData>): any {
         <DataTableColumnHeader :table="table" :get-pinned-style="getPinnedStyle" />
 
         <TableBody>
-          <template v-if="loading">
-            <TableEmpty :colspan="tableColumns.length">
-              Loading...
-            </TableEmpty>
-          </template>
-          <template v-else-if="table.getRowModel().rows.length">
+          <template v-if="table.getRowModel().rows.length">
             <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
               <TableCell
                 v-for="cell in row.getVisibleCells()"
