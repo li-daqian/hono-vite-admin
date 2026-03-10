@@ -23,10 +23,19 @@ const emit = defineEmits<{
 
 // 判断是否有任何搜索项已被填充
 const hasActiveSearch = computed(() => {
-  return Object.values(props.searchState).some((value) => {
+  return props.searchFields.some((field) => {
+    const value = props.searchState[field.key]
+
     if (Array.isArray(value))
       return value.length > 0
-    return value !== null && String(value).trim().length > 0
+
+    if (value == null)
+      return false
+
+    if (typeof value === 'string')
+      return value.trim().length > 0
+
+    return Boolean(value)
   })
 })
 

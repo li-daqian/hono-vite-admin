@@ -151,6 +151,16 @@ function getPinnedStyle(column: Column<TData>): any {
     background: 'hsl(var(--background))',
   }
 }
+
+function resetSearch() {
+  const state: Record<string, any> = {}
+  props.search.forEach((f) => {
+    state[f.key] = f.type === SearchFieldType.Multi ? (f.defaultValue ?? []) : (f.defaultValue ?? '')
+  })
+
+  searchState.value = state
+  pagination.value.pageIndex = 0
+}
 </script>
 
 <template>
@@ -159,7 +169,7 @@ function getPinnedStyle(column: Column<TData>): any {
       v-model:search-state="searchState"
       :table="table"
       :search-fields="props.search"
-      @reset="() => (pagination.pageIndex = 0)"
+      @reset="resetSearch"
     />
 
     <div class="rounded-md border overflow-hidden">
