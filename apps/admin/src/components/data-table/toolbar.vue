@@ -69,7 +69,7 @@ function updateValue(key: string, value: any) {
       </div>
 
       <Button v-if="hasActiveSearch" variant="ghost" class="h-9 px-2 lg:px-3" @click="emit('reset')">
-        Clear
+        Reset
         <X class="ms-2 h-4 w-4" />
       </Button>
     </div>
