@@ -208,7 +208,10 @@ export const zGetUserPageData = z.object({
             z.string().max(100),
             z.null()
         ]).optional().default(null),
-        status: z.enum(['ACTIVE', 'DISABLED']).describe('Filter users by account status').optional()
+        status: z.union([
+            z.array(z.enum(['ACTIVE', 'DISABLED'])),
+            z.null()
+        ]).optional().default(null)
     })
 });
 

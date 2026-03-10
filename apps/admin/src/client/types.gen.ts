@@ -353,9 +353,9 @@ export type GetUserPageData = {
          */
         search?: string | null;
         /**
-         * Filter users by account status
+         * Filter users by one or more account statuses
          */
-        status?: 'ACTIVE' | 'DISABLED';
+        status?: Array<'ACTIVE' | 'DISABLED'> | null;
     };
     url: '/user/page';
 };
