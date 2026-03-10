@@ -47,7 +47,7 @@ const searchConfig: DataTableSearchField[] = [
   },
   {
     key: 'status',
-    type: SearchFieldType.Single,
+    type: SearchFieldType.Multi,
     label: 'Status',
     placeholder: 'All',
     options: [
