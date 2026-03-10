@@ -66,7 +66,7 @@ const fetchUsers: FetchRequest<UserPageItem> = async (params) => {
 <template>
   <Card>
     <CardHeader class="flex flex-row items-center justify-between">
-      <CardTitle>Users</CardTitle>
+      <CardTitle>User List</CardTitle>
     </CardHeader>
 
     <CardContent>
