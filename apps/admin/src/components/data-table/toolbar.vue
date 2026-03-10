@@ -21,6 +21,9 @@ const emit = defineEmits<{
   (e: 'reset'): void
 }>()
 
+// Define toolbar item height in one place
+const TOOLBAR_ITEM_HEIGHT = 'h-8'
+
 // 判断是否有任何搜索项已被填充
 const hasActiveSearch = computed(() => {
   return props.searchFields.some((field) => {
@@ -49,12 +52,12 @@ function updateValue(key: string, value: any) {
 <template>
   <div class="flex items-center justify-between gap-4">
     <div class="flex flex-1 flex-wrap items-end gap-3">
-      <div v-for="field in props.searchFields" :key="field.key" class="flex min-w-48 flex-col gap-1">
+      <div v-for="field in props.searchFields" :key="field.key" class="flex flex-col gap-1">
         <Input
           v-if="field.type === SearchFieldType.Input"
           :model-value="props.searchState[field.key]"
           :placeholder="field.placeholder ?? 'Search'"
-          class="h-9"
+          :class="`${TOOLBAR_ITEM_HEIGHT} w-64`"
           @update:model-value="v => updateValue(field.key, v)"
         />
 
@@ -63,6 +66,7 @@ function updateValue(key: string, value: any) {
           :title="field.label ?? field.key"
           :options="field.options ?? []"
           :model-value="props.searchState[field.key]"
+          :class="TOOLBAR_ITEM_HEIGHT"
           mode="single"
           @update:model-value="v => updateValue(field.key, v)"
         />
@@ -72,12 +76,13 @@ function updateValue(key: string, value: any) {
           :title="field.label ?? field.key"
           :options="field.options ?? []"
           :model-value="props.searchState[field.key]"
+          :class="TOOLBAR_ITEM_HEIGHT"
           mode="multi"
           @update:model-value="v => updateValue(field.key, v)"
         />
       </div>
 
-      <Button v-if="hasActiveSearch" variant="ghost" class="h-9 px-2 lg:px-3" @click="emit('reset')">
+      <Button v-if="hasActiveSearch" variant="ghost" :class="`${TOOLBAR_ITEM_HEIGHT} px-2 lg:px-3`" @click="emit('reset')">
         Reset
         <X class="ms-2 h-4 w-4" />
       </Button>

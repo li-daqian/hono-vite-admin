@@ -28,6 +28,7 @@ export interface DataTableFacetedFilterProps {
   modelValue?: string | string[]
   mode?: 'single' | 'multi'
   icon?: Component
+  class?: string
 }
 
 const props = withDefaults(defineProps<DataTableFacetedFilterProps>(), {
@@ -80,7 +81,7 @@ function clearFilters() {
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <Button variant="outline" size="sm" class="h-8 border-dashed">
+      <Button variant="outline" size="sm" :class="cn('border-dashed', props.class)">
         <CirclePlus class="size-4" />
         {{ props.title }}
         <template v-if="selectedValues.size > 0">
