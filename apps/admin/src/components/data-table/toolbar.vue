@@ -3,7 +3,6 @@ import type { Table } from '@tanstack/vue-table'
 import type { DataTableSearchField } from './types'
 import { Button } from '@admin/components/ui/button'
 import { Input } from '@admin/components/ui/input'
-import { Label } from '@admin/components/ui/label'
 import { X } from 'lucide-vue-next'
 import { computed } from 'vue'
 import DataTableFacetedFilter from './faceted-filter.vue'
@@ -42,10 +41,6 @@ function updateValue(key: string, value: any) {
   <div class="flex items-center justify-between gap-4">
     <div class="flex flex-1 flex-wrap items-end gap-3">
       <div v-for="field in props.searchFields" :key="field.key" class="flex min-w-48 flex-col gap-1">
-        <Label v-if="field.type === SearchFieldType.Input" class="text-xs text-muted-foreground">
-          {{ field.label ?? field.key }}
-        </Label>
-
         <Input
           v-if="field.type === SearchFieldType.Input"
           :model-value="props.searchState[field.key]"
