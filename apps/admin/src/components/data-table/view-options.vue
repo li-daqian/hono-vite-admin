@@ -39,7 +39,7 @@ function getColumnTitle(column: Column<TData, unknown>) {
         size="sm"
         class="ms-auto hidden h-8 lg:flex"
       >
-        <Settings2 class="mr-2 size-4" />
+        <Settings2 class="size-4" />
         View
       </Button>
     </DropdownMenuTrigger>
