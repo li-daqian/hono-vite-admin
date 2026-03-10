@@ -39,7 +39,22 @@ export type UserProfileResponse = z.infer<typeof UserProfileResponseSchema>
 
 export const UserPaginationRequestSchema = PaginationQuerySchema.extend({
   search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering users by username, email, or display name', example: 'john' }),
-  status: z.preprocess(emptyStringToUndefined, z.enum(Object.values(UserStatus)).nullable().default(null)).openapi({ description: 'Filter users by account status', example: UserStatus.ACTIVE }),
+  status: z.preprocess(
+    (val) => {
+      // If it's an empty string, return undefined so it hits the default
+      if (val === '')
+        return undefined
+        // If it's a single string, wrap it in an array for the array schema
+      if (typeof val === 'string')
+        return [val]
+      return val
+    },
+    z.array(z.enum(UserStatus)).nullable().default(null),
+  )
+    .openapi({
+      description: 'Filter users by one or more account statuses',
+      example: [UserStatus.ACTIVE, UserStatus.DISABLED],
+    }),
 })
 export type UserPaginationRequest = z.infer<typeof UserPaginationRequestSchema>
 export const UserPaginationResponseSchema = PaginatedResponseSchema(UserProfileResponseSchema)

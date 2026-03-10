@@ -56,7 +56,7 @@ class UserService {
     const skip = (page - 1) * pageSize
 
     const where = {
-      ...(status ? { status } : {}),
+      ...(status && { status: { in: status } }),
       ...(search
         ? {
             OR: [
