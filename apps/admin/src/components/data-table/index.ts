@@ -1,3 +1,4 @@
+export { default as DataTableBulkActions } from './bulk-actions.vue'
 export { default as DataTablePagination } from './pagination.vue'
 export { default as DataTable } from './table.vue'
 export { default as DataTableToolbar } from './toolbar.vue'
