@@ -1,11 +1,15 @@
 <script setup lang="ts" generic="TData extends Record<string, unknown>">
 import type {
+  CellContext,
   Column,
   ColumnDef,
   ColumnPinningState,
+  HeaderContext,
   PaginationState,
   Row,
+  RowSelectionState,
   SortingState,
+  Table as TableInstance,
   VisibilityState,
 } from '@tanstack/vue-table'
 import type { DataTableColumn, DataTableOperations, DataTableSearchField, FetchRequest, FetchRequestParams } from './types'
@@ -17,9 +21,9 @@ import {
   TableRow,
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
-import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
+import { FlexRender, getCoreRowModel, getFilteredRowModel, useVueTable } from '@tanstack/vue-table'
 
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, h, ref, shallowRef, watch } from 'vue'
 import DataTableColumnHeader from './column-header.vue'
 import DataTablePagination from './pagination.vue'
 import DataTableToolbar from './toolbar.vue'
@@ -39,7 +43,10 @@ const props = withDefaults(defineProps<{
   pageSize: 10,
 })
 
-const slots = defineSlots<{ operations?: (props: { row: TData }) => any }>()
+const slots = defineSlots<{
+  'operations'?: (props: { row: TData }) => any
+  'bulk-actions'?: (props: { table: TableInstance<TData> }) => any
+}>()
 
 // 状态管理
 const tableData = shallowRef<TData[]>([])
@@ -48,6 +55,7 @@ const totalPages = ref(1)
 const columnVisibility = ref<VisibilityState>({})
 const columnPinning = ref<ColumnPinningState>({})
 const sorting = ref<SortingState>([])
+const rowSelection = ref<RowSelectionState>({})
 
 // 搜索状态初始化
 const searchState = ref<Record<string, any>>({})
@@ -62,19 +70,47 @@ watch(() => props.search, (fields) => {
 
 // 转换列定义
 const tableColumns = computed<ColumnDef<TData>[]>(() => {
-  const cols = props.columns.map(c => ({
-    id: c.key,
-    accessorKey: c.key,
-    header: c.header,
-    enableSorting: c.sortable === true,
-    enableHiding: c.configurable !== false,
-    cell: ({ row, getValue }) => c.cell ? c.cell(row.original, getValue()) : getValue(),
-  } satisfies ColumnDef<TData>))
+  const cols: ColumnDef<TData>[] = [
+    {
+      id: 'select',
+      enableSorting: false,
+      enableHiding: false,
+      header: ({ table }: HeaderContext<TData, unknown>) => h('input', {
+        'type': 'checkbox',
+        'checked': table.getIsAllPageRowsSelected(),
+        'indeterminate': table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
+        'aria-label': 'Select all rows on current page',
+        'class': 'size-4 cursor-pointer accent-primary',
+        'onChange': (event: Event) => {
+          table.toggleAllPageRowsSelected((event.target as HTMLInputElement).checked)
+        },
+      }),
+      cell: ({ row }: CellContext<TData, unknown>) => h('input', {
+        'type': 'checkbox',
+        'checked': row.getIsSelected(),
+        'indeterminate': row.getIsSomeSelected() && !row.getIsSelected(),
+        'disabled': !row.getCanSelect(),
+        'aria-label': 'Select row',
+        'class': 'size-4 cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50',
+        'onChange': (event: Event) => {
+          row.toggleSelected((event.target as HTMLInputElement).checked)
+        },
+      }),
+    },
+    ...props.columns.map(c => ({
+      id: c.key,
+      accessorKey: c.key,
+      header: c.header,
+      enableSorting: c.sortable === true,
+      enableHiding: c.configurable !== false,
+      cell: ({ row, getValue }) => c.cell ? c.cell(row.original, getValue()) : getValue(),
+    } satisfies ColumnDef<TData>)),
+  ]
 
   if (slots.operations) {
     cols.push({
       id: 'actions',
-      header: '',
+      header: props.operations?.header ?? '',
       enableHiding: false,
       cell: ({ row }: { row: Row<TData> }) => slots.operations?.({ row: row.original }),
     } as any)
@@ -91,9 +127,11 @@ const table = useVueTable({
     get sorting() { return sorting.value },
     get columnVisibility() { return columnVisibility.value },
     get columnPinning() { return columnPinning.value },
+    get rowSelection() { return rowSelection.value },
   },
   manualPagination: true,
   manualSorting: true,
+  enableRowSelection: true,
   get pageCount() { return totalPages.value },
   onPaginationChange: updater => valueUpdater(updater, pagination),
   onSortingChange: (updater) => {
@@ -102,7 +140,9 @@ const table = useVueTable({
   },
   onColumnVisibilityChange: updater => valueUpdater(updater, columnVisibility),
   onColumnPinningChange: updater => valueUpdater(updater, columnPinning),
+  onRowSelectionChange: updater => valueUpdater(updater, rowSelection),
   getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
 })
 
 // 数据获取逻辑
@@ -198,5 +238,7 @@ function resetSearch() {
     </div>
 
     <DataTablePagination :table="table" />
+
+    <slot name="bulk-actions" :table="table" />
   </div>
 </template>

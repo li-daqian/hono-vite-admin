@@ -5,9 +5,15 @@ import { getUserPage } from '@admin/client'
 import { DataTable, SearchFieldType } from '@admin/components/data-table'
 import { Button } from '@admin/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@admin/components/ui/card'
-import { h } from 'vue'
+import { Trash2 } from 'lucide-vue-next'
+import { h, ref } from 'vue'
+import UsersDataTableBulkActions from './component/data-table-bulk-actions.vue'
+import UsersDeleteDialog from './component/users-delete-dialog.vue'
 
 type UserPageItem = GetUserPageResponse['items'][number]
+
+const showDeleteConfirm = ref(false)
+const currentRow = ref<UserPageItem | null>(null)
 
 const columns: DataTableColumn<UserPageItem>[] = [
   {
@@ -61,6 +67,11 @@ const fetchUsers: FetchRequest<UserPageItem> = async (params) => {
   const response = await getUserPage<true>({ query: params })
   return response.data
 }
+
+function openDeleteDialog(row: UserPageItem) {
+  currentRow.value = row
+  showDeleteConfirm.value = true
+}
 </script>
 
 <template>
@@ -76,12 +87,34 @@ const fetchUsers: FetchRequest<UserPageItem> = async (params) => {
         :search="searchConfig"
         :operations="{ header: 'Actions', pin: 'right' }"
       >
-        <template #operations>
-          <Button variant="ghost" size="sm">
-            View
-          </Button>
+        <template #operations="{ row }">
+          <div class="flex items-center justify-end gap-1">
+            <Button variant="ghost" size="sm">
+              View
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Delete user"
+              title="Delete user"
+              @click="openDeleteDialog(row)"
+            >
+              <Trash2 />
+            </Button>
+          </div>
+        </template>
+
+        <template #bulk-actions="{ table }">
+          <UsersDataTableBulkActions :table="table" />
         </template>
       </DataTable>
+
+      <UsersDeleteDialog
+        v-if="currentRow"
+        :open="showDeleteConfirm"
+        :current-row="currentRow"
+        @update:open="showDeleteConfirm = $event"
+      />
     </CardContent>
   </Card>
 </template>
