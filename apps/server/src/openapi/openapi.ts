@@ -1,20 +1,23 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { BusinessError } from '@server/src/common/exception'
-import { authApp } from '@server/src/modules/auth/auth.route'
-import { userApp } from '@server/src/modules/user/user.route'
 import { setUpSwagger } from '@server/src/openapi/swagger'
 
-const openApi = new OpenAPIHono({
-  defaultHook: (result, _c) => {
-    if (!result.success) {
-      throw BusinessError.BadRequest(result.error.message, 'ValidationError')
-    }
-  },
-})
+interface ApiConfig {
+  basePath: string
+  title: string
+  version: string
+}
 
-setUpSwagger(openApi)
+export function createApi(config: ApiConfig) {
+  const api = new OpenAPIHono({
+    defaultHook: (result, _c) => {
+      if (!result.success) {
+        throw BusinessError.BadRequest(result.error.message, 'ValidationError')
+      }
+    },
+  })
 
-openApi.route('/auth', authApp)
-openApi.route('/user', userApp)
+  setUpSwagger(api, config)
 
-export { openApi }
+  return api
+}

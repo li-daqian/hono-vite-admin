@@ -1,7 +1,11 @@
+import process from 'node:process'
 import { defineConfig } from '@hey-api/openapi-ts'
 
+const API_BASE_URL = process.env.OPENAPI_SERVER_URL ?? 'http://localhost:3000'
+const API_V1_OPENAPI_JSON = '/api/v1/openapi.json'
+
 export default defineConfig({
-  input: 'http://localhost:3000/api/v1/openapi.json',
+  input: `${API_BASE_URL}${API_V1_OPENAPI_JSON}`,
   output: {
     path: './src/client',
   },

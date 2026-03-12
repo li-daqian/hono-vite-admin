@@ -1,10 +1,17 @@
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { ErrorResponseSchema } from '@server/src/common/basic.schema'
-import { API_V1_BASE_PATH } from '@server/src/common/constant'
 import { getEnv } from '@server/src/lib/env'
 
-export function setUpSwagger(api: OpenAPIHono) {
+interface SwaggerConfig {
+  basePath: string
+  title: string
+  version: string
+}
+
+export function setUpSwagger(api: OpenAPIHono, config: SwaggerConfig) {
+  const { basePath, title, version } = config
+
   if (!getEnv().isProduction) {
     // Register security scheme
     api.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
@@ -17,16 +24,16 @@ export function setUpSwagger(api: OpenAPIHono) {
     api.doc('/openapi.json', {
       openapi: '3.0.0',
       info: {
-        title: 'Hono-vite-admin API',
-        version: '1.0.0',
+        title,
+        version,
       },
       servers: [{
-        url: `${API_V1_BASE_PATH}`,
+        url: basePath,
       }],
     })
     // Swagger UI with auto token setup
     api.get('/docs', swaggerUI({
-      url: `${API_V1_BASE_PATH}/openapi.json`,
+      url: `${basePath}/openapi.json`,
       onComplete: `() => {
       const originalFetch = window.fetch;
       window.fetch = function(...args) {

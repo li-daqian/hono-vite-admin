@@ -1,10 +1,11 @@
-import { API_V1_BASE_PATH } from '@server/src/common/constant'
+import { API_V1_BASE_PATH, API_V2_BASE_PATH } from '@server/src/common/constant'
 import { holdContext } from '@server/src/middleware/context.middleware'
 import { corsMiddleware } from '@server/src/middleware/cors.middleware'
 import { onErrorHandler, onNotFoundHandler } from '@server/src/middleware/expcetion.middleware'
 import { requestIdMiddleware } from '@server/src/middleware/requestId.middleware'
 import { traceLogger } from '@server/src/middleware/trace.middleware'
-import { openApi } from '@server/src/openapi/openapi'
+import { apiV1 } from '@server/src/openapi/v1'
+import { apiV2 } from '@server/src/openapi/v2'
 import { Hono } from 'hono'
 
 // Initialize main app
@@ -26,6 +27,7 @@ app.get('/favicon.ico', (c) => {
 })
 
 // Main API routes
-app.route(API_V1_BASE_PATH, openApi)
+app.route(API_V1_BASE_PATH, apiV1)
+app.route(API_V2_BASE_PATH, apiV2)
 
 export default app
