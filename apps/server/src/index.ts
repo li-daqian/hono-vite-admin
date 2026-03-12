@@ -1,3 +1,4 @@
+import { API_V1_BASE_PATH } from '@server/src/common/constant'
 import { holdContext } from '@server/src/middleware/context.middleware'
 import { corsMiddleware } from '@server/src/middleware/cors.middleware'
 import { onErrorHandler, onNotFoundHandler } from '@server/src/middleware/expcetion.middleware'
@@ -25,6 +26,6 @@ app.get('/favicon.ico', (c) => {
 })
 
 // Main API routes
-app.route('/api/v1', openApi)
+app.route(API_V1_BASE_PATH, openApi)
 
 export default app
