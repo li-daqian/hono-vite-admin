@@ -27,6 +27,11 @@ app.get('/favicon.ico', (c) => {
   return c.redirect('https://hono.dev/favicon.ico', 302)
 })
 
+// Well-known route for Chrome DevTools
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (c) => {
+  return c.json({})
+})
+
 // Main API routes
 app.route(API_V1_BASE_PATH, apiV1)
 app.route(API_V2_BASE_PATH, apiV2)
