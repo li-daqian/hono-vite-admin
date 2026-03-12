@@ -1,7 +1,5 @@
-import type { SwaggerUIOptions } from '@hono/swagger-ui'
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { Hono } from 'hono'
-import { swaggerUI } from '@hono/swagger-ui'
 import { ErrorResponseSchema } from '@server/src/common/basic.schema'
 import { getEnv } from '@server/src/lib/env'
 
@@ -55,6 +53,9 @@ export function setUpUnifiedSwagger(app: Hono, config: UnifiedSwaggerConfig) {
     : apis
 
   if (!getEnv().isProduction) {
+    const defaultPrimaryName = primaryName ?? sortedApis[0]?.name
+    const defaultSpecUrl = sortedApis[0]?.url ?? ''
+
     const onCompleteScript = `() => {
       const originalFetch = window.fetch;
       window.fetch = function(...args) {
@@ -85,40 +86,44 @@ export function setUpUnifiedSwagger(app: Hono, config: UnifiedSwaggerConfig) {
           return response;
         });
       };
+
     }`
 
-    const swaggerOptions: SwaggerUIOptions = {
-      url: sortedApis[0]?.url,
-      urls: sortedApis,
-      manuallySwaggerUIHtml: (asset) => {
-        const standalonePresetUrl = asset.js[0]?.replace('swagger-ui-bundle.js', 'swagger-ui-standalone-preset.js')
-        const defaultPrimaryName = primaryName ?? sortedApis[0]?.name
+    app.get(docsPath, (c) => {
+      c.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+      c.header('Pragma', 'no-cache')
+      c.header('Expires', '0')
 
-        return `
-          <div>
-            <div id="swagger-ui"></div>
-            ${asset.css.map(url => `<link rel="stylesheet" href="${url}" />`).join('')}
-            ${asset.js.map(url => `<script src="${url}" crossorigin="anonymous"></script>`).join('')}
-            ${standalonePresetUrl ? `<script src="${standalonePresetUrl}" crossorigin="anonymous"></script>` : ''}
-            <script>
-              window.onload = () => {
-                window.ui = SwaggerUIBundle({
-                  dom_id: '#swagger-ui',
-                  url: ${JSON.stringify(sortedApis[0]?.url)},
-                  urls: ${JSON.stringify(sortedApis)},
-                  'urls.primaryName': ${JSON.stringify(defaultPrimaryName)},
-                  presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-                  plugins: [SwaggerUIBundle.plugins.DownloadUrl],
-                  layout: 'StandaloneLayout',
-                  onComplete: ${onCompleteScript},
-                })
-              }
-            </script>
-          </div>
-        `
-      },
-    }
-
-    app.get(docsPath, swaggerUI(swaggerOptions))
+      return c.html(`
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="description" content="SwaggerUI" />
+          <title>SwaggerUI</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />
+        </head>
+        <body>
+          <div id="swagger-ui"></div>
+          <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js" crossorigin="anonymous"></script>
+          <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js" crossorigin="anonymous"></script>
+          <script>
+            window.onload = () => {
+              window.ui = SwaggerUIBundle({
+                dom_id: '#swagger-ui',
+                url: ${JSON.stringify(defaultSpecUrl)},
+                urls: ${JSON.stringify(sortedApis)},
+                'urls.primaryName': ${JSON.stringify(defaultPrimaryName)},
+                layout: 'StandaloneLayout',
+                presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+                plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+                onComplete: ${onCompleteScript},
+              })
+            }
+          </script>
+        </body>
+      </html>
+    `)
+    })
   }
 }
