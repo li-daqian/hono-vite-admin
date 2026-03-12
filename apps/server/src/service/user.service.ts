@@ -1,4 +1,14 @@
-import type { UserCreateRequest, UserCreateResponse, UserPaginationRequest, UserPaginationResponse, UserProfileResponse } from '@server/src/schemas/user.schema'
+import type { UserStatus } from '@server/generated/prisma/enums'
+import type {
+  UserBatchDeleteResponse,
+  UserBatchStatusUpdateResponse,
+  UserCreateRequest,
+  UserCreateResponse,
+  UserPaginationRequest,
+  UserPaginationResponse,
+  UserProfileResponse,
+  UserUpdateRequest,
+} from '@server/src/schemas/user.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import { buildOrderBy, paginate } from '@server/src/utils/pagination'
@@ -101,6 +111,68 @@ class UserService {
     }))
 
     return paginate(items, total, query)
+  }
+
+  async updateUser(userId: string, request: UserUpdateRequest): Promise<UserProfileResponse> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+    if (!user) {
+      throw BusinessError.NotFound('User not found')
+    }
+
+    if (request.username && request.username !== user.username && !(await this.isUsernameUnique(request.username))) {
+      throw BusinessError.UsernameAlreadyExists()
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        username: request.username,
+        email: request.email,
+        phone: request.phone,
+        displayName: request.displayName,
+        status: request.status,
+      },
+    })
+
+    const { password, salt, ...safeUser } = updatedUser
+    return {
+      ...safeUser,
+      createdAt: updatedUser.createdAt.toISOString(),
+      updatedAt: updatedUser.updatedAt.toISOString(),
+    }
+  }
+
+  async deleteUsers(userIds: string[]): Promise<UserBatchDeleteResponse> {
+    const uniqueUserIds = [...new Set(userIds)]
+    if (uniqueUserIds.length === 0) {
+      throw BusinessError.BadRequest('userIds must not be empty')
+    }
+
+    const result = await prisma.user.deleteMany({
+      where: { id: { in: uniqueUserIds } },
+    })
+
+    return {
+      deletedCount: result.count,
+    }
+  }
+
+  async updateUsersStatus(userIds: string[], status: UserStatus): Promise<UserBatchStatusUpdateResponse> {
+    const uniqueUserIds = [...new Set(userIds)]
+    if (uniqueUserIds.length === 0) {
+      throw BusinessError.BadRequest('userIds must not be empty')
+    }
+
+    const result = await prisma.user.updateMany({
+      where: { id: { in: uniqueUserIds } },
+      data: { status },
+    })
+
+    return {
+      updatedCount: result.count,
+    }
   }
 
   private async isUsernameUnique(username: string): Promise<boolean> {

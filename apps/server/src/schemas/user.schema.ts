@@ -25,6 +25,36 @@ export const UserCreateResponseSchema = z.object({
 export type UserCreateRequest = z.infer<typeof UserCreateRequestSchema>
 export type UserCreateResponse = z.infer<typeof UserCreateResponseSchema>
 
+export const UserUpdateRequestSchema = z.object({
+  username: z.string().min(3).max(30).optional().openapi({ description: 'Unique username for the user', example: 'johndoe' }),
+  email: z.email().nullable().optional().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
+  phone: z.string().min(10).max(15).nullable().optional().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
+  displayName: z.string().max(50).nullable().optional().openapi({ description: 'Display name of the user', example: 'John Doe' }),
+  status: z.enum(Object.values(UserStatus)).optional().openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
+}).refine(value => Object.keys(value).length > 0, {
+  message: 'At least one field must be provided for update',
+})
+export type UserUpdateRequest = z.infer<typeof UserUpdateRequestSchema>
+
+export const UserBatchDeleteRequestSchema = z.object({
+  userIds: z.array(z.string()).min(1).openapi({ description: 'IDs of users to delete', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
+})
+export const UserBatchDeleteResponseSchema = z.object({
+  deletedCount: z.number().int().nonnegative().openapi({ description: 'Number of users deleted', example: 2 }),
+})
+export type UserBatchDeleteRequest = z.infer<typeof UserBatchDeleteRequestSchema>
+export type UserBatchDeleteResponse = z.infer<typeof UserBatchDeleteResponseSchema>
+
+export const UserBatchStatusUpdateRequestSchema = z.object({
+  userIds: z.array(z.string()).min(1).openapi({ description: 'IDs of users to update status', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
+  status: z.enum(Object.values(UserStatus)).openapi({ description: 'Target status for users', example: UserStatus.DISABLED }),
+})
+export const UserBatchStatusUpdateResponseSchema = z.object({
+  updatedCount: z.number().int().nonnegative().openapi({ description: 'Number of users updated', example: 3 }),
+})
+export type UserBatchStatusUpdateRequest = z.infer<typeof UserBatchStatusUpdateRequestSchema>
+export type UserBatchStatusUpdateResponse = z.infer<typeof UserBatchStatusUpdateResponseSchema>
+
 export const UserProfileResponseSchema = z.object({
   id: z.string().openapi({ description: 'Unique identifier for the user', example: '550e8400-e29b-41d4-a716-446655440000' }),
   username: z.string().openapi({ description: 'Unique username for the user', example: 'johndoe' }),
