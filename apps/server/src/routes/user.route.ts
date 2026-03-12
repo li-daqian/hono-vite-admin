@@ -1,5 +1,4 @@
 import type { OpenAPIHono } from '@hono/zod-openapi'
-import type { UserCreateRequest } from '@server/src/schemas/user.schema'
 import { createRoute, z } from '@hono/zod-openapi'
 import { authMiddleware, getLoginUser } from '@server/src/middleware/auth.middleware'
 import {
@@ -29,7 +28,7 @@ export function userRoute(api: OpenAPIHono) {
     middleware: [authMiddleware],
     tags: ['User'],
   }), async (c) => {
-    const body = await c.req.json<UserCreateRequest>()
+    const body = c.req.valid('json')
     const createdUser = await userService.createUser(body)
     return c.json(createdUser, 201)
   })
