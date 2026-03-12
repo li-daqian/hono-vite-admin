@@ -1,7 +1,7 @@
-import type { AuthLoginRequest, AuthRefreshRequest } from '@server/src/schemas/auth.schema'
+import type { AuthLoginRequest, AuthRefreshRequest } from '@server/src/modules/auth/auth.schema'
 import { refreshTokenCookie } from '@server/src/lib/cookie'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
-import { authService } from '@server/src/service/auth.service'
+import { authService } from '@server/src/modules/auth/auth.service'
 
 export async function handleAuthPrefill(c: any) {
   const prefillData = await authService.getPrefilledCredentials()

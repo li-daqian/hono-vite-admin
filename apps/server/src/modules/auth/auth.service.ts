@@ -1,5 +1,5 @@
 import type { Action, Menu } from '@server/generated/prisma/client'
-import type { AuthLoginRequest, AuthLoginResponse, AuthMenu, AuthMenuResponse, AuthPrefillResponse, AuthRefreshResponse } from '@server/src/schemas/auth.schema'
+import type { AuthLoginRequest, AuthLoginResponse, AuthMenu, AuthMenuResponse, AuthPrefillResponse, AuthRefreshResponse } from '@server/src/modules/auth/auth.schema'
 import { randomUUID } from 'node:crypto'
 import { PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'

@@ -1,4 +1,4 @@
-import { ErrorResponseSchema } from '@server/src/schemas/basic.schema'
+import { ErrorResponseSchema } from '@server/src/common/basic.schema'
 
 interface GlobalErrorResponseEntry {
   description: string

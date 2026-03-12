@@ -1,4 +1,4 @@
-import type { AuthLoginResponse } from '@server/src/schemas/auth.schema'
+import type { AuthLoginResponse } from '@server/src/modules/auth/auth.schema'
 import type { Context } from 'hono'
 import { getEnv } from '@server/src/lib/env'
 import { getCookie, setCookie } from 'hono/cookie'

@@ -8,7 +8,7 @@ import type {
   UserPaginationResponse,
   UserProfileResponse,
   UserUpdateRequest,
-} from '@server/src/schemas/user.schema'
+} from '@server/src/modules/user/user.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import { buildOrderBy, paginate } from '@server/src/utils/pagination'

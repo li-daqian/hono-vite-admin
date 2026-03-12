@@ -7,7 +7,7 @@ import {
   AuthPrefillResponseSchema,
   AuthRefreshRequestSchema,
   AuthRefreshResponseSchema,
-} from '@server/src/schemas/auth.schema'
+} from '@server/src/modules/auth/auth.schema'
 
 export const authPrefillRoute = createRoute({
   path: '/auth/prefill',

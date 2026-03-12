@@ -5,14 +5,14 @@ import {
   handleAuthMenus,
   handleAuthPrefill,
   handleAuthRefresh,
-} from '@server/src/routes/auth.handler'
+} from '@server/src/modules/auth/auth.handler'
 import {
   authLoginRoute,
   authLogoutRoute,
   authMenusRoute,
   authPrefillRoute,
   authRefreshRoute,
-} from '@server/src/routes/auth.openapi'
+} from '@server/src/modules/auth/auth.openapi'
 
 export function authRoute(api: OpenAPIHono) {
   api.openapi(authPrefillRoute, handleAuthPrefill)

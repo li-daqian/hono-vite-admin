@@ -1,4 +1,4 @@
-import type { PaginatedResponse, PaginationQuery } from '@server/src/schemas/basic.schema'
+import type { PaginatedResponse, PaginationQuery } from '@server/src/common/basic.schema'
 import { BusinessError } from '@server/src/common/exception'
 
 type SortDirection = 'asc' | 'desc'

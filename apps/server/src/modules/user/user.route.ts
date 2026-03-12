@@ -6,7 +6,7 @@ import {
   handleGetUserProfile,
   handleUpdateUser,
   handleUpdateUserStatusBatch,
-} from '@server/src/routes/user.handler'
+} from '@server/src/modules/user/user.handler'
 import {
   createUserRoute,
   deleteUsersBatchRoute,
@@ -14,7 +14,7 @@ import {
   getUserProfileRoute,
   updateUserRoute,
   updateUserStatusBatchRoute,
-} from '@server/src/routes/user.openapi'
+} from '@server/src/modules/user/user.openapi'
 
 export function userRoute(api: OpenAPIHono) {
   api.openapi(createUserRoute, handleCreateUser)

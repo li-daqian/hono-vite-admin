@@ -1,6 +1,6 @@
 import { z } from '@hono/zod-openapi'
 import { UserStatus } from '@server/generated/prisma/enums'
-import { PaginatedResponseSchema, PaginationQuerySchema } from '@server/src/schemas/basic.schema'
+import { PaginatedResponseSchema, PaginationQuerySchema } from '@server/src/common/basic.schema'
 
 function emptyStringToUndefined(value: unknown) {
   return value === '' ? undefined : value

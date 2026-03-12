@@ -1,5 +1,5 @@
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
-import { userService } from '@server/src/service/user.service'
+import { userService } from '@server/src/modules/user/user.service'
 
 export async function handleCreateUser(c: any) {
   const body = c.req.valid('json')

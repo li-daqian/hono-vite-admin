@@ -11,7 +11,7 @@ import {
   UserPaginationResponseSchema,
   UserProfileResponseSchema,
   UserUpdateRequestSchema,
-} from '@server/src/schemas/user.schema'
+} from '@server/src/modules/user/user.schema'
 
 export const createUserRoute = createRoute({
   path: '/user',
