@@ -2,9 +2,9 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import { getAuthMenusResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer } from './transformers.gen';
-import type { GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses } from './types.gen';
-import { zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostUserData, zPostUserResponse } from './zod.gen';
+import { getAuthMenusResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer, putUserByIdResponseTransformer } from './transformers.gen';
+import type { DeleteUserBatchData, DeleteUserBatchResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
+import { zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostUserData, zPostUserResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -89,23 +89,6 @@ export const getAuthMenus = <ThrowOnError extends boolean = false>(options?: Opt
 });
 
 /**
- * Create a new user
- */
-export const postUser = <ThrowOnError extends boolean = false>(options: Options<PostUserData, ThrowOnError>) => (options.client ?? client).post<PostUserResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zPostUserData.parseAsync(data),
-    responseTransformer: postUserResponseTransformer,
-    responseType: 'json',
-    responseValidator: async (data) => await zPostUserResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/user',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Get user profile
  */
 export const getUserProfile = <ThrowOnError extends boolean = false>(options?: Options<GetUserProfileData, ThrowOnError>) => (options?.client ?? client).get<GetUserProfileResponses, unknown, ThrowOnError>({
@@ -129,4 +112,70 @@ export const getUserPage = <ThrowOnError extends boolean = false>(options: Optio
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/user/page',
     ...options
+});
+
+/**
+ * Create a new user
+ */
+export const postUser = <ThrowOnError extends boolean = false>(options: Options<PostUserData, ThrowOnError>) => (options.client ?? client).post<PostUserResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostUserData.parseAsync(data),
+    responseTransformer: postUserResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zPostUserResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/user',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update user
+ */
+export const putUserById = <ThrowOnError extends boolean = false>(options: Options<PutUserByIdData, ThrowOnError>) => (options.client ?? client).put<PutUserByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPutUserByIdData.parseAsync(data),
+    responseTransformer: putUserByIdResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zPutUserByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/user/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Batch delete users
+ */
+export const deleteUserBatch = <ThrowOnError extends boolean = false>(options: Options<DeleteUserBatchData, ThrowOnError>) => (options.client ?? client).delete<DeleteUserBatchResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDeleteUserBatchData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zDeleteUserBatchResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/user/batch',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Batch update user status
+ */
+export const patchUserStatusBatch = <ThrowOnError extends boolean = false>(options: Options<PatchUserStatusBatchData, ThrowOnError>) => (options.client ?? client).patch<PatchUserStatusBatchResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPatchUserStatusBatchData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zPatchUserStatusBatchResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/user/status/batch',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });

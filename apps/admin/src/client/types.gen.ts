@@ -217,72 +217,6 @@ export type GetAuthMenusResponses = {
 
 export type GetAuthMenusResponse = GetAuthMenusResponses[keyof GetAuthMenusResponses];
 
-export type PostUserData = {
-    body: {
-        /**
-         * Unique username for the user
-         */
-        username: string;
-        /**
-         * Password for the user
-         */
-        password: string;
-        /**
-         * Email address of the user
-         */
-        email: string | null;
-        /**
-         * Phone number of the user
-         */
-        phone: string | null;
-        /**
-         * Display name of the user
-         */
-        displayName: string | null;
-    };
-    path?: never;
-    query?: never;
-    url: '/user';
-};
-
-export type PostUserResponses = {
-    /**
-     * User created successfully
-     */
-    201: {
-        /**
-         * Unique identifier for the user
-         */
-        id: string;
-        /**
-         * Unique username for the user
-         */
-        username: string;
-        /**
-         * Email address of the user
-         */
-        email: string | null;
-        /**
-         * Phone number of the user
-         */
-        phone: string | null;
-        /**
-         * Display name of the user
-         */
-        displayName: string | null;
-        /**
-         * Timestamp when the user was created
-         */
-        createdAt: Date;
-        /**
-         * Timestamp when the user was last updated
-         */
-        updatedAt: Date;
-    };
-};
-
-export type PostUserResponse = PostUserResponses[keyof PostUserResponses];
-
 export type GetUserProfileData = {
     body?: never;
     path?: never;
@@ -407,3 +341,200 @@ export type GetUserPageResponses = {
 };
 
 export type GetUserPageResponse = GetUserPageResponses[keyof GetUserPageResponses];
+
+export type PostUserData = {
+    body: {
+        /**
+         * Unique username for the user
+         */
+        username: string;
+        /**
+         * Password for the user
+         */
+        password: string;
+        /**
+         * Email address of the user
+         */
+        email: string | null;
+        /**
+         * Phone number of the user
+         */
+        phone: string | null;
+        /**
+         * Display name of the user
+         */
+        displayName: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/user';
+};
+
+export type PostUserResponses = {
+    /**
+     * User created successfully
+     */
+    201: {
+        /**
+         * Unique identifier for the user
+         */
+        id: string;
+        /**
+         * Unique username for the user
+         */
+        username: string;
+        /**
+         * Email address of the user
+         */
+        email: string | null;
+        /**
+         * Phone number of the user
+         */
+        phone: string | null;
+        /**
+         * Display name of the user
+         */
+        displayName: string | null;
+        /**
+         * Timestamp when the user was created
+         */
+        createdAt: Date;
+        /**
+         * Timestamp when the user was last updated
+         */
+        updatedAt: Date;
+    };
+};
+
+export type PostUserResponse = PostUserResponses[keyof PostUserResponses];
+
+export type PutUserByIdData = {
+    body: {
+        /**
+         * Unique username for the user
+         */
+        username?: string;
+        /**
+         * Email address of the user
+         */
+        email?: string | null;
+        /**
+         * Phone number of the user
+         */
+        phone?: string | null;
+        /**
+         * Display name of the user
+         */
+        displayName?: string | null;
+        /**
+         * Status of the user account
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+    };
+    path: {
+        /**
+         * User ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/user/{id}';
+};
+
+export type PutUserByIdResponses = {
+    /**
+     * User updated successfully
+     */
+    200: {
+        /**
+         * Unique identifier for the user
+         */
+        id: string;
+        /**
+         * Unique username for the user
+         */
+        username: string;
+        /**
+         * Email address of the user
+         */
+        email: string | null;
+        /**
+         * Phone number of the user
+         */
+        phone: string | null;
+        /**
+         * Display name of the user
+         */
+        displayName: string | null;
+        /**
+         * Status of the user account
+         */
+        status: 'ACTIVE' | 'DISABLED';
+        /**
+         * Timestamp when the user was created
+         */
+        createdAt: Date;
+        /**
+         * Timestamp when the user was last updated
+         */
+        updatedAt: Date;
+    };
+};
+
+export type PutUserByIdResponse = PutUserByIdResponses[keyof PutUserByIdResponses];
+
+export type DeleteUserBatchData = {
+    body: {
+        /**
+         * IDs of users to delete
+         */
+        userIds: Array<string>;
+    };
+    path?: never;
+    query?: never;
+    url: '/user/batch';
+};
+
+export type DeleteUserBatchResponses = {
+    /**
+     * Users deleted successfully
+     */
+    200: {
+        /**
+         * Number of users deleted
+         */
+        deletedCount: number;
+    };
+};
+
+export type DeleteUserBatchResponse = DeleteUserBatchResponses[keyof DeleteUserBatchResponses];
+
+export type PatchUserStatusBatchData = {
+    body: {
+        /**
+         * IDs of users to update status
+         */
+        userIds: Array<string>;
+        /**
+         * Target status for users
+         */
+        status: 'ACTIVE' | 'DISABLED';
+    };
+    path?: never;
+    query?: never;
+    url: '/user/status/batch';
+};
+
+export type PatchUserStatusBatchResponses = {
+    /**
+     * User status updated successfully
+     */
+    200: {
+        /**
+         * Number of users updated
+         */
+        updatedCount: number;
+    };
+};
+
+export type PatchUserStatusBatchResponse = PatchUserStatusBatchResponses[keyof PatchUserStatusBatchResponses];

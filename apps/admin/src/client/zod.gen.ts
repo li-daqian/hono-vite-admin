@@ -122,49 +122,6 @@ export const zGetAuthMenusData = z.object({
  */
 export const zGetAuthMenusResponse = z.array(zAuthMenuSchema).describe('List of menus accessible to the user');
 
-export const zPostUserData = z.object({
-    body: z.object({
-        username: z.string().min(3).max(30).describe('Unique username for the user'),
-        password: z.string().min(6).max(100).describe('Password for the user'),
-        email: z.union([
-            z.string().email(),
-            z.null()
-        ]),
-        phone: z.union([
-            z.string().min(10).max(15),
-            z.null()
-        ]),
-        displayName: z.union([
-            z.string().max(50),
-            z.null()
-        ])
-    }),
-    path: z.never().optional(),
-    query: z.never().optional()
-});
-
-/**
- * User created successfully
- */
-export const zPostUserResponse = z.object({
-    id: z.string().describe('Unique identifier for the user'),
-    username: z.string().describe('Unique username for the user'),
-    email: z.union([
-        z.string().email(),
-        z.null()
-    ]),
-    phone: z.union([
-        z.string(),
-        z.null()
-    ]),
-    displayName: z.union([
-        z.string(),
-        z.null()
-    ]),
-    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
-    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
-}).describe('User created successfully');
-
 export const zGetUserProfileData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -240,3 +197,123 @@ export const zGetUserPageResponse = z.object({
     })).describe('List of items for the current page'),
     meta: zPaginationMetaSchema
 }).describe('Standard paginated response envelope');
+
+export const zPostUserData = z.object({
+    body: z.object({
+        username: z.string().min(3).max(30).describe('Unique username for the user'),
+        password: z.string().min(6).max(100).describe('Password for the user'),
+        email: z.union([
+            z.string().email(),
+            z.null()
+        ]),
+        phone: z.union([
+            z.string().min(10).max(15),
+            z.null()
+        ]),
+        displayName: z.union([
+            z.string().max(50),
+            z.null()
+        ])
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * User created successfully
+ */
+export const zPostUserResponse = z.object({
+    id: z.string().describe('Unique identifier for the user'),
+    username: z.string().describe('Unique username for the user'),
+    email: z.union([
+        z.string().email(),
+        z.null()
+    ]),
+    phone: z.union([
+        z.string(),
+        z.null()
+    ]),
+    displayName: z.union([
+        z.string(),
+        z.null()
+    ]),
+    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
+    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
+}).describe('User created successfully');
+
+export const zPutUserByIdData = z.object({
+    body: z.object({
+        username: z.string().min(3).max(30).describe('Unique username for the user').optional(),
+        email: z.union([
+            z.string().email(),
+            z.null()
+        ]).optional(),
+        phone: z.union([
+            z.string().min(10).max(15),
+            z.null()
+        ]).optional(),
+        displayName: z.union([
+            z.string().max(50),
+            z.null()
+        ]).optional(),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account').optional()
+    }),
+    path: z.object({
+        id: z.string().describe('User ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * User updated successfully
+ */
+export const zPutUserByIdResponse = z.object({
+    id: z.string().describe('Unique identifier for the user'),
+    username: z.string().describe('Unique username for the user'),
+    email: z.union([
+        z.string().email(),
+        z.null()
+    ]),
+    phone: z.union([
+        z.string(),
+        z.null()
+    ]),
+    displayName: z.union([
+        z.string(),
+        z.null()
+    ]),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
+    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
+    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
+}).describe('User updated successfully');
+
+export const zDeleteUserBatchData = z.object({
+    body: z.object({
+        userIds: z.array(z.string()).min(1).describe('IDs of users to delete')
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Users deleted successfully
+ */
+export const zDeleteUserBatchResponse = z.object({
+    deletedCount: z.number().int().gte(0).describe('Number of users deleted')
+}).describe('Users deleted successfully');
+
+export const zPatchUserStatusBatchData = z.object({
+    body: z.object({
+        userIds: z.array(z.string()).min(1).describe('IDs of users to update status'),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Target status for users')
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * User status updated successfully
+ */
+export const zPatchUserStatusBatchResponse = z.object({
+    updatedCount: z.number().int().gte(0).describe('Number of users updated')
+}).describe('User status updated successfully');
