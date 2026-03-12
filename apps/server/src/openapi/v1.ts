@@ -4,7 +4,7 @@ import { userApp } from '@server/src/modules/user/user.route'
 import { createApi } from '@server/src/openapi/openapi'
 
 const apiV1 = createApi({
-  basePath: API_V1_BASE_PATH,
+  apiBasePath: API_V1_BASE_PATH,
   title: 'Hono-vite-admin API',
   version: '1.0.0',
 })

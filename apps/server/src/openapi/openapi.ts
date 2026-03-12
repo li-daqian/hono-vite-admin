@@ -3,7 +3,7 @@ import { BusinessError } from '@server/src/common/exception'
 import { setUpSwagger } from '@server/src/openapi/swagger'
 
 interface ApiConfig {
-  basePath: string
+  apiBasePath: string
   title: string
   version: string
 }

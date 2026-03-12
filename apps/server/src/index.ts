@@ -4,6 +4,7 @@ import { corsMiddleware } from '@server/src/middleware/cors.middleware'
 import { onErrorHandler, onNotFoundHandler } from '@server/src/middleware/expcetion.middleware'
 import { requestIdMiddleware } from '@server/src/middleware/requestId.middleware'
 import { traceLogger } from '@server/src/middleware/trace.middleware'
+import { setUpUnifiedSwagger } from '@server/src/openapi/swagger'
 import { apiV1 } from '@server/src/openapi/v1'
 import { apiV2 } from '@server/src/openapi/v2'
 import { Hono } from 'hono'
@@ -29,5 +30,13 @@ app.get('/favicon.ico', (c) => {
 // Main API routes
 app.route(API_V1_BASE_PATH, apiV1)
 app.route(API_V2_BASE_PATH, apiV2)
+
+setUpUnifiedSwagger(app, {
+  apis: [
+    { name: 'v1', url: `${API_V1_BASE_PATH}/openapi.json` },
+    { name: 'v2', url: `${API_V2_BASE_PATH}/openapi.json` },
+  ],
+  primaryName: 'v1',
+})
 
 export default app
