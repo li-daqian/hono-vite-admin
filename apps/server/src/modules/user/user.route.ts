@@ -1,4 +1,4 @@
-import type { OpenAPIHono } from '@hono/zod-openapi'
+import { OpenAPIHono } from '@hono/zod-openapi'
 import {
   handleCreateUser,
   handleDeleteUsersBatch,
@@ -16,11 +16,10 @@ import {
   updateUserStatusBatchRoute,
 } from '@server/src/modules/user/user.openapi'
 
-export function userRoute(api: OpenAPIHono) {
-  api.openapi(getUserProfileRoute, handleGetUserProfile)
-  api.openapi(getUserPageRoute, handleGetUserPage)
-  api.openapi(createUserRoute, handleCreateUser)
-  api.openapi(updateUserRoute, handleUpdateUser)
-  api.openapi(deleteUsersBatchRoute, handleDeleteUsersBatch)
-  api.openapi(updateUserStatusBatchRoute, handleUpdateUserStatusBatch)
-}
+export const userApp = new OpenAPIHono()
+  .openapi(getUserProfileRoute, handleGetUserProfile)
+  .openapi(getUserPageRoute, handleGetUserPage)
+  .openapi(createUserRoute, handleCreateUser)
+  .openapi(updateUserRoute, handleUpdateUser)
+  .openapi(deleteUsersBatchRoute, handleDeleteUsersBatch)
+  .openapi(updateUserStatusBatchRoute, handleUpdateUserStatusBatch)

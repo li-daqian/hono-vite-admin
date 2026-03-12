@@ -1,6 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { BusinessError } from '@server/src/common/exception'
-import { registerRoutes } from '@server/src/openapi/registerRoutes'
+import { authApp } from '@server/src/modules/auth/auth.route'
+import { userApp } from '@server/src/modules/user/user.route'
 import { setUpSwagger } from '@server/src/openapi/swagger'
 
 const openApi = new OpenAPIHono({
@@ -13,6 +14,7 @@ const openApi = new OpenAPIHono({
 
 setUpSwagger(openApi)
 
-registerRoutes(openApi)
+openApi.route('/auth', authApp)
+openApi.route('/user', userApp)
 
 export { openApi }

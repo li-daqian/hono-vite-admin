@@ -1,4 +1,4 @@
-import type { OpenAPIHono } from '@hono/zod-openapi'
+import { OpenAPIHono } from '@hono/zod-openapi'
 import {
   handleAuthLogin,
   handleAuthLogout,
@@ -14,10 +14,9 @@ import {
   authRefreshRoute,
 } from '@server/src/modules/auth/auth.openapi'
 
-export function authRoute(api: OpenAPIHono) {
-  api.openapi(authPrefillRoute, handleAuthPrefill)
-  api.openapi(authLoginRoute, handleAuthLogin)
-  api.openapi(authRefreshRoute, handleAuthRefresh)
-  api.openapi(authLogoutRoute, handleAuthLogout)
-  api.openapi(authMenusRoute, handleAuthMenus)
-}
+export const authApp = new OpenAPIHono()
+  .openapi(authPrefillRoute, handleAuthPrefill)
+  .openapi(authLoginRoute, handleAuthLogin)
+  .openapi(authRefreshRoute, handleAuthRefresh)
+  .openapi(authLogoutRoute, handleAuthLogout)
+  .openapi(authMenusRoute, handleAuthMenus)

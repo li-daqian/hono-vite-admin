@@ -10,7 +10,7 @@ import {
 } from '@server/src/modules/auth/auth.schema'
 
 export const authPrefillRoute = createRoute({
-  path: '/auth/prefill',
+  path: '/prefill',
   method: 'get',
   description: 'Get prefilled login credentials',
   responses: {
@@ -20,7 +20,7 @@ export const authPrefillRoute = createRoute({
 })
 
 export const authLoginRoute = createRoute({
-  path: '/auth/login',
+  path: '/login',
   method: 'post',
   description: 'User login',
   request: { body: { required: true, content: { 'application/json': { schema: AuthLoginRequestSchema } } } },
@@ -31,7 +31,7 @@ export const authLoginRoute = createRoute({
 })
 
 export const authRefreshRoute = createRoute({
-  path: '/auth/refresh',
+  path: '/refresh',
   method: 'post',
   description: 'Refresh access token using refresh token',
   request: { body: { content: { 'application/json': { schema: AuthRefreshRequestSchema } } } },
@@ -42,7 +42,7 @@ export const authRefreshRoute = createRoute({
 })
 
 export const authLogoutRoute = createRoute({
-  path: '/auth/logout',
+  path: '/logout',
   method: 'post',
   description: 'User logout',
   responses: {
@@ -54,7 +54,7 @@ export const authLogoutRoute = createRoute({
 })
 
 export const authMenusRoute = createRoute({
-  path: '/auth/menus',
+  path: '/menus',
   method: 'get',
   description: 'Get user menus',
   responses: {

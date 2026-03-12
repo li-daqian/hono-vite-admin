@@ -14,7 +14,7 @@ import {
 } from '@server/src/modules/user/user.schema'
 
 export const createUserRoute = createRoute({
-  path: '/user',
+  path: '',
   method: 'post',
   description: 'Create a new user',
   request: { body: { required: true, content: { 'application/json': { schema: UserCreateRequestSchema } } } },
@@ -27,7 +27,7 @@ export const createUserRoute = createRoute({
 })
 
 export const getUserProfileRoute = createRoute({
-  path: '/user/profile',
+  path: '/profile',
   method: 'get',
   description: 'Get user profile',
   responses: {
@@ -39,7 +39,7 @@ export const getUserProfileRoute = createRoute({
 })
 
 export const getUserPageRoute = createRoute({
-  path: '/user/page',
+  path: '/page',
   method: 'get',
   description: 'Get paginated list of users',
   request: {
@@ -54,7 +54,7 @@ export const getUserPageRoute = createRoute({
 })
 
 export const updateUserRoute = createRoute({
-  path: '/user/{id}',
+  path: '/{id}',
   method: 'put',
   description: 'Update user',
   request: {
@@ -72,7 +72,7 @@ export const updateUserRoute = createRoute({
 })
 
 export const deleteUsersBatchRoute = createRoute({
-  path: '/user/batch',
+  path: '/batch',
   method: 'delete',
   description: 'Batch delete users',
   request: {
@@ -87,7 +87,7 @@ export const deleteUsersBatchRoute = createRoute({
 })
 
 export const updateUserStatusBatchRoute = createRoute({
-  path: '/user/status/batch',
+  path: '/status/batch',
   method: 'patch',
   description: 'Batch update user status',
   request: {
