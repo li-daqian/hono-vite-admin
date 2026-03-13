@@ -241,6 +241,37 @@ export const zPostUserResponse = z.object({
     updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 }).describe('User created successfully');
 
+export const zGetUserByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('User ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * User detail retrieved successfully
+ */
+export const zGetUserByIdResponse = z.object({
+    id: z.string().describe('Unique identifier for the user'),
+    username: z.string().describe('Unique username for the user'),
+    email: z.union([
+        z.string().email(),
+        z.null()
+    ]),
+    phone: z.union([
+        z.string(),
+        z.null()
+    ]),
+    displayName: z.union([
+        z.string(),
+        z.null()
+    ]),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
+    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
+    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
+}).describe('User detail retrieved successfully');
+
 export const zPutUserByIdData = z.object({
     body: z.object({
         username: z.string().min(3).max(30).describe('Unique username for the user').optional(),

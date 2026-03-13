@@ -408,6 +408,60 @@ export type PostUserResponses = {
 
 export type PostUserResponse = PostUserResponses[keyof PostUserResponses];
 
+export type GetUserByIdData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/user/{id}';
+};
+
+export type GetUserByIdResponses = {
+    /**
+     * User detail retrieved successfully
+     */
+    200: {
+        /**
+         * Unique identifier for the user
+         */
+        id: string;
+        /**
+         * Unique username for the user
+         */
+        username: string;
+        /**
+         * Email address of the user
+         */
+        email: string | null;
+        /**
+         * Phone number of the user
+         */
+        phone: string | null;
+        /**
+         * Display name of the user
+         */
+        displayName: string | null;
+        /**
+         * Status of the user account
+         */
+        status: 'ACTIVE' | 'DISABLED';
+        /**
+         * Timestamp when the user was created
+         */
+        createdAt: Date;
+        /**
+         * Timestamp when the user was last updated
+         */
+        updatedAt: Date;
+    };
+};
+
+export type GetUserByIdResponse = GetUserByIdResponses[keyof GetUserByIdResponses];
+
 export type PutUserByIdData = {
     body: {
         /**
