@@ -1,24 +1,53 @@
 <script lang="ts">
 import type { GetUserPageResponse } from '@admin/client'
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import type { InjectionKey, Ref } from 'vue'
+import { defineComponent, inject, provide, ref } from 'vue'
 
 type User = GetUserPageResponse['items'][number]
 
 export type UsersDialogType = 'add' | 'edit' | 'delete'
 
-export const useUsersStore = defineStore('users', () => {
-  const open = ref<UsersDialogType | null>(null)
-  const currentRow = ref<User | null>(null)
+export interface UsersContextType {
+  open: Ref<UsersDialogType | null>
+  setOpen: (value: UsersDialogType | null) => void
+  currentRow: Ref<User | null>
+  setCurrentRow: (value: User | null) => void
+}
 
-  function setOpen(value: UsersDialogType | null) {
-    open.value = value
+export const USERS_CONTEXT_KEY: InjectionKey<UsersContextType> = Symbol('USERS_CONTEXT_KEY')
+
+export function useUsers() {
+  const usersContext = inject(USERS_CONTEXT_KEY)
+
+  if (!usersContext) {
+    throw new Error('useUsers has to be used within <UsersProvider>')
   }
 
-  function setCurrentRow(value: User | null) {
-    currentRow.value = value
-  }
+  return usersContext
+}
 
-  return { open, setOpen, currentRow, setCurrentRow }
+export default defineComponent({
+  name: 'UsersProvider',
+  setup(_, { slots }) {
+    const open = ref<UsersDialogType | null>(null)
+    const currentRow = ref<User | null>(null)
+
+    const setOpen = (value: UsersDialogType | null) => {
+      open.value = value
+    }
+
+    const setCurrentRow = (value: User | null) => {
+      currentRow.value = value
+    }
+
+    provide(USERS_CONTEXT_KEY, {
+      open,
+      setOpen,
+      currentRow,
+      setCurrentRow,
+    })
+
+    return () => slots.default?.()
+  },
 })
 </script>
