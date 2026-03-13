@@ -37,3 +37,9 @@ export async function handleUpdateUserStatusBatch(c: any) {
   const result = await userService.updateUsersStatus(body.userIds, body.status)
   return c.json(result, 200)
 }
+
+export async function handleGetUserDetail(c: any) {
+  const { id } = c.req.valid('param')
+  const user = await userService.getUserProfile(id)
+  return c.json(user, 200)
+}

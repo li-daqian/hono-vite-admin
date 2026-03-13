@@ -13,6 +13,23 @@ import {
   UserUpdateRequestSchema,
 } from '@server/src/modules/user/user.schema'
 
+export const getUserDetailRoute = createRoute({
+  path: '/{id}',
+  method: 'get',
+  description: 'Get user detail by ID',
+  request: {
+    params: z.object({
+      id: z.string().openapi({ description: 'User ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+    }),
+  },
+  responses: {
+    200: { description: 'User detail retrieved successfully', content: { 'application/json': { schema: UserProfileResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware],
+  tags: ['User'],
+})
+
 export const createUserRoute = createRoute({
   path: '',
   method: 'post',
