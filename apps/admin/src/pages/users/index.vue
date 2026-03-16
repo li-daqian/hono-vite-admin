@@ -8,17 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@admin/components/ui/c
 import { Pencil, Trash2 } from 'lucide-vue-next'
 import { h, ref } from 'vue'
 import UsersDataTableBulkActions from './component/data-table-bulk-actions.vue'
-import UsersActionDialog from './component/users-action-dialog.vue'
-import UsersDeleteDialog from './component/users-delete-dialog.vue'
+import UsersDialogs from './component/users-dialogs.vue'
 import UsersPrimaryButtons from './component/users-primary-buttons.vue'
+import UsersProvider from './component/users-provider.vue'
 
 type UserPageItem = GetUserPageResponse['items'][number]
 
-const showDeleteConfirm = ref(false)
-const currentRow = ref<UserPageItem | null>(null)
-const actionOpen = ref(false)
-const actionMode = ref<'add' | 'edit'>('add')
-const selectedUserId = ref<string>()
 const tableRenderKey = ref(0)
 
 const columns: DataTableColumn<UserPageItem>[] = [
@@ -74,95 +69,60 @@ const fetchUsers: FetchRequest<UserPageItem> = async (params) => {
   return response.data
 }
 
-function openDeleteDialog(row: UserPageItem) {
-  currentRow.value = row
-  showDeleteConfirm.value = true
-}
-
-function openAddDialog() {
-  actionMode.value = 'add'
-  selectedUserId.value = undefined
-  actionOpen.value = true
-}
-
-function openEditDialog(row: UserPageItem) {
-  actionMode.value = 'edit'
-  selectedUserId.value = row.id
-  actionOpen.value = true
-}
-
-function handleActionOpenChange(open: boolean) {
-  actionOpen.value = open
-  if (!open)
-    selectedUserId.value = undefined
-}
-
 function handleActionSuccess() {
   tableRenderKey.value += 1
 }
 </script>
 
 <template>
-  <Card>
-    <CardHeader class="flex flex-row items-center justify-between">
-      <CardTitle>User List</CardTitle>
-      <UsersPrimaryButtons @add="openAddDialog" />
-    </CardHeader>
+  <UsersProvider v-slot="{ setOpen, setCurrentRow }">
+    <Card>
+      <CardHeader class="flex flex-row items-center justify-between">
+        <CardTitle>User List</CardTitle>
+        <UsersPrimaryButtons @add="() => { setCurrentRow(null); setOpen('add') }" />
+      </CardHeader>
 
-    <CardContent>
-      <DataTable
-        :key="tableRenderKey"
-        :request="fetchUsers"
-        :columns="columns"
-        :search="searchConfig"
-        :operations="{ header: 'Actions', pin: 'right' }"
-      >
-        <template #operations="{ row }">
-          <div class="flex items-center justify-end gap-1">
-            <Button variant="ghost" size="sm" @click="openEditDialog(row)">
-              Edit
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Edit user"
-              title="Edit user"
-              @click="openEditDialog(row)"
-            >
-              <Pencil />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Delete user"
-              title="Delete user"
-              @click="openDeleteDialog(row)"
-            >
-              <Trash2 />
-            </Button>
-          </div>
-        </template>
+      <CardContent>
+        <DataTable
+          :key="tableRenderKey"
+          :request="fetchUsers"
+          :columns="columns"
+          :search="searchConfig"
+          :operations="{ header: 'Actions', pin: 'right' }"
+        >
+          <template #operations="{ row }">
+            <div class="flex items-center justify-end gap-1">
+              <Button variant="ghost" size="sm" @click="() => { setCurrentRow(row); setOpen('edit') }">
+                Edit
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Edit user"
+                title="Edit user"
+                @click="() => { setCurrentRow(row); setOpen('edit') }"
+              >
+                <Pencil />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Delete user"
+                title="Delete user"
+                @click="() => { setCurrentRow(row); setOpen('delete') }"
+              >
+                <Trash2 />
+              </Button>
+            </div>
+          </template>
 
-        <template #bulk-actions="{ table }">
-          <UsersDataTableBulkActions :table="table" />
-        </template>
-      </DataTable>
+          <template #bulk-actions="{ table }">
+            <UsersDataTableBulkActions :table="table" />
+          </template>
+        </DataTable>
 
-      <UsersDeleteDialog
-        v-if="currentRow"
-        :open="showDeleteConfirm"
-        :current-row="currentRow"
-        @update:open="showDeleteConfirm = $event"
-      />
-
-      <UsersActionDialog
-        v-if="actionOpen"
-        :id="selectedUserId"
-        :open="actionOpen"
-        :mode="actionMode"
-        @success="handleActionSuccess"
-        @update:open="handleActionOpenChange"
-      />
-    </CardContent>
-  </Card>
+        <UsersDialogs @success="handleActionSuccess" />
+      </CardContent>
+    </Card>
+  </UsersProvider>
 </template>

@@ -47,7 +47,12 @@ export default defineComponent({
       setCurrentRow,
     })
 
-    return () => slots.default?.()
+    return () => slots.default?.({
+      open,
+      setOpen,
+      currentRow,
+      setCurrentRow,
+    })
   },
 })
 </script>
