@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { GetUserPageResponse } from '@admin/client'
+import type { UserProfileResponseSchema } from '@admin/client'
 import ConfirmDialog from '@admin/components/confirm-dialog.vue'
 import { Input } from '@admin/components/ui/input'
 import { Label } from '@admin/components/ui/label'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 
-type User = GetUserPageResponse['items'][number]
+type User = UserProfileResponseSchema
 
 const props = defineProps<{
   open: boolean

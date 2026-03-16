@@ -47,6 +47,41 @@ export type AuthMenuSchema = {
     actions: Array<AuthActionSchema>;
 };
 
+export type UserProfileResponseSchema = {
+    /**
+     * Unique identifier for the user
+     */
+    id: string;
+    /**
+     * Unique username for the user
+     */
+    username: string;
+    /**
+     * Email address of the user
+     */
+    email: string | null;
+    /**
+     * Phone number of the user
+     */
+    phone: string | null;
+    /**
+     * Display name of the user
+     */
+    displayName: string | null;
+    /**
+     * Status of the user account
+     */
+    status: 'ACTIVE' | 'DISABLED';
+    /**
+     * Timestamp when the user was created
+     */
+    createdAt: Date;
+    /**
+     * Timestamp when the user was last updated
+     */
+    updatedAt: Date;
+};
+
 export type PaginationMetaSchema = {
     /**
      * Total number of items
@@ -228,40 +263,7 @@ export type GetUserProfileResponses = {
     /**
      * User profile retrieved successfully
      */
-    200: {
-        /**
-         * Unique identifier for the user
-         */
-        id: string;
-        /**
-         * Unique username for the user
-         */
-        username: string;
-        /**
-         * Email address of the user
-         */
-        email: string | null;
-        /**
-         * Phone number of the user
-         */
-        phone: string | null;
-        /**
-         * Display name of the user
-         */
-        displayName: string | null;
-        /**
-         * Status of the user account
-         */
-        status: 'ACTIVE' | 'DISABLED';
-        /**
-         * Timestamp when the user was created
-         */
-        createdAt: Date;
-        /**
-         * Timestamp when the user was last updated
-         */
-        updatedAt: Date;
-    };
+    200: UserProfileResponseSchema;
 };
 
 export type GetUserProfileResponse = GetUserProfileResponses[keyof GetUserProfileResponses];
@@ -302,40 +304,7 @@ export type GetUserPageResponses = {
         /**
          * List of items for the current page
          */
-        items: Array<{
-            /**
-             * Unique identifier for the user
-             */
-            id: string;
-            /**
-             * Unique username for the user
-             */
-            username: string;
-            /**
-             * Email address of the user
-             */
-            email: string | null;
-            /**
-             * Phone number of the user
-             */
-            phone: string | null;
-            /**
-             * Display name of the user
-             */
-            displayName: string | null;
-            /**
-             * Status of the user account
-             */
-            status: 'ACTIVE' | 'DISABLED';
-            /**
-             * Timestamp when the user was created
-             */
-            createdAt: Date;
-            /**
-             * Timestamp when the user was last updated
-             */
-            updatedAt: Date;
-        }>;
+        items: Array<UserProfileResponseSchema>;
         meta: PaginationMetaSchema;
     };
 };
@@ -424,40 +393,7 @@ export type GetUserByIdResponses = {
     /**
      * User detail retrieved successfully
      */
-    200: {
-        /**
-         * Unique identifier for the user
-         */
-        id: string;
-        /**
-         * Unique username for the user
-         */
-        username: string;
-        /**
-         * Email address of the user
-         */
-        email: string | null;
-        /**
-         * Phone number of the user
-         */
-        phone: string | null;
-        /**
-         * Display name of the user
-         */
-        displayName: string | null;
-        /**
-         * Status of the user account
-         */
-        status: 'ACTIVE' | 'DISABLED';
-        /**
-         * Timestamp when the user was created
-         */
-        createdAt: Date;
-        /**
-         * Timestamp when the user was last updated
-         */
-        updatedAt: Date;
-    };
+    200: UserProfileResponseSchema;
 };
 
 export type GetUserByIdResponse = GetUserByIdResponses[keyof GetUserByIdResponses];
@@ -499,40 +435,7 @@ export type PutUserByIdResponses = {
     /**
      * User updated successfully
      */
-    200: {
-        /**
-         * Unique identifier for the user
-         */
-        id: string;
-        /**
-         * Unique username for the user
-         */
-        username: string;
-        /**
-         * Email address of the user
-         */
-        email: string | null;
-        /**
-         * Phone number of the user
-         */
-        phone: string | null;
-        /**
-         * Display name of the user
-         */
-        displayName: string | null;
-        /**
-         * Status of the user account
-         */
-        status: 'ACTIVE' | 'DISABLED';
-        /**
-         * Timestamp when the user was created
-         */
-        createdAt: Date;
-        /**
-         * Timestamp when the user was last updated
-         */
-        updatedAt: Date;
-    };
+    200: UserProfileResponseSchema;
 };
 
 export type PutUserByIdResponse = PutUserByIdResponses[keyof PutUserByIdResponses];

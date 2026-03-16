@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GetUserPageResponse } from '@admin/client'
+import type { UserProfileResponseSchema } from '@admin/client'
 import type { DataTableColumn, DataTableSearchField, FetchRequest } from '@admin/components/data-table'
 import { getUserPage } from '@admin/client'
 import { DataTable, SearchFieldType } from '@admin/components/data-table'
@@ -12,7 +12,7 @@ import UsersDialogs from './component/users-dialogs.vue'
 import UsersPrimaryButtons from './component/users-primary-buttons.vue'
 import UsersProvider from './component/users-provider.vue'
 
-type UserPageItem = GetUserPageResponse['items'][number]
+type UserPageItem = UserProfileResponseSchema
 
 const tableRenderKey = ref(0)
 

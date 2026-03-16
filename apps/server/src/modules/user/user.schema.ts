@@ -64,7 +64,7 @@ export const UserProfileResponseSchema = z.object({
   status: z.enum(Object.values(UserStatus)).openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
   createdAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was created', example: '2024-01-01T12:00:00Z' }),
   updatedAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was last updated', example: '2024-01-02T12:00:00Z' }),
-})
+}).openapi('UserProfileResponseSchema')
 export type UserProfileResponse = z.infer<typeof UserProfileResponseSchema>
 
 export const UserPaginationRequestSchema = PaginationQuerySchema.extend({

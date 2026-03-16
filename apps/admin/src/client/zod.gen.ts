@@ -27,6 +27,26 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
     actions: z.array(zAuthActionSchema).describe('Menu actions')
 });
 
+export const zUserProfileResponseSchema = z.object({
+    id: z.string().describe('Unique identifier for the user'),
+    username: z.string().describe('Unique username for the user'),
+    email: z.union([
+        z.string().email(),
+        z.null()
+    ]),
+    phone: z.union([
+        z.string(),
+        z.null()
+    ]),
+    displayName: z.union([
+        z.string(),
+        z.null()
+    ]),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
+    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
+    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
+});
+
 export const zPaginationMetaSchema = z.object({
     totalItem: z.number().int().describe('Total number of items'),
     totalPage: z.number().int().describe('Total number of pages'),
@@ -131,25 +151,7 @@ export const zGetUserProfileData = z.object({
 /**
  * User profile retrieved successfully
  */
-export const zGetUserProfileResponse = z.object({
-    id: z.string().describe('Unique identifier for the user'),
-    username: z.string().describe('Unique username for the user'),
-    email: z.union([
-        z.string().email(),
-        z.null()
-    ]),
-    phone: z.union([
-        z.string(),
-        z.null()
-    ]),
-    displayName: z.union([
-        z.string(),
-        z.null()
-    ]),
-    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
-    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
-    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
-}).describe('User profile retrieved successfully');
+export const zGetUserProfileResponse = zUserProfileResponseSchema;
 
 export const zGetUserPageData = z.object({
     body: z.never().optional(),
@@ -176,25 +178,7 @@ export const zGetUserPageData = z.object({
  * Standard paginated response envelope
  */
 export const zGetUserPageResponse = z.object({
-    items: z.array(z.object({
-        id: z.string().describe('Unique identifier for the user'),
-        username: z.string().describe('Unique username for the user'),
-        email: z.union([
-            z.string().email(),
-            z.null()
-        ]),
-        phone: z.union([
-            z.string(),
-            z.null()
-        ]),
-        displayName: z.union([
-            z.string(),
-            z.null()
-        ]),
-        status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
-        createdAt: z.string().datetime().describe('Timestamp when the user was created'),
-        updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
-    })).describe('List of items for the current page'),
+    items: z.array(zUserProfileResponseSchema).describe('List of items for the current page'),
     meta: zPaginationMetaSchema
 }).describe('Standard paginated response envelope');
 
@@ -252,25 +236,7 @@ export const zGetUserByIdData = z.object({
 /**
  * User detail retrieved successfully
  */
-export const zGetUserByIdResponse = z.object({
-    id: z.string().describe('Unique identifier for the user'),
-    username: z.string().describe('Unique username for the user'),
-    email: z.union([
-        z.string().email(),
-        z.null()
-    ]),
-    phone: z.union([
-        z.string(),
-        z.null()
-    ]),
-    displayName: z.union([
-        z.string(),
-        z.null()
-    ]),
-    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
-    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
-    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
-}).describe('User detail retrieved successfully');
+export const zGetUserByIdResponse = zUserProfileResponseSchema;
 
 export const zPutUserByIdData = z.object({
     body: z.object({
@@ -298,25 +264,7 @@ export const zPutUserByIdData = z.object({
 /**
  * User updated successfully
  */
-export const zPutUserByIdResponse = z.object({
-    id: z.string().describe('Unique identifier for the user'),
-    username: z.string().describe('Unique username for the user'),
-    email: z.union([
-        z.string().email(),
-        z.null()
-    ]),
-    phone: z.union([
-        z.string(),
-        z.null()
-    ]),
-    displayName: z.union([
-        z.string(),
-        z.null()
-    ]),
-    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
-    createdAt: z.string().datetime().describe('Timestamp when the user was created'),
-    updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
-}).describe('User updated successfully');
+export const zPutUserByIdResponse = zUserProfileResponseSchema;
 
 export const zDeleteUserBatchData = z.object({
     body: z.object({

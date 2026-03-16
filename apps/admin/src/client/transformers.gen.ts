@@ -22,18 +22,19 @@ export const getAuthMenusResponseTransformer = async (data: any): Promise<GetAut
     return data;
 };
 
-export const getUserProfileResponseTransformer = async (data: any): Promise<GetUserProfileResponse> => {
+const userProfileResponseSchemaSchemaResponseTransformer = (data: any) => {
     data.createdAt = new Date(data.createdAt);
     data.updatedAt = new Date(data.updatedAt);
     return data;
 };
 
+export const getUserProfileResponseTransformer = async (data: any): Promise<GetUserProfileResponse> => {
+    data = userProfileResponseSchemaSchemaResponseTransformer(data);
+    return data;
+};
+
 export const getUserPageResponseTransformer = async (data: any): Promise<GetUserPageResponse> => {
-    data.items = data.items.map((item: any) => {
-        item.createdAt = new Date(item.createdAt);
-        item.updatedAt = new Date(item.updatedAt);
-        return item;
-    });
+    data.items = data.items.map((item: any) => userProfileResponseSchemaSchemaResponseTransformer(item));
     return data;
 };
 
@@ -44,13 +45,11 @@ export const postUserResponseTransformer = async (data: any): Promise<PostUserRe
 };
 
 export const getUserByIdResponseTransformer = async (data: any): Promise<GetUserByIdResponse> => {
-    data.createdAt = new Date(data.createdAt);
-    data.updatedAt = new Date(data.updatedAt);
+    data = userProfileResponseSchemaSchemaResponseTransformer(data);
     return data;
 };
 
 export const putUserByIdResponseTransformer = async (data: any): Promise<PutUserByIdResponse> => {
-    data.createdAt = new Date(data.createdAt);
-    data.updatedAt = new Date(data.updatedAt);
+    data = userProfileResponseSchemaSchemaResponseTransformer(data);
     return data;
 };

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { GetUserPageResponse } from '@admin/client'
+import type { UserProfileResponseSchema } from '@admin/client'
 import type { Table } from '@tanstack/vue-table'
 import ConfirmDialog from '@admin/components/confirm-dialog.vue'
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 
-type User = GetUserPageResponse['items'][number]
+type User = UserProfileResponseSchema
 
 const props = defineProps<{
   table: Table<User>

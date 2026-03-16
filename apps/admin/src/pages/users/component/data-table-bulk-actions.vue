@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GetUserPageResponse } from '@admin/client'
+import type { UserProfileResponseSchema } from '@admin/client'
 import type { Table } from '@tanstack/vue-table'
 import { DataTableBulkActions as BulkActionsToolbar } from '@admin/components/data-table'
 import { Button } from '@admin/components/ui/button'
@@ -13,7 +13,7 @@ import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import UsersMultiDeleteDialog from './users-multi-delete-dialog.vue'
 
-type User = GetUserPageResponse['items'][number]
+type User = UserProfileResponseSchema
 
 const props = defineProps<{
   table: Table<User>

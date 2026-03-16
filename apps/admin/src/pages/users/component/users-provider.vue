@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { GetUserPageResponse } from '@admin/client'
+import type { UserProfileResponseSchema } from '@admin/client'
 import type { InjectionKey, Ref } from 'vue'
 import { defineComponent, inject, provide, ref } from 'vue'
 
-type User = GetUserPageResponse['items'][number]
+type User = UserProfileResponseSchema
 
 export type UsersDialogType = 'add' | 'edit' | 'delete'
 
