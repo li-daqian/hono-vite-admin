@@ -3,11 +3,10 @@ import type { UserProfileResponseSchema } from '@admin/client'
 import type { DataTableColumn, DataTableSearchField, FetchRequest } from '@admin/components/data-table'
 import { getUserPage } from '@admin/client'
 import { DataTable, SearchFieldType } from '@admin/components/data-table'
-import { Button } from '@admin/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@admin/components/ui/card'
-import { Pencil, Trash2 } from 'lucide-vue-next'
 import { h, ref } from 'vue'
 import UsersDataTableBulkActions from './component/data-table-bulk-actions.vue'
+import DataTableRowActions from './component/data-table-row-actions.vue'
 import UsersDialogs from './component/users-dialogs.vue'
 import UsersPrimaryButtons from './component/users-primary-buttons.vue'
 import UsersProvider from './component/users-provider.vue'
@@ -91,28 +90,8 @@ function handleActionSuccess() {
           :operations="{ header: 'Actions', pin: 'right' }"
         >
           <template #operations="{ row }">
-            <div class="flex items-center justify-end gap-1">
-              <Button variant="ghost" size="sm" @click="() => { setCurrentRow(row); setOpen('edit') }">
-                Edit
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Edit user"
-                title="Edit user"
-                @click="() => { setCurrentRow(row); setOpen('edit') }"
-              >
-                <Pencil />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Delete user"
-                title="Delete user"
-                @click="() => { setCurrentRow(row); setOpen('delete') }"
-              >
-                <Trash2 />
-              </Button>
+            <div class="flex items-center justify-end">
+              <DataTableRowActions :row="row" />
             </div>
           </template>
 
