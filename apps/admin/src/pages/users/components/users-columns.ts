@@ -29,16 +29,16 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     enableSorting: false,
     enableHiding: false,
     header: ({ table }) => h(Checkbox, {
-      'checked': table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
-      'onUpdate:checked': (value: CheckboxCheckedState) => {
+      'modelValue': table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
+      'onUpdate:modelValue': (value: CheckboxCheckedState) => {
         table.toggleAllPageRowsSelected(!!value)
       },
       'aria-label': 'Select all',
       'class': 'translate-y-[2px]',
     }),
     cell: ({ row }) => h(Checkbox, {
-      'checked': row.getIsSelected(),
-      'onUpdate:checked': (value: CheckboxCheckedState) => {
+      'modelValue': row.getIsSelected(),
+      'onUpdate:modelValue': (value: CheckboxCheckedState) => {
         row.toggleSelected(!!value)
       },
       'disabled': !row.getCanSelect(),
