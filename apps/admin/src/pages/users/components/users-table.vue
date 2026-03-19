@@ -2,7 +2,6 @@
 import type { DataTableFilterField, FetchRequestParams } from '@admin/components/data-table'
 import type {
   ColumnFiltersState,
-  ColumnPinningState,
   PaginationState,
   RowSelectionState,
   SortingState,
@@ -52,10 +51,6 @@ const sorting = ref<SortingState>([])
 const rowSelection = ref<RowSelectionState>({})
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = ref<VisibilityState>({})
-const columnPinning = ref<ColumnPinningState>({
-  left: ['select', 'username'],
-  right: ['actions'],
-})
 const isLoading = ref(false)
 
 const table = useVueTable({
@@ -81,9 +76,6 @@ const table = useVueTable({
     get columnVisibility() {
       return columnVisibility.value
     },
-    get columnPinning() {
-      return columnPinning.value
-    },
   },
   manualPagination: true,
   manualSorting: true,
@@ -103,7 +95,6 @@ const table = useVueTable({
   },
   onRowSelectionChange: updater => valueUpdater(updater, rowSelection),
   onColumnVisibilityChange: updater => valueUpdater(updater, columnVisibility),
-  onColumnPinningChange: updater => valueUpdater(updater, columnPinning),
   getCoreRowModel: getCoreRowModel(),
 })
 
@@ -137,21 +128,6 @@ async function fetchUsers() {
   }
   finally {
     isLoading.value = false
-  }
-}
-
-function getPinnedStyle(column: ReturnType<typeof table.getAllLeafColumns>[number]) {
-  const pinned = column.getIsPinned()
-  if (!pinned) {
-    return undefined
-  }
-
-  return {
-    position: 'sticky',
-    left: pinned === 'left' ? `${column.getStart('left')}px` : undefined,
-    right: pinned === 'right' ? `${column.getAfter('right')}px` : undefined,
-    zIndex: 1,
-    background: 'hsl(var(--background))',
   }
 }
 
@@ -211,7 +187,6 @@ watch(() => props.refreshKey, () => {
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              :style="getPinnedStyle(header.column)"
               :class="cn(
                 'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
                 getColumnMetaClass(header.column, 'className'),
@@ -250,7 +225,6 @@ watch(() => props.refreshKey, () => {
               <TableCell
                 v-for="cell in row.getVisibleCells()"
                 :key="cell.id"
-                :style="getPinnedStyle(cell.column)"
                 :class="cn(
                   'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
                   getColumnMetaClass(cell.column, 'className'),

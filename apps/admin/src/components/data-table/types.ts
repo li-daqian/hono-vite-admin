@@ -13,21 +13,6 @@ export interface DataTableFilterField {
   options: DataTableSearchOption[]
 }
 
-export interface DataTableColumn<TData> {
-  header: string
-  key: keyof TData & string
-  pin?: 'left' | 'right'
-  sortable?: boolean
-  visible?: boolean
-  configurable?: boolean
-  cell?: (row: TData, value: unknown) => unknown
-}
-
-export interface DataTableOperations {
-  header?: string
-  pin?: 'left' | 'right'
-}
-
 export interface PaginatedResponse<TItem> {
   items: TItem[]
   meta: PaginationMetaSchema
