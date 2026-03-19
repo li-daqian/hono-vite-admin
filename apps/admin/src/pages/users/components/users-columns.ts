@@ -57,15 +57,15 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     enableSorting: true,
   },
   {
-    id: 'phone',
-    accessorKey: 'phone',
-    header: 'Phone',
-  },
-  {
     id: 'email',
     accessorKey: 'email',
     header: 'Email',
     enableSorting: true,
+  },
+  {
+    id: 'phone',
+    accessorKey: 'phone',
+    header: 'Phone',
   },
   {
     id: 'status',
@@ -73,12 +73,10 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     header: 'Status',
     enableSorting: false,
     enableHiding: false,
-    cell: ({ row }) => h('div', { class: 'flex justify-center' }, [
-      h(Badge, {
-        variant: 'outline',
-        class: cn('capitalize', statusClassMap[row.original.status]),
-      }, () => row.original.status.toLowerCase()),
-    ]),
+    cell: ({ row }) => h(Badge, {
+      variant: 'outline',
+      class: cn('capitalize', statusClassMap[row.original.status]),
+    }, () => row.original.status.toLowerCase()),
   },
   {
     id: 'actions',
