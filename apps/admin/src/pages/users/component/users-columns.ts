@@ -18,6 +18,9 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     size: 40,
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      className: 'max-md:sticky start-0 z-10 rounded-tl-[inherit]',
+    },
     header: ({ table }) => h('input', {
       'type': 'checkbox',
       'checked': table.getIsAllPageRowsSelected(),
@@ -46,6 +49,13 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     header: 'Username',
     enableSorting: true,
     enableHiding: false,
+    meta: {
+      className: cn(
+        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)]',
+        'ps-0.5 max-md:sticky start-6',
+      ),
+      tdClassName: 'font-medium',
+    },
   },
   {
     id: 'displayName',
@@ -68,7 +78,8 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     id: 'status',
     accessorKey: 'status',
     header: 'Status',
-    enableSorting: true,
+    enableSorting: false,
+    enableHiding: false,
     cell: ({ row }) => h('div', { class: 'flex justify-center' }, [
       h(Badge, {
         variant: 'outline',
@@ -81,6 +92,10 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     header: 'Actions',
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      className: 'max-md:sticky right-0 z-10 rounded-tr-[inherit] bg-background',
+      thClassName: 'text-right',
+    },
     cell: ({ row }) => h('div', { class: 'flex items-center justify-end' }, [
       h(DataTableRowActions, { row: row.original }),
     ]),

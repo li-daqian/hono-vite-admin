@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { UserProfileResponseSchema } from '@admin/client'
+import { deleteUserBatch } from '@admin/client'
 import ConfirmDialog from '@admin/components/confirm-dialog.vue'
 import { Input } from '@admin/components/ui/input'
 import { Label } from '@admin/components/ui/label'
+import { AlertTriangle } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 
@@ -15,9 +17,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
+  (e: 'success'): void
 }>()
 
 const value = ref('')
+const isDeleting = ref(false)
 
 const canDelete = computed(() => value.value.trim() === props.currentRow.username)
 
@@ -27,12 +31,25 @@ function handleOpenChange(open: boolean) {
     value.value = ''
 }
 
-function handleDelete() {
+async function handleDelete() {
   if (!canDelete.value)
     return
 
-  handleOpenChange(false)
-  toast.success(`User \"${props.currentRow.username}\" deleted (mock action).`)
+  isDeleting.value = true
+  try {
+    await deleteUserBatch<true>({
+      body: {
+        userIds: [props.currentRow.id],
+      },
+    })
+
+    handleOpenChange(false)
+    toast.success(`User "${props.currentRow.username}" deleted.`)
+    emit('success')
+  }
+  finally {
+    isDeleting.value = false
+  }
 }
 </script>
 
@@ -41,12 +58,16 @@ function handleDelete() {
     :open="props.open"
     :handle-confirm="handleDelete"
     :disabled="!canDelete"
+    :is-loading="isDeleting"
     confirm-text="Delete"
     destructive
     @update:open="handleOpenChange"
   >
     <template #title>
-      <span class="text-destructive">Delete User</span>
+      <span class="text-destructive">
+        <AlertTriangle class="me-1 inline-block stroke-destructive" :size="18" />
+        Delete User
+      </span>
     </template>
 
     <template #desc>

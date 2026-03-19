@@ -172,6 +172,15 @@ function getSortIcon(column: ReturnType<typeof table.getAllLeafColumns>[number])
   return sorted === 'asc' ? ArrowUp : sorted === 'desc' ? ArrowDown : ArrowUpDown
 }
 
+function getColumnMetaClass(column: ReturnType<typeof table.getAllLeafColumns>[number], key: 'className' | 'thClassName' | 'tdClassName') {
+  const meta = column.columnDef.meta as Record<string, string> | undefined
+  return meta?.[key]
+}
+
+function handleTableMutationSuccess() {
+  void fetchUsers()
+}
+
 let timer: number | undefined
 
 watch([pagination, sorting, searchState], () => {
@@ -216,7 +225,11 @@ watch(() => props.refreshKey, () => {
               v-for="header in headerGroup.headers"
               :key="header.id"
               :style="getPinnedStyle(header.column)"
-              :class="cn('bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted')"
+              :class="cn(
+                'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                getColumnMetaClass(header.column, 'className'),
+                getColumnMetaClass(header.column, 'thClassName'),
+              )"
             >
               <template v-if="!header.isPlaceholder">
                 <Button
@@ -251,7 +264,11 @@ watch(() => props.refreshKey, () => {
                 v-for="cell in row.getVisibleCells()"
                 :key="cell.id"
                 :style="getPinnedStyle(cell.column)"
-                :class="cn('bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted')"
+                :class="cn(
+                  'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                  getColumnMetaClass(cell.column, 'className'),
+                  getColumnMetaClass(cell.column, 'tdClassName'),
+                )"
               >
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
               </TableCell>
@@ -268,6 +285,6 @@ watch(() => props.refreshKey, () => {
     </div>
 
     <DataTablePagination :table="table" class="mt-auto" />
-    <DataTableBulkActions :table="table" />
+    <DataTableBulkActions :table="table" @success="handleTableMutationSuccess" />
   </div>
 </template>

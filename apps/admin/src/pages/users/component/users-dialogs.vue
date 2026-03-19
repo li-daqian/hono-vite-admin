@@ -66,6 +66,7 @@ function handleDeleteOpenChange(value: boolean) {
     v-if="currentRow"
     :open="open === 'delete'"
     :current-row="currentRow"
+    @success="emit('success')"
     @update:open="handleDeleteOpenChange"
   />
 </template>
