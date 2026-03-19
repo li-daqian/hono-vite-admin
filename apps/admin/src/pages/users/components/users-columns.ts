@@ -82,7 +82,7 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
   },
   {
     id: 'actions',
-    header: 'Actions',
+    header: '',
     enableSorting: false,
     enableHiding: false,
     meta: {
