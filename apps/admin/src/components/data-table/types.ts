@@ -1,25 +1,16 @@
 import type { PaginationMetaSchema } from '@admin/client'
-
-export const SearchFieldType = {
-  Input: 1,
-  Single: 2,
-  Multi: 3,
-} as const
-
-export type SearchFieldTypeValue = (typeof SearchFieldType)[keyof typeof SearchFieldType]
+import type { Component } from 'vue'
 
 export interface DataTableSearchOption {
   label: string
   value: string
+  icon?: Component
 }
 
-export interface DataTableSearchField {
-  key: string
-  type: SearchFieldTypeValue
-  label?: string
-  placeholder?: string
-  options?: DataTableSearchOption[]
-  defaultValue?: string | string[] | null
+export interface DataTableFilterField {
+  columnId: string
+  title: string
+  options: DataTableSearchOption[]
 }
 
 export interface DataTableColumn<TData> {

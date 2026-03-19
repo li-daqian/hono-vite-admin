@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { DataTableSearchField, FetchRequestParams } from '@admin/components/data-table'
+import type { DataTableFilterField, FetchRequestParams } from '@admin/components/data-table'
 import type {
+  ColumnFiltersState,
   ColumnPinningState,
   PaginationState,
   RowSelectionState,
@@ -9,7 +10,7 @@ import type {
 } from '@tanstack/vue-table'
 import type { UserPageItem } from './users-columns'
 import { getUserPage } from '@admin/client'
-import { DataTablePagination, DataTableToolbar, SearchFieldType } from '@admin/components/data-table'
+import { DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
 import { Button } from '@admin/components/ui/button'
 import {
   Table,
@@ -33,18 +34,10 @@ const props = withDefaults(defineProps<{
   refreshKey: 0,
 })
 
-const searchFields: DataTableSearchField[] = [
+const filters: DataTableFilterField[] = [
   {
-    key: 'search',
-    type: SearchFieldType.Input,
-    label: 'Search',
-    placeholder: 'Username, email, display name',
-  },
-  {
-    key: 'status',
-    type: SearchFieldType.Multi,
-    label: 'Status',
-    placeholder: 'All',
+    columnId: 'status',
+    title: 'Status',
     options: [
       { label: 'Active', value: 'ACTIVE' },
       { label: 'Disabled', value: 'DISABLED' },
@@ -57,14 +50,11 @@ const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 10 })
 const totalPages = ref(1)
 const sorting = ref<SortingState>([])
 const rowSelection = ref<RowSelectionState>({})
+const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = ref<VisibilityState>({})
 const columnPinning = ref<ColumnPinningState>({
   left: ['select', 'username'],
   right: ['actions'],
-})
-const searchState = ref<Record<string, string | string[]>>({
-  search: '',
-  status: [],
 })
 const isLoading = ref(false)
 
@@ -85,6 +75,9 @@ const table = useVueTable({
     get rowSelection() {
       return rowSelection.value
     },
+    get columnFilters() {
+      return columnFilters.value
+    },
     get columnVisibility() {
       return columnVisibility.value
     },
@@ -94,6 +87,7 @@ const table = useVueTable({
   },
   manualPagination: true,
   manualSorting: true,
+  manualFiltering: true,
   enableRowSelection: true,
   get pageCount() {
     return totalPages.value
@@ -103,6 +97,10 @@ const table = useVueTable({
     valueUpdater(updater, sorting)
     pagination.value.pageIndex = 0
   },
+  onColumnFiltersChange: (updater) => {
+    valueUpdater(updater, columnFilters)
+    pagination.value.pageIndex = 0
+  },
   onRowSelectionChange: updater => valueUpdater(updater, rowSelection),
   onColumnVisibilityChange: updater => valueUpdater(updater, columnVisibility),
   onColumnPinningChange: updater => valueUpdater(updater, columnPinning),
@@ -110,12 +108,15 @@ const table = useVueTable({
 })
 
 async function fetchUsers() {
+  const usernameFilter = columnFilters.value.find(filter => filter.id === 'username')?.value
+  const statusFilter = columnFilters.value.find(filter => filter.id === 'status')?.value
+
   const query: FetchRequestParams = {
     page: pagination.value.pageIndex + 1,
     pageSize: pagination.value.pageSize,
     sort: sorting.value.map(item => `${item.id} ${item.desc ? 'desc' : 'asc'}`).join(',') || undefined,
-    search: searchState.value.search || undefined,
-    status: (searchState.value.status as string[]).length > 0 ? searchState.value.status : undefined,
+    search: typeof usernameFilter === 'string' && usernameFilter.trim().length > 0 ? usernameFilter.trim() : undefined,
+    status: Array.isArray(statusFilter) && statusFilter.length > 0 ? statusFilter : undefined,
   }
 
   isLoading.value = true
@@ -137,19 +138,6 @@ async function fetchUsers() {
   finally {
     isLoading.value = false
   }
-}
-
-function updateSearchState(nextState: Record<string, any>) {
-  searchState.value = nextState
-  pagination.value.pageIndex = 0
-}
-
-function resetSearch() {
-  searchState.value = {
-    search: '',
-    status: [],
-  }
-  pagination.value.pageIndex = 0
 }
 
 function getPinnedStyle(column: ReturnType<typeof table.getAllLeafColumns>[number]) {
@@ -183,7 +171,7 @@ function handleTableMutationSuccess() {
 
 let timer: number | undefined
 
-watch([pagination, sorting, searchState], () => {
+watch([pagination, sorting, columnFilters], () => {
   if (timer) {
     window.clearTimeout(timer)
   }
@@ -207,10 +195,9 @@ watch(() => props.refreshKey, () => {
   >
     <DataTableToolbar
       :table="table"
-      :search-fields="searchFields"
-      :search-state="searchState"
-      @update:search-state="updateSearchState"
-      @reset="resetSearch"
+      search-placeholder="Filter users..."
+      search-key="username"
+      :filters="filters"
     />
 
     <div class="overflow-hidden rounded-md border">

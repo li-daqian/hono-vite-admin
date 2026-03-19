@@ -1,6 +1,5 @@
-<script setup lang="ts">
-import type { Component } from 'vue'
-import type { DataTableSearchOption } from './types'
+<script setup lang="ts" generic="TData, TValue">
+import type { Column } from '@tanstack/vue-table'
 import { Badge } from '@admin/components/ui/badge'
 import { Button } from '@admin/components/ui/button'
 import {
@@ -22,74 +21,47 @@ import { cn } from '@admin/lib/utils'
 import { Check, CirclePlus } from 'lucide-vue-next'
 import { computed } from 'vue'
 
-export interface DataTableFacetedFilterProps {
+const props = defineProps<{
+  column?: Column<TData, TValue>
   title?: string
-  options: DataTableSearchOption[]
-  modelValue?: string | string[]
-  mode?: 'single' | 'multi'
-  icon?: Component
-  class?: string
-}
-
-const props = withDefaults(defineProps<DataTableFacetedFilterProps>(), {
-  mode: 'multi',
-})
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | string[] | undefined): void
+  options: {
+    label: string
+    value: string
+    icon?: any
+  }[]
 }>()
 
-// Compute selected values as a Set for easy lookup
-const selectedValues = computed(() => {
-  if (props.mode === 'multi') {
-    return new Set(Array.isArray(props.modelValue) ? props.modelValue : [])
-  }
-  else {
-    return new Set(props.modelValue ? [props.modelValue] : [])
-  }
-})
+const facets = computed(() => props.column?.getFacetedUniqueValues())
+const selectedValues = computed(() => new Set((props.column?.getFilterValue() as string[]) ?? []))
 
-// Toggle selection for an option
 function toggleOption(optionValue: string) {
-  if (props.mode === 'multi') {
-    const currentValues = Array.isArray(props.modelValue) ? [...props.modelValue] : []
-    if (currentValues.includes(optionValue)) {
-      const filtered = currentValues.filter(v => v !== optionValue)
-      emit('update:modelValue', filtered.length ? filtered : undefined)
-    }
-    else {
-      emit('update:modelValue', [...currentValues, optionValue])
-    }
+  const next = new Set(selectedValues.value)
+
+  if (next.has(optionValue)) {
+    next.delete(optionValue)
   }
   else {
-    // Single mode: if already selected, clear; otherwise set
-    if (props.modelValue === optionValue) {
-      emit('update:modelValue', undefined)
-    }
-    else {
-      emit('update:modelValue', optionValue)
-    }
+    next.add(optionValue)
   }
+
+  const values = Array.from(next)
+  props.column?.setFilterValue(values.length > 0 ? values : undefined)
 }
 
-// Clear all selections
 function clearFilters() {
-  emit('update:modelValue', undefined)
+  props.column?.setFilterValue(undefined)
 }
 </script>
 
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <Button variant="outline" size="sm" :class="cn('border-dashed', props.class)">
+      <Button variant="outline" size="sm" class="h-8 border-dashed">
         <CirclePlus class="size-4" />
         {{ props.title }}
         <template v-if="selectedValues.size > 0">
           <Separator orientation="vertical" class="mx-2 h-4" />
-          <Badge
-            variant="secondary"
-            class="rounded-sm px-1 font-normal lg:hidden"
-          >
+          <Badge variant="secondary" class="rounded-sm px-1 font-normal lg:hidden">
             {{ selectedValues.size }}
           </Badge>
           <div class="hidden space-x-1 lg:flex">
@@ -102,7 +74,7 @@ function clearFilters() {
             </Badge>
             <template v-else>
               <Badge
-                v-for="option in props.options.filter(opt => selectedValues.has(opt.value))"
+                v-for="option in props.options.filter(option => selectedValues.has(option.value))"
                 :key="option.value"
                 variant="secondary"
                 class="rounded-sm px-1 font-normal"
@@ -114,6 +86,7 @@ function clearFilters() {
         </template>
       </Button>
     </PopoverTrigger>
+
     <PopoverContent class="w-50 p-0" align="start">
       <Command>
         <CommandInput :placeholder="props.title" />
@@ -134,24 +107,27 @@ function clearFilters() {
                     : 'opacity-50 [&_svg]:invisible',
                 )"
               >
-                <Check :class="cn('h-4 w-4 text-background')" />
+                <Check class="h-4 w-4" />
               </div>
+
               <component
-                :is="props.icon"
-                v-if="props.icon"
+                :is="option.icon"
+                v-if="option.icon"
                 class="size-4 text-muted-foreground"
               />
+
               <span>{{ option.label }}</span>
+
+              <span v-if="facets?.get(option.value)" class="ms-auto flex h-4 w-4 items-center justify-center text-xs font-mono">
+                {{ facets.get(option.value) }}
+              </span>
             </CommandItem>
           </CommandGroup>
+
           <template v-if="selectedValues.size > 0">
             <CommandSeparator />
             <CommandGroup>
-              <CommandItem
-                :value="`clear-${props.title}`"
-                class="justify-center text-center"
-                @select="clearFilters"
-              >
+              <CommandItem :value="`clear-${props.title ?? 'filters'}`" class="justify-center text-center" @select="clearFilters">
                 Clear filters
               </CommandItem>
             </CommandGroup>
