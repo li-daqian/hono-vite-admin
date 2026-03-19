@@ -1,41 +1,44 @@
-<script setup lang="ts" generic="TData extends Record<string, unknown>">
-import type { Column, Table as TanstackTable } from '@tanstack/vue-table'
+<script setup lang="ts">
+import type { Column } from '@tanstack/vue-table'
+import type { HTMLAttributes } from 'vue'
 import { Button } from '@admin/components/ui/button'
-import { TableHead, TableHeader, TableRow } from '@admin/components/ui/table'
-import { FlexRender } from '@tanstack/vue-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
+import { cn } from '@admin/lib/utils'
+import { ArrowDownIcon, ArrowUpIcon, CaretSortIcon } from '@radix-icons/vue'
 
 const props = defineProps<{
-  table: TanstackTable<TData>
-  getPinnedStyle: (column: Column<TData>) => Record<string, string | number> | undefined
+  column: Column<unknown, unknown>
+  title: string
+  class?: HTMLAttributes['class']
 }>()
-
-function getSortIcon(column: Column<TData>) {
-  const sorted = column.getIsSorted()
-  return sorted === 'asc' ? ArrowUp : sorted === 'desc' ? ArrowDown : ArrowUpDown
-}
 </script>
 
 <template>
-  <TableHeader>
-    <TableRow v-for="headerGroup in props.table.getHeaderGroups()" :key="headerGroup.id">
-      <TableHead
-        v-for="header in headerGroup.headers"
-        :key="header.id"
-        :style="props.getPinnedStyle(header.column)"
-      >
-        <Button
-          v-if="header.column.getCanSort()"
-          variant="ghost"
-          size="sm"
-          class="-ml-3 h-8"
-          @click="header.column.toggleSorting()"
-        >
-          <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-          <component :is="getSortIcon(header.column)" class="ml-2 size-4" />
-        </Button>
-        <FlexRender v-else :render="header.column.columnDef.header" :props="header.getContext()" />
-      </TableHead>
-    </TableRow>
-  </TableHeader>
+  <div
+    v-if="!props.column.getCanSort()"
+    :class="cn(props.class)"
+  >
+    {{ props.title }}
+  </div>
+  <div v-else :class="cn('flex items-center space-x-2', props.class)">
+    <Button
+      variant="ghost"
+      size="sm"
+      class="h-8"
+      @click="props.column.toggleSorting()"
+    >
+      <span>{{ props.title }}</span>
+      <ArrowDownIcon
+        v-if="props.column.getIsSorted() === 'desc'"
+        class="ms-2 h-4 w-4"
+      />
+      <ArrowUpIcon
+        v-else-if="props.column.getIsSorted() === 'asc'"
+        class="ms-2 h-4 w-4"
+      />
+      <CaretSortIcon
+        v-else
+        class="ms-2 h-4 w-4"
+      />
+    </Button>
+  </div>
 </template>

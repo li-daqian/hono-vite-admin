@@ -10,7 +10,6 @@ import type {
 import type { UserPageItem } from './users-columns'
 import { getUserPage } from '@admin/client'
 import { DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
-import { Button } from '@admin/components/ui/button'
 import {
   Table,
   TableBody,
@@ -22,7 +21,6 @@ import {
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { cn } from '@admin/lib/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
 import { ref, shallowRef, watch } from 'vue'
 import DataTableBulkActions from './data-table-bulk-actions.vue'
 import { usersColumns } from './users-columns'
@@ -131,11 +129,6 @@ async function fetchUsers() {
   }
 }
 
-function getSortIcon(column: ReturnType<typeof table.getAllLeafColumns>[number]) {
-  const sorted = column.getIsSorted()
-  return sorted === 'asc' ? ArrowUp : sorted === 'desc' ? ArrowDown : ArrowUpDown
-}
-
 function getColumnMetaClass(column: ReturnType<typeof table.getAllLeafColumns>[number], key: 'className' | 'thClassName' | 'tdClassName') {
   const meta = column.columnDef.meta as Record<string, string> | undefined
   return meta?.[key]
@@ -194,18 +187,7 @@ watch(() => props.refreshKey, () => {
               )"
             >
               <template v-if="!header.isPlaceholder">
-                <Button
-                  v-if="header.column.getCanSort()"
-                  variant="ghost"
-                  size="sm"
-                  class="-ml-3 h-8"
-                  @click="header.column.toggleSorting()"
-                >
-                  <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                  <component :is="getSortIcon(header.column)" class="ml-2 size-4" />
-                </Button>
                 <FlexRender
-                  v-else
                   :render="header.column.columnDef.header"
                   :props="header.getContext()"
                 />

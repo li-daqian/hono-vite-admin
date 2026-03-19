@@ -1,6 +1,9 @@
 import type { UserProfileResponseSchema } from '@admin/client'
-import type { CellContext, ColumnDef } from '@tanstack/vue-table'
+import type { Column, ColumnDef } from '@tanstack/vue-table'
+import type { CheckboxCheckedState } from 'reka-ui'
+import { DataTableColumnHeader } from '@admin/components/data-table'
 import { Badge } from '@admin/components/ui/badge'
+import { Checkbox } from '@admin/components/ui/checkbox'
 import { cn } from '@admin/lib/utils'
 import { h } from 'vue'
 import DataTableRowActions from './data-table-row-actions.vue'
@@ -12,38 +15,41 @@ export const statusClassMap: Record<UserPageItem['status'], string> = {
   DISABLED: 'border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300',
 }
 
+function renderColumnHeader(column: Column<UserPageItem, unknown>, title: string) {
+  return h(DataTableColumnHeader, {
+    column: column as unknown as Column<unknown, unknown>,
+    title,
+  })
+}
+
 export const usersColumns: ColumnDef<UserPageItem>[] = [
   {
     id: 'select',
     size: 40,
     enableSorting: false,
     enableHiding: false,
-    header: ({ table }) => h('input', {
-      'type': 'checkbox',
-      'checked': table.getIsAllPageRowsSelected(),
-      'indeterminate': table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
-      'aria-label': 'Select all rows on current page',
-      'class': 'size-4 cursor-pointer accent-primary',
-      'onChange': (event: Event) => {
-        table.toggleAllPageRowsSelected((event.target as HTMLInputElement).checked)
+    header: ({ table }) => h(Checkbox, {
+      'checked': table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
+      'onUpdate:checked': (value: CheckboxCheckedState) => {
+        table.toggleAllPageRowsSelected(!!value)
       },
+      'aria-label': 'Select all',
+      'class': 'translate-y-[2px]',
     }),
-    cell: ({ row }: CellContext<UserPageItem, unknown>) => h('input', {
-      'type': 'checkbox',
+    cell: ({ row }) => h(Checkbox, {
       'checked': row.getIsSelected(),
-      'indeterminate': row.getIsSomeSelected() && !row.getIsSelected(),
+      'onUpdate:checked': (value: CheckboxCheckedState) => {
+        row.toggleSelected(!!value)
+      },
       'disabled': !row.getCanSelect(),
       'aria-label': `Select user ${row.original.username}`,
-      'class': 'size-4 cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50',
-      'onChange': (event: Event) => {
-        row.toggleSelected((event.target as HTMLInputElement).checked)
-      },
+      'class': 'translate-y-[2px]',
     }),
   },
   {
     id: 'username',
     accessorKey: 'username',
-    header: 'Username',
+    header: ({ column }) => renderColumnHeader(column, 'Username'),
     enableSorting: true,
     enableHiding: false,
     meta: {
@@ -53,24 +59,25 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
   {
     id: 'displayName',
     accessorKey: 'displayName',
-    header: 'Display Name',
+    header: ({ column }) => renderColumnHeader(column, 'Display Name'),
     enableSorting: true,
   },
   {
     id: 'email',
     accessorKey: 'email',
-    header: 'Email',
+    header: ({ column }) => renderColumnHeader(column, 'Email'),
     enableSorting: true,
   },
   {
     id: 'phone',
     accessorKey: 'phone',
-    header: 'Phone',
+    header: ({ column }) => renderColumnHeader(column, 'Phone'),
+    enableSorting: false,
   },
   {
     id: 'status',
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => renderColumnHeader(column, 'Status'),
     enableSorting: false,
     enableHiding: false,
     cell: ({ row }) => h(Badge, {
