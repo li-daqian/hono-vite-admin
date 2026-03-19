@@ -61,18 +61,27 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     accessorKey: 'displayName',
     header: ({ column }) => renderColumnHeader(column, 'Display Name'),
     enableSorting: true,
+    meta: {
+      label: 'Display Name',
+    },
   },
   {
     id: 'email',
     accessorKey: 'email',
     header: ({ column }) => renderColumnHeader(column, 'Email'),
     enableSorting: true,
+    meta: {
+      label: 'Email',
+    },
   },
   {
     id: 'phone',
     accessorKey: 'phone',
     header: ({ column }) => renderColumnHeader(column, 'Phone'),
     enableSorting: false,
+    meta: {
+      label: 'Phone',
+    },
   },
   {
     id: 'status',

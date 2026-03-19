@@ -27,7 +27,17 @@ const columns = computed(() =>
 )
 
 function getColumnTitle(column: Column<TData, unknown>) {
-  return column.columnDef.header
+  const meta = column.columnDef.meta as { label?: string } | undefined
+
+  if (meta?.label) {
+    return meta.label
+  }
+
+  if (typeof column.columnDef.header === 'string') {
+    return column.columnDef.header
+  }
+
+  return column.id
 }
 </script>
 
@@ -51,8 +61,9 @@ function getColumnTitle(column: Column<TData, unknown>) {
         v-for="column in columns"
         :key="column.id"
         class="capitalize"
-        :checked="column.getIsVisible()"
-        @update:checked="(value: any) => column.toggleVisibility(!!value)"
+        :model-value="column.getIsVisible()"
+        @select="event => event.preventDefault()"
+        @update:model-value="(value) => column.toggleVisibility(!!value)"
       >
         {{ getColumnTitle(column) }}
       </DropdownMenuCheckboxItem>
