@@ -23,7 +23,7 @@ const props = defineProps<{
     <Button
       variant="ghost"
       size="sm"
-      class="h-8"
+      class="h-8 px-0 has-[>svg]:px-0"
       @click="props.column.toggleSorting()"
     >
       <span>{{ props.title }}</span>
