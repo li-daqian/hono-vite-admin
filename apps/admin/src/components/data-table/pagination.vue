@@ -67,67 +67,67 @@ function goToPage(pageNumber: number) {
           Rows per page
         </p>
       </div>
+    </div>
 
-      <div class="flex items-center sm:space-x-6 lg:space-x-8">
-        <div class="flex w-25 items-center justify-center text-sm font-medium @max-3xl/content:hidden">
-          Page {{ currentPage }} of {{ totalPages }}
-        </div>
-        <div class="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            class="size-8 p-0 @max-md/content:hidden"
-            :disabled="!props.table.getCanPreviousPage()"
-            @click="props.table.setPageIndex(0)"
-          >
-            <span class="sr-only">Go to first page</span>
-            <ChevronsLeftIcon class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            class="size-8 p-0"
-            :disabled="!props.table.getCanPreviousPage()"
-            @click="props.table.previousPage()"
-          >
-            <span class="sr-only">Go to previous page</span>
-            <ChevronLeftIcon class="h-4 w-4" />
-          </Button>
+    <div class="flex items-center sm:space-x-6 lg:space-x-8">
+      <div class="flex w-25 items-center justify-center text-sm font-medium @max-3xl/content:hidden">
+        Page {{ currentPage }} of {{ totalPages }}
+      </div>
+      <div class="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          class="size-8 p-0 @max-md/content:hidden"
+          :disabled="!props.table.getCanPreviousPage()"
+          @click="props.table.setPageIndex(0)"
+        >
+          <span class="sr-only">Go to first page</span>
+          <ChevronsLeftIcon class="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          class="size-8 p-0"
+          :disabled="!props.table.getCanPreviousPage()"
+          @click="props.table.previousPage()"
+        >
+          <span class="sr-only">Go to previous page</span>
+          <ChevronLeftIcon class="h-4 w-4" />
+        </Button>
 
-          <div
-            v-for="(pageNumber, index) in pageNumbers"
-            :key="`${pageNumber}-${index}`"
-            class="flex items-center"
-          >
-            <span v-if="pageNumber === '...'" class="px-1 text-sm text-muted-foreground">...</span>
-            <Button
-              v-else
-              :variant="currentPage === pageNumber ? 'default' : 'outline'"
-              class="h-8 min-w-8 px-2"
-              @click="goToPage(pageNumber)"
-            >
-              <span class="sr-only">Go to page {{ pageNumber }}</span>
-              {{ pageNumber }}
-            </Button>
-          </div>
-
+        <div
+          v-for="(pageNumber, index) in pageNumbers"
+          :key="`${pageNumber}-${index}`"
+          class="flex items-center"
+        >
+          <span v-if="pageNumber === '...'" class="px-1 text-sm text-muted-foreground">...</span>
           <Button
-            variant="outline"
-            class="size-8 p-0"
-            :disabled="!props.table.getCanNextPage()"
-            @click="props.table.nextPage()"
+            v-else
+            :variant="currentPage === pageNumber ? 'default' : 'outline'"
+            class="h-8 min-w-8 px-2"
+            @click="goToPage(pageNumber)"
           >
-            <span class="sr-only">Go to next page</span>
-            <ChevronRightIcon class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            class="size-8 p-0 @max-md/content:hidden"
-            :disabled="!props.table.getCanNextPage()"
-            @click="props.table.setPageIndex(props.table.getPageCount() - 1)"
-          >
-            <span class="sr-only">Go to last page</span>
-            <ChevronsRightIcon class="h-4 w-4" />
+            <span class="sr-only">Go to page {{ pageNumber }}</span>
+            {{ pageNumber }}
           </Button>
         </div>
+
+        <Button
+          variant="outline"
+          class="size-8 p-0"
+          :disabled="!props.table.getCanNextPage()"
+          @click="props.table.nextPage()"
+        >
+          <span class="sr-only">Go to next page</span>
+          <ChevronRightIcon class="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          class="size-8 p-0 @max-md/content:hidden"
+          :disabled="!props.table.getCanNextPage()"
+          @click="props.table.setPageIndex(props.table.getPageCount() - 1)"
+        >
+          <span class="sr-only">Go to last page</span>
+          <ChevronsRightIcon class="h-4 w-4" />
+        </Button>
       </div>
     </div>
   </div>
