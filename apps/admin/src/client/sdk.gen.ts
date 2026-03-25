@@ -3,8 +3,8 @@
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import { getAuthMenusResponseTransformer, getUserByIdResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer, putUserByIdResponseTransformer } from './transformers.gen';
-import type { DeleteUserBatchData, DeleteUserBatchResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostUserData, PostUserResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
-import { zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostUserData, zPostUserResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
+import type { DeleteRoleByIdData, DeleteRoleByIdResponses, DeleteUserBatchData, DeleteUserBatchResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetRoleByIdData, GetRoleByIdResponses, GetRoleData, GetRoleResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostRoleData, PostRoleResponses, PostUserData, PostUserResponses, PutRoleByIdData, PutRoleByIdResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
+import { zDeleteRoleByIdData, zDeleteRoleByIdResponse, zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetRoleByIdData, zGetRoleByIdResponse, zGetRoleData, zGetRoleResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostRoleData, zPostRoleResponse, zPostUserData, zPostUserResponse, zPutRoleByIdData, zPutRoleByIdResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -86,6 +86,74 @@ export const getAuthMenus = <ThrowOnError extends boolean = false>(options?: Opt
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/menus',
     ...options
+});
+
+/**
+ * Get role list
+ */
+export const getRole = <ThrowOnError extends boolean = false>(options?: Options<GetRoleData, ThrowOnError>) => (options?.client ?? client).get<GetRoleResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetRoleData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetRoleResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/role',
+    ...options
+});
+
+/**
+ * Create a new role
+ */
+export const postRole = <ThrowOnError extends boolean = false>(options: Options<PostRoleData, ThrowOnError>) => (options.client ?? client).post<PostRoleResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostRoleData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zPostRoleResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/role',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete role
+ */
+export const deleteRoleById = <ThrowOnError extends boolean = false>(options: Options<DeleteRoleByIdData, ThrowOnError>) => (options.client ?? client).delete<DeleteRoleByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDeleteRoleByIdData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zDeleteRoleByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/role/{id}',
+    ...options
+});
+
+/**
+ * Get role detail by ID
+ */
+export const getRoleById = <ThrowOnError extends boolean = false>(options: Options<GetRoleByIdData, ThrowOnError>) => (options.client ?? client).get<GetRoleByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetRoleByIdData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetRoleByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/role/{id}',
+    ...options
+});
+
+/**
+ * Update role
+ */
+export const putRoleById = <ThrowOnError extends boolean = false>(options: Options<PutRoleByIdData, ThrowOnError>) => (options.client ?? client).put<PutRoleByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPutRoleByIdData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zPutRoleByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/role/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

@@ -27,6 +27,17 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
     actions: z.array(zAuthActionSchema).describe('Menu actions')
 });
 
+export const zRoleProfileResponseSchema = z.object({
+    id: z.string().describe('Unique identifier for the role'),
+    name: z.string().describe('Unique role name'),
+    description: z.union([
+        z.string(),
+        z.null()
+    ])
+});
+
+export const zRoleListResponseSchema = z.array(zRoleProfileResponseSchema);
+
 export const zUserProfileResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the user'),
     username: z.string().describe('Unique username for the user'),
@@ -141,6 +152,88 @@ export const zGetAuthMenusData = z.object({
  * List of menus accessible to the user
  */
 export const zGetAuthMenusResponse = z.array(zAuthMenuSchema).describe('List of menus accessible to the user');
+
+export const zGetRoleData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Role list retrieved successfully
+ */
+export const zGetRoleResponse = zRoleListResponseSchema;
+
+export const zPostRoleData = z.object({
+    body: z.object({
+        name: z.string().min(1).max(50).describe('Unique role name'),
+        description: z.union([
+            z.string().max(255),
+            z.null()
+        ])
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Role created successfully
+ */
+export const zPostRoleResponse = z.object({
+    id: z.string().describe('Unique identifier for the role'),
+    name: z.string().describe('Unique role name'),
+    description: z.union([
+        z.string(),
+        z.null()
+    ])
+}).describe('Role created successfully');
+
+export const zDeleteRoleByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Role ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Role deleted successfully
+ */
+export const zDeleteRoleByIdResponse = z.object({
+    deletedCount: z.number().int().gte(0).describe('Number of roles deleted')
+}).describe('Role deleted successfully');
+
+export const zGetRoleByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Role ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Role detail retrieved successfully
+ */
+export const zGetRoleByIdResponse = zRoleProfileResponseSchema;
+
+export const zPutRoleByIdData = z.object({
+    body: z.object({
+        name: z.string().min(1).max(50).describe('Unique role name').optional(),
+        description: z.union([
+            z.string().max(255),
+            z.null()
+        ]).optional()
+    }),
+    path: z.object({
+        id: z.string().describe('Role ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Role updated successfully
+ */
+export const zPutRoleByIdResponse = zRoleProfileResponseSchema;
 
 export const zGetUserProfileData = z.object({
     body: z.never().optional(),

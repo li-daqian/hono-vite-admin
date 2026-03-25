@@ -47,6 +47,23 @@ export type AuthMenuSchema = {
     actions: Array<AuthActionSchema>;
 };
 
+export type RoleProfileResponseSchema = {
+    /**
+     * Unique identifier for the role
+     */
+    id: string;
+    /**
+     * Unique role name
+     */
+    name: string;
+    /**
+     * Role description
+     */
+    description: string | null;
+};
+
+export type RoleListResponseSchema = Array<RoleProfileResponseSchema>;
+
 export type UserProfileResponseSchema = {
     /**
      * Unique identifier for the user
@@ -251,6 +268,137 @@ export type GetAuthMenusResponses = {
 };
 
 export type GetAuthMenusResponse = GetAuthMenusResponses[keyof GetAuthMenusResponses];
+
+export type GetRoleData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/role';
+};
+
+export type GetRoleResponses = {
+    /**
+     * Role list retrieved successfully
+     */
+    200: RoleListResponseSchema;
+};
+
+export type GetRoleResponse = GetRoleResponses[keyof GetRoleResponses];
+
+export type PostRoleData = {
+    body: {
+        /**
+         * Unique role name
+         */
+        name: string;
+        /**
+         * Role description
+         */
+        description: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/role';
+};
+
+export type PostRoleResponses = {
+    /**
+     * Role created successfully
+     */
+    201: {
+        /**
+         * Unique identifier for the role
+         */
+        id: string;
+        /**
+         * Unique role name
+         */
+        name: string;
+        /**
+         * Role description
+         */
+        description: string | null;
+    };
+};
+
+export type PostRoleResponse = PostRoleResponses[keyof PostRoleResponses];
+
+export type DeleteRoleByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/role/{id}';
+};
+
+export type DeleteRoleByIdResponses = {
+    /**
+     * Role deleted successfully
+     */
+    200: {
+        /**
+         * Number of roles deleted
+         */
+        deletedCount: number;
+    };
+};
+
+export type DeleteRoleByIdResponse = DeleteRoleByIdResponses[keyof DeleteRoleByIdResponses];
+
+export type GetRoleByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/role/{id}';
+};
+
+export type GetRoleByIdResponses = {
+    /**
+     * Role detail retrieved successfully
+     */
+    200: RoleProfileResponseSchema;
+};
+
+export type GetRoleByIdResponse = GetRoleByIdResponses[keyof GetRoleByIdResponses];
+
+export type PutRoleByIdData = {
+    body: {
+        /**
+         * Unique role name
+         */
+        name?: string;
+        /**
+         * Role description
+         */
+        description?: string | null;
+    };
+    path: {
+        /**
+         * Role ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/role/{id}';
+};
+
+export type PutRoleByIdResponses = {
+    /**
+     * Role updated successfully
+     */
+    200: RoleProfileResponseSchema;
+};
+
+export type PutRoleByIdResponse = PutRoleByIdResponses[keyof PutRoleByIdResponses];
 
 export type GetUserProfileData = {
     body?: never;
