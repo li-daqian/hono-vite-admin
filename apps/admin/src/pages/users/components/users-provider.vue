@@ -1,7 +1,8 @@
 <script lang="ts">
 import type { UserProfileResponseSchema } from '@admin/client'
 import type { InjectionKey, Ref } from 'vue'
-import { defineComponent, inject, provide, ref } from 'vue'
+import { getRole } from '@admin/client'
+import { defineComponent, inject, onMounted, provide, ref } from 'vue'
 
 type User = UserProfileResponseSchema
 
@@ -12,6 +13,10 @@ export interface UsersContextType {
   setOpen: (value: UsersDialogType | null) => void
   currentRow: Ref<User | null>
   setCurrentRow: (value: User | null) => void
+  roleOptions: Ref<string[]>
+  getUserRoles: (user: User) => string[]
+  setUserRoles: (userId: string, roles: string[]) => void
+  ensureRoleOption: (roleName: string) => void
 }
 
 export const USERS_CONTEXT_KEY: InjectionKey<UsersContextType> = Symbol('USERS_CONTEXT_KEY')
@@ -31,6 +36,13 @@ export default defineComponent({
   setup(_, { slots }) {
     const open = ref<UsersDialogType | null>(null)
     const currentRow = ref<User | null>(null)
+    const roleOptions = ref<string[]>([])
+    const userRoleOverrides = ref<Record<string, string[]>>({})
+
+    function hasRoleName(source: string[], target: string) {
+      const normalizedTarget = target.trim().toLowerCase()
+      return source.some(roleName => roleName.trim().toLowerCase() === normalizedTarget)
+    }
 
     const setOpen = (value: UsersDialogType | null) => {
       open.value = value
@@ -40,11 +52,48 @@ export default defineComponent({
       currentRow.value = value
     }
 
+    const ensureRoleOption = (roleName: string) => {
+      const normalizedRoleName = roleName.trim()
+      if (!normalizedRoleName || hasRoleName(roleOptions.value, normalizedRoleName)) {
+        return
+      }
+
+      roleOptions.value = [...roleOptions.value, normalizedRoleName].sort((left, right) => left.localeCompare(right))
+    }
+
+    const getUserRoles = (user: User) => {
+      return userRoleOverrides.value[user.id] ?? user.roles ?? []
+    }
+
+    const setUserRoles = (userId: string, roles: string[]) => {
+      userRoleOverrides.value = {
+        ...userRoleOverrides.value,
+        [userId]: [...roles],
+      }
+    }
+
+    onMounted(async () => {
+      try {
+        const response = await getRole<true>()
+        roleOptions.value = response.data
+          .map(role => role.name.trim())
+          .filter(Boolean)
+          .sort((left, right) => left.localeCompare(right))
+      }
+      catch {
+        roleOptions.value = []
+      }
+    })
+
     provide(USERS_CONTEXT_KEY, {
       open,
       setOpen,
       currentRow,
       setCurrentRow,
+      roleOptions,
+      getUserRoles,
+      setUserRoles,
+      ensureRoleOption,
     })
 
     return () => slots.default?.({
@@ -52,6 +101,10 @@ export default defineComponent({
       setOpen,
       currentRow,
       setCurrentRow,
+      roleOptions,
+      getUserRoles,
+      setUserRoles,
+      ensureRoleOption,
     })
   },
 })

@@ -7,6 +7,7 @@ import { Checkbox } from '@admin/components/ui/checkbox'
 import { cn } from '@admin/lib/utils'
 import { h } from 'vue'
 import DataTableRowActions from './data-table-row-actions.vue'
+import UsersRoleCell from './users-role-cell.vue'
 
 export type UserPageItem = UserProfileResponseSchema
 
@@ -72,16 +73,9 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     enableSorting: false,
     meta: {
       label: 'Role',
-      tdClassName: 'max-w-[260px]',
+      tdClassName: 'min-w-[240px] max-w-[320px]',
     },
-    cell: ({ row }) => {
-      const roles = row.original.roles ?? []
-      if (roles.length === 0) {
-        return h('span', { class: 'text-muted-foreground' }, '-')
-      }
-
-      return h('div', { class: 'flex flex-wrap gap-1' }, roles.map((role: string) => h(Badge, { variant: 'outline' }, () => role)))
-    },
+    cell: ({ row }) => h(UsersRoleCell, { row: row.original }),
   },
   {
     id: 'email',
