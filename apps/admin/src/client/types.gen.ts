@@ -74,6 +74,10 @@ export type UserProfileResponseSchema = {
      */
     username: string;
     /**
+     * Role names assigned to the user
+     */
+    roles: Array<string>;
+    /**
      * Email address of the user
      */
     email: string | null;
@@ -500,6 +504,10 @@ export type PostUserResponses = {
          * Unique username for the user
          */
         username: string;
+        /**
+         * Role names assigned to the user
+         */
+        roles: Array<string>;
         /**
          * Email address of the user
          */

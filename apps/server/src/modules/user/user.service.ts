@@ -34,12 +34,24 @@ class UserService {
         phone: request.phone,
         displayName: request.displayName,
       },
+      include: {
+        roles: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     })
 
     // Remove sensitive info before returning
     const { password, salt: userSalt, ...safeUser } = user
     return {
       ...safeUser,
+      roles: user.roles.map(item => item.role.name),
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }
@@ -48,6 +60,17 @@ class UserService {
   async getUserProfile(userId: string): Promise<UserProfileResponse> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        roles: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     })
     if (!user) {
       throw BusinessError.NotFound('User not found')
@@ -56,6 +79,7 @@ class UserService {
     const { password, salt, ...safeUser } = user
     return {
       ...safeUser,
+      roles: user.roles.map(item => item.role.name),
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }
@@ -94,6 +118,15 @@ class UserService {
         select: {
           id: true,
           username: true,
+          roles: {
+            select: {
+              role: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
           email: true,
           phone: true,
           displayName: true,
@@ -106,6 +139,7 @@ class UserService {
 
     const items = users.map(user => ({
       ...user,
+      roles: user.roles.map(item => item.role.name),
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }))
@@ -134,11 +168,23 @@ class UserService {
         displayName: request.displayName,
         status: request.status,
       },
+      include: {
+        roles: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     })
 
     const { password, salt, ...safeUser } = updatedUser
     return {
       ...safeUser,
+      roles: updatedUser.roles.map(item => item.role.name),
       createdAt: updatedUser.createdAt.toISOString(),
       updatedAt: updatedUser.updatedAt.toISOString(),
     }

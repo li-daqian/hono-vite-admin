@@ -66,6 +66,24 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     },
   },
   {
+    id: 'roles',
+    accessorKey: 'roles',
+    header: ({ column }) => renderColumnHeader(column, 'Role'),
+    enableSorting: false,
+    meta: {
+      label: 'Role',
+      tdClassName: 'max-w-[260px]',
+    },
+    cell: ({ row }) => {
+      const roles = row.original.roles ?? []
+      if (roles.length === 0) {
+        return h('span', { class: 'text-muted-foreground' }, '-')
+      }
+
+      return h('div', { class: 'flex flex-wrap gap-1' }, roles.map((role: string) => h(Badge, { variant: 'outline' }, () => role)))
+    },
+  },
+  {
     id: 'email',
     accessorKey: 'email',
     header: ({ column }) => renderColumnHeader(column, 'Email'),

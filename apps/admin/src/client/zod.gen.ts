@@ -41,6 +41,7 @@ export const zRoleListResponseSchema = z.array(zRoleProfileResponseSchema);
 export const zUserProfileResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the user'),
     username: z.string().describe('Unique username for the user'),
+    roles: z.array(z.string()).describe('Role names assigned to the user'),
     email: z.union([
         z.string().email(),
         z.null()
@@ -302,6 +303,7 @@ export const zPostUserData = z.object({
 export const zPostUserResponse = z.object({
     id: z.string().describe('Unique identifier for the user'),
     username: z.string().describe('Unique username for the user'),
+    roles: z.array(z.string()).describe('Role names assigned to the user'),
     email: z.union([
         z.string().email(),
         z.null()
