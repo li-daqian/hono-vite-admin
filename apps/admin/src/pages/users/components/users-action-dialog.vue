@@ -128,7 +128,11 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
         displayName: response.data.displayName ?? '',
         status: response.data.status,
       })
-      editRoles.value = response.data.roles ?? []
+      // Map role names from user response to IDs using roleOptions
+      const roleNames = response.data.roles ?? []
+      editRoles.value = roleOptions.value
+        .filter(opt => roleNames.includes(opt.label))
+        .map(opt => opt.value)
     }
     finally {
       isPrefilling.value = false
@@ -138,6 +142,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
   }
 
   setValues(addInitialValues)
+  editRoles.value = []
   isPrefilling.value = false
 }
 
@@ -149,6 +154,7 @@ async function handleSubmit(values: Record<string, any>) {
       email: toNullable(values.email),
       phone: toNullable(values.phone),
       displayName: toNullable(values.displayName),
+      roleIds: editRoles.value.length > 0 ? editRoles.value : undefined,
     }
 
     await postUser<true>({ body: payload })
@@ -169,7 +175,7 @@ async function handleSubmit(values: Record<string, any>) {
     phone: toNullable(values.phone),
     displayName: toNullable(values.displayName),
     status: values.status,
-    roles: editRoles.value,
+    roleIds: editRoles.value,
   }
 
   await putUserById<true>({
@@ -247,7 +253,7 @@ async function handleSubmit(values: Record<string, any>) {
             </FormItem>
           </FormField>
 
-          <div v-if="props.mode === 'edit'" class="grid gap-2">
+          <div class="grid gap-2">
             <label class="text-sm leading-none font-medium">Roles</label>
             <Skeleton v-if="isPrefilling" class="h-9" />
             <MultiSelect v-else v-model="editRoles" :options="roleOptions" placeholder="Select roles" search-placeholder="Search role" />

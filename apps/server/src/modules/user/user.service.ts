@@ -33,6 +33,13 @@ class UserService {
         email: request.email,
         phone: request.phone,
         displayName: request.displayName,
+        ...(request.roleIds && request.roleIds.length > 0 && {
+          roles: {
+            create: request.roleIds.map(roleId => ({
+              role: { connect: { id: roleId } },
+            })),
+          },
+        }),
       },
       include: {
         roles: {
@@ -159,10 +166,6 @@ class UserService {
       throw BusinessError.UsernameAlreadyExists()
     }
 
-    const roleIds = request.roles !== undefined
-      ? await this.resolveRoleIdsByNames(request.roles)
-      : null
-
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -171,10 +174,10 @@ class UserService {
         phone: request.phone,
         displayName: request.displayName,
         status: request.status,
-        ...(roleIds !== null && {
+        ...(request.roleIds !== undefined && {
           roles: {
             deleteMany: {},
-            create: roleIds.map(roleId => ({
+            create: request.roleIds.map(roleId => ({
               role: {
                 connect: { id: roleId },
               },
@@ -240,36 +243,6 @@ class UserService {
       where: { username },
     })
     return existingUser === null
-  }
-
-  private async resolveRoleIdsByNames(roleNames: string[]): Promise<string[]> {
-    const normalizedRoleNames = [...new Set(roleNames.map(roleName => roleName.trim()).filter(Boolean))]
-    if (normalizedRoleNames.length === 0) {
-      return []
-    }
-
-    const roles = await prisma.role.findMany({
-      where: {
-        OR: normalizedRoleNames.map(roleName => ({
-          name: {
-            equals: roleName,
-            mode: 'insensitive',
-          },
-        })),
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    })
-
-    const foundRoleNames = new Set(roles.map(role => role.name.trim().toLowerCase()))
-    const missingRoles = normalizedRoleNames.filter(roleName => !foundRoleNames.has(roleName.toLowerCase()))
-    if (missingRoles.length > 0) {
-      throw BusinessError.BadRequest(`Roles not found: ${missingRoles.join(', ')}`)
-    }
-
-    return roles.map(role => role.id)
   }
 }
 

@@ -12,6 +12,7 @@ export const UserCreateRequestSchema = z.object({
   email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().min(10).max(15).nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().max(50).nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
+  roleIds: z.array(z.string().min(1)).optional().openapi({ description: 'Role IDs to assign to the user', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
 })
 export const UserCreateResponseSchema = z.object({
   id: z.string().openapi({ description: 'Unique identifier for the user', example: '550e8400-e29b-41d4-a716-446655440000' }),
@@ -32,7 +33,7 @@ export const UserUpdateRequestSchema = z.object({
   phone: z.string().min(10).max(15).nullable().optional().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().max(50).nullable().optional().openapi({ description: 'Display name of the user', example: 'John Doe' }),
   status: z.enum(Object.values(UserStatus)).optional().openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
-  roles: z.array(z.string().min(1).max(50)).optional().openapi({ description: 'Role names assigned to the user', example: ['admin', 'operator'] }),
+  roleIds: z.array(z.string().min(1)).optional().openapi({ description: 'Role IDs to assign to the user', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
 }).refine(value => Object.keys(value).length > 0, {
   message: 'At least one field must be provided for update',
 })

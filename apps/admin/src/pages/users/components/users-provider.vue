@@ -13,10 +13,10 @@ export interface UsersContextType {
   setOpen: (value: UsersDialogType | null) => void
   currentRow: Ref<User | null>
   setCurrentRow: (value: User | null) => void
-  roleOptions: Ref<string[]>
+  roleOptions: Ref<{ value: string, label: string }[]>
   getUserRoles: (user: User) => string[]
   setUserRoles: (userId: string, roles: string[]) => void
-  ensureRoleOption: (roleName: string) => void
+  ensureRoleOption: (roleId: string, roleName: string) => void
 }
 
 export const USERS_CONTEXT_KEY: InjectionKey<UsersContextType> = Symbol('USERS_CONTEXT_KEY')
@@ -36,12 +36,11 @@ export default defineComponent({
   setup(_, { slots }) {
     const open = ref<UsersDialogType | null>(null)
     const currentRow = ref<User | null>(null)
-    const roleOptions = ref<string[]>([])
+    const roleOptions = ref<{ value: string, label: string }[]>([])
     const userRoleOverrides = ref<Record<string, string[]>>({})
 
-    function hasRoleName(source: string[], target: string) {
-      const normalizedTarget = target.trim().toLowerCase()
-      return source.some(roleName => roleName.trim().toLowerCase() === normalizedTarget)
+    function hasRoleId(source: { value: string }[], id: string) {
+      return source.some(o => o.value === id)
     }
 
     const setOpen = (value: UsersDialogType | null) => {
@@ -52,13 +51,13 @@ export default defineComponent({
       currentRow.value = value
     }
 
-    const ensureRoleOption = (roleName: string) => {
-      const normalizedRoleName = roleName.trim()
-      if (!normalizedRoleName || hasRoleName(roleOptions.value, normalizedRoleName)) {
+    const ensureRoleOption = (roleId: string, roleName: string) => {
+      if (!roleId || hasRoleId(roleOptions.value, roleId)) {
         return
       }
 
-      roleOptions.value = [...roleOptions.value, normalizedRoleName].sort((left, right) => left.localeCompare(right))
+      roleOptions.value = [...roleOptions.value, { value: roleId, label: roleName.trim() }]
+        .sort((a, b) => a.label.localeCompare(b.label))
     }
 
     const getUserRoles = (user: User) => {
@@ -76,9 +75,9 @@ export default defineComponent({
       try {
         const response = await getRole<true>()
         roleOptions.value = response.data
-          .map(role => role.name.trim())
-          .filter(Boolean)
-          .sort((left, right) => left.localeCompare(right))
+          .filter(role => role.id && role.name)
+          .map(role => ({ value: role.id, label: role.name.trim() }))
+          .sort((a, b) => a.label.localeCompare(b.label))
       }
       catch {
         roleOptions.value = []

@@ -12,7 +12,7 @@ const props = defineProps<{
   /**
    * All available options for selection.
    */
-  options: string[]
+  options: { value: string, label: string }[]
   placeholder?: string
   searchPlaceholder?: string
 }>()
@@ -25,37 +25,41 @@ const searchInputRef = ref<HTMLInputElement | null>(null)
 
 const mergedOptions = computed(() => {
   const opts = [...props.options]
-  for (const roleName of modelValue.value) {
-    if (!opts.some(o => o.trim().toLowerCase() === roleName.trim().toLowerCase())) {
-      opts.push(roleName)
+  for (const id of modelValue.value) {
+    if (!opts.some(o => o.value === id)) {
+      opts.push({ value: id, label: id })
     }
   }
-  return opts.sort((a, b) => a.localeCompare(b))
+  return opts.sort((a, b) => a.label.localeCompare(b.label))
 })
 
 const filteredOptions = computed(() => {
   const keyword = searchTerm.value.trim().toLowerCase()
   if (!keyword)
     return mergedOptions.value
-  return mergedOptions.value.filter(r => r.toLowerCase().includes(keyword))
+  return mergedOptions.value.filter(o => o.label.toLowerCase().includes(keyword))
 })
 
-function isSelected(roleName: string) {
-  return modelValue.value.some(r => r.toLowerCase() === roleName.toLowerCase())
+function getLabelForValue(id: string) {
+  return props.options.find(o => o.value === id)?.label ?? id
 }
 
-function toggleRole(roleName: string) {
-  if (isSelected(roleName)) {
-    modelValue.value = modelValue.value.filter(r => r.toLowerCase() !== roleName.toLowerCase())
+function isSelected(id: string) {
+  return modelValue.value.includes(id)
+}
+
+function toggleRole(id: string) {
+  if (isSelected(id)) {
+    modelValue.value = modelValue.value.filter(v => v !== id)
   }
   else {
-    modelValue.value = [...modelValue.value, roleName]
+    modelValue.value = [...modelValue.value, id]
   }
   searchTerm.value = ''
 }
 
-function removeRole(roleName: string) {
-  modelValue.value = modelValue.value.filter(r => r.toLowerCase() !== roleName.toLowerCase())
+function removeRole(id: string) {
+  modelValue.value = modelValue.value.filter(v => v !== id)
 }
 
 watch(open, async (value) => {
@@ -77,12 +81,12 @@ watch(open, async (value) => {
       >
         <template v-if="modelValue.length > 0">
           <Badge
-            v-for="roleName in modelValue"
-            :key="roleName"
+            v-for="id in modelValue"
+            :key="id"
             variant="outline"
             class="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-foreground shadow-none"
           >
-            {{ roleName }}
+            {{ getLabelForValue(id) }}
           </Badge>
         </template>
         <span v-else class="text-sm text-muted-foreground">{{ placeholder ?? 'Select options' }}</span>
@@ -94,16 +98,16 @@ watch(open, async (value) => {
         <div class="flex flex-wrap items-center gap-1 rounded-md border bg-background px-2 py-2">
           <template v-if="modelValue.length > 0">
             <Badge
-              v-for="roleName in modelValue"
-              :key="roleName"
+              v-for="id in modelValue"
+              :key="id"
               variant="outline"
               class="rounded-md border-border bg-muted px-2 py-1 text-xs font-medium text-foreground"
             >
-              <span>{{ roleName }}</span>
+              <span>{{ getLabelForValue(id) }}</span>
               <button
                 type="button"
                 class="ml-1 inline-flex size-3.5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-                @click.stop="removeRole(roleName)"
+                @click.stop="removeRole(id)"
               >
                 <X class="size-3" />
               </button>
@@ -127,22 +131,22 @@ watch(open, async (value) => {
 
       <div class="max-h-64 overflow-y-auto p-2">
         <button
-          v-for="roleName in filteredOptions"
-          :key="roleName"
+          v-for="option in filteredOptions"
+          :key="option.value"
           type="button"
           class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-muted"
-          :class="isSelected(roleName) ? 'bg-muted' : ''"
-          @click="toggleRole(roleName)"
+          :class="isSelected(option.value) ? 'bg-muted' : ''"
+          @click="toggleRole(option.value)"
         >
           <GripVertical class="size-4 text-muted-foreground" />
           <Badge
             variant="outline"
             class="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-foreground"
           >
-            {{ roleName }}
+            {{ option.label }}
           </Badge>
           <Check
-            v-if="isSelected(roleName)"
+            v-if="isSelected(option.value)"
             class="ml-auto size-4 text-foreground"
           />
         </button>

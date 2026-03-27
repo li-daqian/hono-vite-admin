@@ -291,7 +291,8 @@ export const zPostUserData = z.object({
         displayName: z.union([
             z.string().max(50),
             z.null()
-        ])
+        ]),
+        roleIds: z.array(z.string().min(1)).describe('Role IDs to assign to the user').optional()
     }),
     path: z.never().optional(),
     query: z.never().optional()
@@ -349,7 +350,7 @@ export const zPutUserByIdData = z.object({
             z.null()
         ]).optional(),
         status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account').optional(),
-        roles: z.array(z.string().min(1).max(50)).describe('Role names assigned to the user').optional()
+        roleIds: z.array(z.string().min(1)).describe('Role IDs to assign to the user').optional()
     }),
     path: z.object({
         id: z.string().describe('User ID')

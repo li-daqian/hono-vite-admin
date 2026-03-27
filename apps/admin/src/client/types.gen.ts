@@ -485,6 +485,10 @@ export type PostUserData = {
          * Display name of the user
          */
         displayName: string | null;
+        /**
+         * Role IDs to assign to the user
+         */
+        roleIds?: Array<string>;
     };
     path?: never;
     query?: never;
@@ -577,9 +581,9 @@ export type PutUserByIdData = {
          */
         status?: 'ACTIVE' | 'DISABLED';
         /**
-         * Role names assigned to the user
+         * Role IDs to assign to the user
          */
-        roles?: Array<string>;
+        roleIds?: Array<string>;
     };
     path: {
         /**
