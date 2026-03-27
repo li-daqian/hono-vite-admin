@@ -7,6 +7,7 @@ import type {
   UserPaginationRequest,
   UserPaginationResponse,
   UserProfileResponse,
+  UserRolesUpdateRequest,
   UserUpdateRequest,
 } from '@server/src/modules/user/user.schema'
 import { BusinessError } from '@server/src/common/exception'
@@ -190,6 +191,50 @@ class UserService {
     }
   }
 
+  async updateUserRoles(userId: string, request: UserRolesUpdateRequest): Promise<UserProfileResponse> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+    if (!user) {
+      throw BusinessError.NotFound('User not found')
+    }
+
+    const roleIds = await this.resolveRoleIdsByNames(request.roles)
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        roles: {
+          deleteMany: {},
+          create: roleIds.map(roleId => ({
+            role: {
+              connect: { id: roleId },
+            },
+          })),
+        },
+      },
+      include: {
+        roles: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const { password, salt, ...safeUser } = updatedUser
+    return {
+      ...safeUser,
+      roles: updatedUser.roles.map(item => item.role.name),
+      createdAt: updatedUser.createdAt.toISOString(),
+      updatedAt: updatedUser.updatedAt.toISOString(),
+    }
+  }
+
   async deleteUsers(userIds: string[]): Promise<UserBatchDeleteResponse> {
     const uniqueUserIds = [...new Set(userIds)]
     if (uniqueUserIds.length === 0) {
@@ -226,6 +271,36 @@ class UserService {
       where: { username },
     })
     return existingUser === null
+  }
+
+  private async resolveRoleIdsByNames(roleNames: string[]): Promise<string[]> {
+    const normalizedRoleNames = [...new Set(roleNames.map(roleName => roleName.trim()).filter(Boolean))]
+    if (normalizedRoleNames.length === 0) {
+      return []
+    }
+
+    const roles = await prisma.role.findMany({
+      where: {
+        OR: normalizedRoleNames.map(roleName => ({
+          name: {
+            equals: roleName,
+            mode: 'insensitive',
+          },
+        })),
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    })
+
+    const foundRoleNames = new Set(roles.map(role => role.name.trim().toLowerCase()))
+    const missingRoles = normalizedRoleNames.filter(roleName => !foundRoleNames.has(roleName.toLowerCase()))
+    if (missingRoles.length > 0) {
+      throw BusinessError.BadRequest(`Roles not found: ${missingRoles.join(', ')}`)
+    }
+
+    return roles.map(role => role.id)
   }
 }
 

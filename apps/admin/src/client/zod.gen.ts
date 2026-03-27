@@ -361,6 +361,21 @@ export const zPutUserByIdData = z.object({
  */
 export const zPutUserByIdResponse = zUserProfileResponseSchema;
 
+export const zPutUserByIdRolesData = z.object({
+    body: z.object({
+        roles: z.array(z.string().min(1).max(50)).describe('Role names assigned to the user')
+    }),
+    path: z.object({
+        id: z.string().describe('User ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * User roles updated successfully
+ */
+export const zPutUserByIdRolesResponse = zUserProfileResponseSchema;
+
 export const zDeleteUserBatchData = z.object({
     body: z.object({
         userIds: z.array(z.string()).min(1).describe('IDs of users to delete')

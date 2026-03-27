@@ -37,6 +37,11 @@ export const UserUpdateRequestSchema = z.object({
 })
 export type UserUpdateRequest = z.infer<typeof UserUpdateRequestSchema>
 
+export const UserRolesUpdateRequestSchema = z.object({
+  roles: z.array(z.string().min(1).max(50)).openapi({ description: 'Role names assigned to the user', example: ['admin', 'operator'] }),
+})
+export type UserRolesUpdateRequest = z.infer<typeof UserRolesUpdateRequestSchema>
+
 export const UserBatchDeleteRequestSchema = z.object({
   userIds: z.array(z.string()).min(1).openapi({ description: 'IDs of users to delete', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
 })

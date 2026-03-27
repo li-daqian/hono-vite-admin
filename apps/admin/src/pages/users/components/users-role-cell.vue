@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UserProfileResponseSchema } from '@admin/client'
+import { putUserByIdRoles } from '@admin/client'
 import { Badge } from '@admin/components/ui/badge'
 import {
   Popover,
@@ -9,17 +10,19 @@ import {
 import { cn } from '@admin/lib/utils'
 import { Check, GripVertical, X } from 'lucide-vue-next'
 import { computed, nextTick, ref, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import { useUsers } from './users-provider.vue'
 
 const props = defineProps<{
   row: UserProfileResponseSchema
 }>()
 
-const { roleOptions, getUserRoles, setUserRoles, ensureRoleOption } = useUsers()
+const { roleOptions, getUserRoles, setUserRoles } = useUsers()
 
 const open = ref(false)
 const searchTerm = ref('')
 const searchInputRef = ref<HTMLInputElement | null>(null)
+const isSaving = ref(false)
 
 const selectedRoles = computed(() => getUserRoles(props.row))
 const mergedRoleOptions = computed(() => {
@@ -44,20 +47,37 @@ const filteredRoleOptions = computed(() => {
   return mergedRoleOptions.value.filter(roleName => roleName.toLowerCase().includes(keyword))
 })
 
-const canCreateRole = computed(() => {
-  const keyword = searchTerm.value.trim()
-  if (!keyword) {
-    return false
+async function updateRoles(nextRoles: string[]) {
+  if (isSaving.value) {
+    return
   }
 
-  return !mergedRoleOptions.value.some(roleName => roleName.toLowerCase() === keyword.toLowerCase())
-})
-
-function updateRoles(nextRoles: string[]) {
+  const previousRoles = [...selectedRoles.value]
   setUserRoles(props.row.id, nextRoles)
+  isSaving.value = true
+
+  try {
+    const response = await putUserByIdRoles<true>({
+      path: {
+        id: props.row.id,
+      },
+      body: {
+        roles: nextRoles,
+      },
+    })
+
+    setUserRoles(props.row.id, response.data.roles)
+  }
+  catch {
+    setUserRoles(props.row.id, previousRoles)
+    toast.error('Failed to save roles.')
+  }
+  finally {
+    isSaving.value = false
+  }
 }
 
-function toggleRole(roleName: string) {
+async function toggleRole(roleName: string) {
   const nextRoles = [...selectedRoles.value]
   const roleIndex = nextRoles.findIndex(currentRole => currentRole.toLowerCase() === roleName.toLowerCase())
 
@@ -68,25 +88,12 @@ function toggleRole(roleName: string) {
     nextRoles.push(roleName)
   }
 
-  updateRoles(nextRoles)
+  await updateRoles(nextRoles)
   searchTerm.value = ''
 }
 
-function removeRole(roleName: string) {
-  updateRoles(selectedRoles.value.filter(currentRole => currentRole.toLowerCase() !== roleName.toLowerCase()))
-}
-
-function createRole() {
-  const nextRoleName = searchTerm.value.trim()
-  if (!nextRoleName) {
-    return
-  }
-
-  ensureRoleOption(nextRoleName)
-  if (!selectedRoles.value.some(roleName => roleName.toLowerCase() === nextRoleName.toLowerCase())) {
-    updateRoles([...selectedRoles.value, nextRoleName])
-  }
-  searchTerm.value = ''
+async function removeRole(roleName: string) {
+  await updateRoles(selectedRoles.value.filter(currentRole => currentRole.toLowerCase() !== roleName.toLowerCase()))
 }
 
 watch(open, async (value) => {
@@ -146,14 +153,15 @@ watch(open, async (value) => {
             ref="searchInputRef"
             v-model="searchTerm"
             type="text"
-            placeholder="Search or create role"
+            placeholder="Search role"
             class="h-7 min-w-20 flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
+            :disabled="isSaving"
           >
         </div>
       </div>
 
       <div class="px-3 pt-3 text-sm text-muted-foreground">
-        Select an option or create one
+        Select an option
       </div>
 
       <div class="max-h-64 overflow-y-auto p-2">
@@ -163,8 +171,10 @@ watch(open, async (value) => {
           type="button"
           :class="cn(
             'flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-muted',
+            isSaving && 'pointer-events-none opacity-60',
             selectedRoles.some(currentRole => currentRole.toLowerCase() === roleName.toLowerCase()) && 'bg-muted',
           )"
+          :disabled="isSaving"
           @click="toggleRole(roleName)"
         >
           <GripVertical class="size-4 text-muted-foreground" />
@@ -177,20 +187,8 @@ watch(open, async (value) => {
           />
         </button>
 
-        <button
-          v-if="canCreateRole"
-          type="button"
-          class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-muted"
-          @click="createRole"
-        >
-          <span class="text-muted-foreground">Create</span>
-          <Badge variant="outline" class="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-foreground">
-            {{ searchTerm.trim() }}
-          </Badge>
-        </button>
-
         <div
-          v-if="filteredRoleOptions.length === 0 && !canCreateRole"
+          v-if="filteredRoleOptions.length === 0"
           class="px-2 py-6 text-center text-sm text-muted-foreground"
         >
           No roles found.
