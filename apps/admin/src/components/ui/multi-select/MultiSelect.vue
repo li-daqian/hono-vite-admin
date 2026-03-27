@@ -10,9 +10,11 @@ import { computed, nextTick, ref, watch } from 'vue'
 
 const props = defineProps<{
   /**
-   * All available role name options for selection.
+   * All available options for selection.
    */
   options: string[]
+  placeholder?: string
+  searchPlaceholder?: string
 }>()
 
 const modelValue = defineModel<string[]>({ default: () => [] })
@@ -83,7 +85,7 @@ watch(open, async (value) => {
             {{ roleName }}
           </Badge>
         </template>
-        <span v-else class="text-sm text-muted-foreground">Select roles</span>
+        <span v-else class="text-sm text-muted-foreground">{{ placeholder ?? 'Select options' }}</span>
       </button>
     </PopoverTrigger>
 
@@ -112,7 +114,8 @@ watch(open, async (value) => {
             ref="searchInputRef"
             v-model="searchTerm"
             type="text"
-            placeholder="Search role"
+            autocomplete="off"
+            :placeholder="searchPlaceholder ?? 'Search'"
             class="h-7 min-w-20 flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
           >
         </div>
@@ -148,7 +151,7 @@ watch(open, async (value) => {
           v-if="filteredOptions.length === 0"
           class="px-2 py-6 text-center text-sm text-muted-foreground"
         >
-          No roles found.
+          No options found.
         </div>
       </div>
     </PopoverContent>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { UserProfileResponseSchema } from '@admin/client'
 import { deleteUserBatch } from '@admin/client'
-import ConfirmDialog from '@admin/components/confirm-dialog.vue'
+import ConfirmDialog from '@admin/components/ConfirmDialog.vue'
 import { Input } from '@admin/components/ui/input'
 import { Label } from '@admin/components/ui/label'
 import { AlertTriangle } from 'lucide-vue-next'

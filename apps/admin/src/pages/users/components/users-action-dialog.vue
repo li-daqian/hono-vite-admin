@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from '@admin/components/ui/form'
 import { Input } from '@admin/components/ui/input'
-import { RoleSelector } from '@admin/components/ui/role-selector'
+import { MultiSelect } from '@admin/components/ui/multi-select'
 import {
   Select,
   SelectContent,
@@ -301,7 +301,7 @@ async function handleSubmit(values: Record<string, any>) {
           <div v-if="props.mode === 'edit'" class="grid gap-2">
             <label class="text-sm leading-none font-medium">Roles</label>
             <Skeleton v-if="isPrefilling" class="h-9" />
-            <RoleSelector v-else v-model="editRoles" :options="roleOptions" />
+            <MultiSelect v-else v-model="editRoles" :options="roleOptions" placeholder="Select roles" search-placeholder="Search role" />
           </div>
         </form>
 
