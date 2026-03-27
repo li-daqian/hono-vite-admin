@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLogo from '@admin/components/AppLogo.vue'
+import { DataTableRefreshButton } from '@admin/components/data-table'
 import ToggleTheme from '@admin/components/ToggleTheme.vue'
 import { Button } from '@admin/components/ui/button'
 import { Separator } from '@admin/components/ui/separator'
@@ -9,9 +10,12 @@ import AppBreadcrumb from '@admin/pages/home/components/AppBreadcrumb.vue'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
 import { useMenuStore } from '@admin/stores/menu'
 import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const menuStore = useMenuStore()
 const sidebar = useSidebar()
+const route = useRoute()
+const router = useRouter()
 
 const breadcrumb = computed(() => {
   return menuStore.breadcrumb
@@ -20,6 +24,17 @@ const breadcrumb = computed(() => {
 const logoAreaWidth = computed(() => {
   return sidebar.isMobile.value ? 'auto' : SIDEBAR_WIDTH
 })
+
+async function handleRouteRefresh() {
+  await router.replace({
+    path: route.path,
+    query: {
+      ...route.query,
+      __refresh: String(Date.now()),
+    },
+    hash: route.hash,
+  })
+}
 </script>
 
 <template>
@@ -31,6 +46,11 @@ const logoAreaWidth = computed(() => {
       </div>
     </div>
     <div class="flex items-center gap-2 ml-4">
+      <DataTableRefreshButton
+        class="rounded-lg cursor-pointer"
+        aria-label="Reload users route"
+        @refresh="handleRouteRefresh"
+      />
       <SidebarTrigger :size="18" class="rounded-lg cursor-pointer" />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
       <AppBreadcrumb :items="breadcrumb" />

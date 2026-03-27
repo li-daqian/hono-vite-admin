@@ -11,7 +11,7 @@ import SiteHeader from '@admin/pages/home/components/SiteHeader.vue'
       <div class="flex">
         <AppSidebar />
         <SidebarInset class="p-4">
-          <RouterView />
+          <RouterView :key="$route.fullPath" />
         </SidebarInset>
       </div>
     </SidebarProvider>

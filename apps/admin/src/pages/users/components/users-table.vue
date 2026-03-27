@@ -147,12 +147,6 @@ function handleTableMutationSuccess() {
   void fetchUsers()
 }
 
-async function refreshTable() {
-  await fetchUsers({ withProgress: true })
-}
-
-defineExpose({ refreshTable })
-
 let timer: number | undefined
 
 watch([pagination, sorting, columnFilters], () => {
