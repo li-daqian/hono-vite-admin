@@ -15,6 +15,27 @@ import { buildOrderBy, paginate } from '@server/src/utils/pagination'
 import bcrypt from 'bcryptjs'
 
 class UserService {
+  private readonly userRoleSelection = {
+    role: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  } as const
+
+  private mapUserRoles<T extends { roles: Array<{ role: { id: string, name: string } }>, createdAt: Date, updatedAt: Date }>(user: T) {
+    return {
+      ...user,
+      roles: user.roles.map(item => ({
+        id: item.role.id,
+        name: item.role.name,
+      })),
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
+  }
+
   async createUser(request: UserCreateRequest): Promise<UserCreateResponse> {
     if (!(await this.isUsernameUnique(request.username))) {
       throw BusinessError.UsernameAlreadyExists()
@@ -43,25 +64,14 @@ class UserService {
       },
       include: {
         roles: {
-          select: {
-            role: {
-              select: {
-                name: true,
-              },
-            },
-          },
+          select: this.userRoleSelection,
         },
       },
     })
 
     // Remove sensitive info before returning
     const { password, salt: userSalt, ...safeUser } = user
-    return {
-      ...safeUser,
-      roles: user.roles.map(item => item.role.name),
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
-    }
+    return this.mapUserRoles(safeUser)
   }
 
   async getUserProfile(userId: string): Promise<UserProfileResponse> {
@@ -69,13 +79,7 @@ class UserService {
       where: { id: userId },
       include: {
         roles: {
-          select: {
-            role: {
-              select: {
-                name: true,
-              },
-            },
-          },
+          select: this.userRoleSelection,
         },
       },
     })
@@ -84,12 +88,7 @@ class UserService {
     }
 
     const { password, salt, ...safeUser } = user
-    return {
-      ...safeUser,
-      roles: user.roles.map(item => item.role.name),
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
-    }
+    return this.mapUserRoles(safeUser)
   }
 
   async getUserPage(query: UserPaginationRequest): Promise<UserPaginationResponse> {
@@ -126,13 +125,7 @@ class UserService {
           id: true,
           username: true,
           roles: {
-            select: {
-              role: {
-                select: {
-                  name: true,
-                },
-              },
-            },
+            select: this.userRoleSelection,
           },
           email: true,
           phone: true,
@@ -144,12 +137,7 @@ class UserService {
       }),
     ])
 
-    const items = users.map(user => ({
-      ...user,
-      roles: user.roles.map(item => item.role.name),
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
-    }))
+    const items = users.map(user => this.mapUserRoles(user))
 
     return paginate(items, total, query)
   }
@@ -187,24 +175,13 @@ class UserService {
       },
       include: {
         roles: {
-          select: {
-            role: {
-              select: {
-                name: true,
-              },
-            },
-          },
+          select: this.userRoleSelection,
         },
       },
     })
 
     const { password, salt, ...safeUser } = updatedUser
-    return {
-      ...safeUser,
-      roles: updatedUser.roles.map(item => item.role.name),
-      createdAt: updatedUser.createdAt.toISOString(),
-      updatedAt: updatedUser.updatedAt.toISOString(),
-    }
+    return this.mapUserRoles(safeUser)
   }
 
   async deleteUsers(userIds: string[]): Promise<UserBatchDeleteResponse> {

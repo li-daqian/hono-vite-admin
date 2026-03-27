@@ -128,11 +128,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
         displayName: response.data.displayName ?? '',
         status: response.data.status,
       })
-      // Map role names from user response to IDs using roleOptions
-      const roleNames = response.data.roles ?? []
-      editRoles.value = roleOptions.value
-        .filter(opt => roleNames.includes(opt.label))
-        .map(opt => opt.value)
+      editRoles.value = (response.data.roles ?? []).map(role => role.id)
     }
     finally {
       isPrefilling.value = false

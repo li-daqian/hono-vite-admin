@@ -74,9 +74,18 @@ export type UserProfileResponseSchema = {
      */
     username: string;
     /**
-     * Role names assigned to the user
+     * Roles assigned to the user
      */
-    roles: Array<string>;
+    roles: Array<{
+        /**
+         * Unique identifier for the role
+         */
+        id: string;
+        /**
+         * Unique role name
+         */
+        name: string;
+    }>;
     /**
      * Email address of the user
      */
@@ -509,9 +518,18 @@ export type PostUserResponses = {
          */
         username: string;
         /**
-         * Role names assigned to the user
+         * Roles assigned to the user
          */
-        roles: Array<string>;
+        roles: Array<{
+            /**
+             * Unique identifier for the role
+             */
+            id: string;
+            /**
+             * Unique role name
+             */
+            name: string;
+        }>;
         /**
          * Email address of the user
          */

@@ -17,12 +17,12 @@ const selectedRoles = computed(() => getUserRoles(props.row))
   <div class="flex min-h-9 w-full flex-wrap items-center gap-1 px-1 py-1">
     <template v-if="selectedRoles.length > 0">
       <Badge
-        v-for="roleName in selectedRoles"
-        :key="roleName"
+        v-for="role in selectedRoles"
+        :key="role.id"
         variant="outline"
         class="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-foreground shadow-none"
       >
-        {{ roleName }}
+        {{ role.name }}
       </Badge>
     </template>
   </div>

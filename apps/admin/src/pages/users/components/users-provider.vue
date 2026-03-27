@@ -5,6 +5,7 @@ import { getRole } from '@admin/client'
 import { defineComponent, inject, onMounted, provide, ref } from 'vue'
 
 type User = UserProfileResponseSchema
+type UserRole = User['roles'][number]
 
 export type UsersDialogType = 'add' | 'edit' | 'delete'
 
@@ -14,8 +15,8 @@ export interface UsersContextType {
   currentRow: Ref<User | null>
   setCurrentRow: (value: User | null) => void
   roleOptions: Ref<{ value: string, label: string }[]>
-  getUserRoles: (user: User) => string[]
-  setUserRoles: (userId: string, roles: string[]) => void
+  getUserRoles: (user: User) => UserRole[]
+  setUserRoles: (userId: string, roles: UserRole[]) => void
   ensureRoleOption: (roleId: string, roleName: string) => void
 }
 
@@ -37,7 +38,7 @@ export default defineComponent({
     const open = ref<UsersDialogType | null>(null)
     const currentRow = ref<User | null>(null)
     const roleOptions = ref<{ value: string, label: string }[]>([])
-    const userRoleOverrides = ref<Record<string, string[]>>({})
+    const userRoleOverrides = ref<Record<string, UserRole[]>>({})
 
     function hasRoleId(source: { value: string }[], id: string) {
       return source.some(o => o.value === id)
@@ -64,10 +65,10 @@ export default defineComponent({
       return userRoleOverrides.value[user.id] ?? user.roles ?? []
     }
 
-    const setUserRoles = (userId: string, roles: string[]) => {
+    const setUserRoles = (userId: string, roles: UserRole[]) => {
       userRoleOverrides.value = {
         ...userRoleOverrides.value,
-        [userId]: [...roles],
+        [userId]: roles.map(role => ({ ...role })),
       }
     }
 
