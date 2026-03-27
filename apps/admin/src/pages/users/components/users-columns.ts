@@ -67,23 +67,13 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     },
   },
   {
-    id: 'roles',
-    accessorKey: 'roles',
-    header: ({ column }) => renderColumnHeader(column, 'Role'),
-    enableSorting: false,
-    meta: {
-      label: 'Role',
-      tdClassName: 'min-w-[240px] max-w-[320px]',
-    },
-    cell: ({ row }) => h(UsersRoleCell, { row: row.original }),
-  },
-  {
     id: 'email',
     accessorKey: 'email',
     header: ({ column }) => renderColumnHeader(column, 'Email'),
     enableSorting: true,
     meta: {
       label: 'Email',
+      tdClassName: 'min-w-[240px] max-w-[320px]',
     },
   },
   {
@@ -105,6 +95,16 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
       variant: 'outline',
       class: cn('capitalize', statusClassMap[row.original.status]),
     }, () => row.original.status.toLowerCase()),
+  },
+  {
+    id: 'roles',
+    accessorKey: 'roles',
+    header: ({ column }) => renderColumnHeader(column, 'Role'),
+    enableSorting: false,
+    meta: {
+      label: 'Role',
+    },
+    cell: ({ row }) => h(UsersRoleCell, { row: row.original }),
   },
   {
     id: 'actions',

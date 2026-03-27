@@ -214,30 +214,6 @@ async function handleSubmit(values: Record<string, any>) {
             </FormItem>
           </FormField>
 
-          <template v-if="props.mode === 'add'">
-            <FormField v-slot="{ componentField }" name="password">
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl class="h-9">
-                  <Skeleton v-if="isPrefilling" />
-                  <Input v-else v-bind="componentField" type="password" placeholder="At least 6 characters" maxlength="100" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="confirmPassword">
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl class="h-9">
-                  <Skeleton v-if="isPrefilling" />
-                  <Input v-else v-bind="componentField" type="password" placeholder="Confirm password" maxlength="100" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            </FormField>
-          </template>
-
           <FormField v-slot="{ componentField }" name="displayName">
             <FormItem>
               <FormLabel>Display Name</FormLabel>
@@ -271,6 +247,36 @@ async function handleSubmit(values: Record<string, any>) {
             </FormItem>
           </FormField>
 
+          <div v-if="props.mode === 'edit'" class="grid gap-2">
+            <label class="text-sm leading-none font-medium">Roles</label>
+            <Skeleton v-if="isPrefilling" class="h-9" />
+            <MultiSelect v-else v-model="editRoles" :options="roleOptions" placeholder="Select roles" search-placeholder="Search role" />
+          </div>
+
+          <template v-if="props.mode === 'add'">
+            <FormField v-slot="{ componentField }" name="password">
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl class="h-9">
+                  <Skeleton v-if="isPrefilling" />
+                  <Input v-else v-bind="componentField" type="password" placeholder="At least 6 characters" maxlength="100" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            </FormField>
+
+            <FormField v-slot="{ componentField }" name="confirmPassword">
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl class="h-9">
+                  <Skeleton v-if="isPrefilling" />
+                  <Input v-else v-bind="componentField" type="password" placeholder="Confirm password" maxlength="100" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            </FormField>
+          </template>
+
           <FormField v-if="props.mode === 'edit'" v-slot="{ componentField }" name="status">
             <FormItem>
               <FormLabel>Status</FormLabel>
@@ -297,12 +303,6 @@ async function handleSubmit(values: Record<string, any>) {
               <FormMessage />
             </FormItem>
           </FormField>
-
-          <div v-if="props.mode === 'edit'" class="grid gap-2">
-            <label class="text-sm leading-none font-medium">Roles</label>
-            <Skeleton v-if="isPrefilling" class="h-9" />
-            <MultiSelect v-else v-model="editRoles" :options="roleOptions" placeholder="Select roles" search-placeholder="Search role" />
-          </div>
         </form>
 
         <DialogFooter class="pt-6">
