@@ -298,11 +298,11 @@ async function handleSubmit(values: Record<string, any>) {
             </FormItem>
           </FormField>
 
-          <FormItem v-if="props.mode === 'edit'">
-            <FormLabel>Roles</FormLabel>
+          <div v-if="props.mode === 'edit'" class="grid gap-2">
+            <label class="text-sm leading-none font-medium">Roles</label>
             <Skeleton v-if="isPrefilling" class="h-9" />
             <RoleSelector v-else v-model="editRoles" :options="roleOptions" />
-          </FormItem>
+          </div>
         </form>
 
         <DialogFooter class="pt-6">
