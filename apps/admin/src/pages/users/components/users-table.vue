@@ -19,7 +19,6 @@ import {
   TableRow,
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
-import NProgress from '@admin/lib/nprogress'
 import { cn } from '@admin/lib/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { ref, shallowRef, watch } from 'vue'
@@ -50,7 +49,7 @@ const sorting = ref<SortingState>([])
 const rowSelection = ref<RowSelectionState>({})
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = ref<VisibilityState>({})
-const isLoading = ref(false)
+const isLoading = ref(true)
 
 const table = useVueTable({
   get data() {
@@ -97,8 +96,7 @@ const table = useVueTable({
   getCoreRowModel: getCoreRowModel(),
 })
 
-async function fetchUsers(options?: { withProgress?: boolean }) {
-  const withProgress = options?.withProgress ?? false
+async function fetchUsers() {
   const usernameFilter = columnFilters.value.find(filter => filter.id === 'username')?.value
   const statusFilter = columnFilters.value.find(filter => filter.id === 'status')?.value
 
@@ -108,12 +106,6 @@ async function fetchUsers(options?: { withProgress?: boolean }) {
     sort: sorting.value.map(item => `${item.id} ${item.desc ? 'desc' : 'asc'}`).join(',') || undefined,
     search: typeof usernameFilter === 'string' && usernameFilter.trim().length > 0 ? usernameFilter.trim() : undefined,
     status: Array.isArray(statusFilter) && statusFilter.length > 0 ? statusFilter : undefined,
-  }
-
-  isLoading.value = true
-
-  if (withProgress) {
-    NProgress.start()
   }
 
   try {
@@ -132,9 +124,6 @@ async function fetchUsers(options?: { withProgress?: boolean }) {
   }
   finally {
     isLoading.value = false
-    if (withProgress) {
-      NProgress.done()
-    }
   }
 }
 
