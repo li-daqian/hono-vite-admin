@@ -292,7 +292,7 @@ async function handleSubmit(values: Record<string, any>) {
           </FormField>
         </form>
 
-        <DialogFooter>
+        <DialogFooter class="pt-6">
           <Button variant="outline" :disabled="isSubmitting" @click="handleOpenChange(false)">
             Cancel
           </Button>
