@@ -25,13 +25,9 @@ function handleAddOpenChange(value: boolean) {
 }
 
 function handleEditOpenChange(value: boolean) {
-  if (value) {
-    setOpen('edit')
-    return
-  }
-
-  setOpen(null)
-  clearCurrentRowWithDelay()
+  setOpen(value ? 'edit' : null)
+  if (!value)
+    setCurrentRow(null)
 }
 
 function handleDeleteOpenChange(value: boolean) {
