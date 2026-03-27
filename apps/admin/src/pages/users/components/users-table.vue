@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
+import NProgress from '@admin/lib/nprogress'
 import { cn } from '@admin/lib/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { ref, shallowRef, watch } from 'vue'
@@ -96,7 +97,8 @@ const table = useVueTable({
   getCoreRowModel: getCoreRowModel(),
 })
 
-async function fetchUsers() {
+async function fetchUsers(options?: { withProgress?: boolean }) {
+  const withProgress = options?.withProgress ?? false
   const usernameFilter = columnFilters.value.find(filter => filter.id === 'username')?.value
   const statusFilter = columnFilters.value.find(filter => filter.id === 'status')?.value
 
@@ -109,6 +111,10 @@ async function fetchUsers() {
   }
 
   isLoading.value = true
+
+  if (withProgress) {
+    NProgress.start()
+  }
 
   try {
     const response = await getUserPage<true>({ query })
@@ -126,6 +132,9 @@ async function fetchUsers() {
   }
   finally {
     isLoading.value = false
+    if (withProgress) {
+      NProgress.done()
+    }
   }
 }
 
@@ -137,6 +146,12 @@ function getColumnMetaClass(column: ReturnType<typeof table.getAllLeafColumns>[n
 function handleTableMutationSuccess() {
   void fetchUsers()
 }
+
+async function refreshTable() {
+  await fetchUsers({ withProgress: true })
+}
+
+defineExpose({ refreshTable })
 
 let timer: number | undefined
 

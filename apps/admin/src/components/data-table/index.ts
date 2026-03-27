@@ -1,6 +1,7 @@
 export { default as DataTableBulkActions } from './bulk-actions.vue'
 export { default as DataTableColumnHeader } from './column-header.vue'
 export { default as DataTablePagination } from './pagination.vue'
+export { default as DataTableRefreshButton } from './refresh-button.vue'
 export { default as DataTableToolbar } from './toolbar.vue'
 export * from './types'
 export { default as DataTableViewOptions } from './view-options.vue'
