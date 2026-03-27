@@ -10,7 +10,6 @@ import {
 import { cn } from '@admin/lib/utils'
 import { Check, GripVertical, X } from 'lucide-vue-next'
 import { computed, nextTick, ref, watch } from 'vue'
-import { toast } from 'vue-sonner'
 import { useUsers } from './users-provider.vue'
 
 const props = defineProps<{
@@ -52,7 +51,6 @@ async function updateRoles(nextRoles: string[]) {
     return
   }
 
-  const previousRoles = [...selectedRoles.value]
   setUserRoles(props.row.id, nextRoles)
   isSaving.value = true
 
@@ -67,10 +65,6 @@ async function updateRoles(nextRoles: string[]) {
     })
 
     setUserRoles(props.row.id, response.data.roles)
-  }
-  catch {
-    setUserRoles(props.row.id, previousRoles)
-    toast.error('Failed to save roles.')
   }
   finally {
     isSaving.value = false
