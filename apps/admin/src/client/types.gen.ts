@@ -576,6 +576,10 @@ export type PutUserByIdData = {
          * Status of the user account
          */
         status?: 'ACTIVE' | 'DISABLED';
+        /**
+         * Role names assigned to the user
+         */
+        roles?: Array<string>;
     };
     path: {
         /**
@@ -595,32 +599,6 @@ export type PutUserByIdResponses = {
 };
 
 export type PutUserByIdResponse = PutUserByIdResponses[keyof PutUserByIdResponses];
-
-export type PutUserByIdRolesData = {
-    body: {
-        /**
-         * Role names assigned to the user
-         */
-        roles: Array<string>;
-    };
-    path: {
-        /**
-         * User ID
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/user/{id}/roles';
-};
-
-export type PutUserByIdRolesResponses = {
-    /**
-     * User roles updated successfully
-     */
-    200: UserProfileResponseSchema;
-};
-
-export type PutUserByIdRolesResponse = PutUserByIdRolesResponses[keyof PutUserByIdRolesResponses];
 
 export type DeleteUserBatchData = {
     body: {

@@ -7,7 +7,6 @@ import type {
   UserPaginationRequest,
   UserPaginationResponse,
   UserProfileResponse,
-  UserRolesUpdateRequest,
   UserUpdateRequest,
 } from '@server/src/modules/user/user.schema'
 import { BusinessError } from '@server/src/common/exception'
@@ -160,6 +159,10 @@ class UserService {
       throw BusinessError.UsernameAlreadyExists()
     }
 
+    const roleIds = request.roles !== undefined
+      ? await this.resolveRoleIdsByNames(request.roles)
+      : null
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -168,50 +171,16 @@ class UserService {
         phone: request.phone,
         displayName: request.displayName,
         status: request.status,
-      },
-      include: {
-        roles: {
-          select: {
-            role: {
-              select: {
-                name: true,
+        ...(roleIds !== null && {
+          roles: {
+            deleteMany: {},
+            create: roleIds.map(roleId => ({
+              role: {
+                connect: { id: roleId },
               },
-            },
+            })),
           },
-        },
-      },
-    })
-
-    const { password, salt, ...safeUser } = updatedUser
-    return {
-      ...safeUser,
-      roles: updatedUser.roles.map(item => item.role.name),
-      createdAt: updatedUser.createdAt.toISOString(),
-      updatedAt: updatedUser.updatedAt.toISOString(),
-    }
-  }
-
-  async updateUserRoles(userId: string, request: UserRolesUpdateRequest): Promise<UserProfileResponse> {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    })
-    if (!user) {
-      throw BusinessError.NotFound('User not found')
-    }
-
-    const roleIds = await this.resolveRoleIdsByNames(request.roles)
-
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        roles: {
-          deleteMany: {},
-          create: roleIds.map(roleId => ({
-            role: {
-              connect: { id: roleId },
-            },
-          })),
-        },
+        }),
       },
       include: {
         roles: {

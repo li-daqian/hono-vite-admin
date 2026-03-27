@@ -10,7 +10,6 @@ import {
   UserPaginationRequestSchema,
   UserPaginationResponseSchema,
   UserProfileResponseSchema,
-  UserRolesUpdateRequestSchema,
   UserUpdateRequestSchema,
 } from '@server/src/modules/user/user.schema'
 
@@ -83,24 +82,6 @@ export const updateUserRoute = createRoute({
   },
   responses: {
     200: { description: 'User updated successfully', content: { 'application/json': { schema: UserProfileResponseSchema } } },
-  },
-  security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
-  tags: ['User'],
-})
-
-export const updateUserRolesRoute = createRoute({
-  path: '/{id}/roles',
-  method: 'put',
-  description: 'Update user roles',
-  request: {
-    params: z.object({
-      id: z.string().openapi({ description: 'User ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
-    }),
-    body: { required: true, content: { 'application/json': { schema: UserRolesUpdateRequestSchema } } },
-  },
-  responses: {
-    200: { description: 'User roles updated successfully', content: { 'application/json': { schema: UserProfileResponseSchema } } },
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware],

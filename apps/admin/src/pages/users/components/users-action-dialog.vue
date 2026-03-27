@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from '@admin/components/ui/form'
 import { Input } from '@admin/components/ui/input'
+import { RoleSelector } from '@admin/components/ui/role-selector'
 import {
   Select,
   SelectContent,
@@ -31,6 +32,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import z from 'zod'
+import { useUsers } from './users-provider.vue'
 
 const props = defineProps<{
   open: boolean
@@ -92,6 +94,9 @@ const editInitialValues = {
 const isPrefilling = ref(props.mode === 'edit')
 const validationSchema = computed(() => (props.mode === 'edit' ? editValidationSchema : addValidationSchema))
 
+const { roleOptions } = useUsers()
+const editRoles = ref<string[]>([])
+
 function toNullable(value: string): string | null {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
@@ -123,6 +128,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
         displayName: response.data.displayName ?? '',
         status: response.data.status,
       })
+      editRoles.value = response.data.roles ?? []
     }
     finally {
       isPrefilling.value = false
@@ -163,6 +169,7 @@ async function handleSubmit(values: Record<string, any>) {
     phone: toNullable(values.phone),
     displayName: toNullable(values.displayName),
     status: values.status,
+    roles: editRoles.value,
   }
 
   await putUserById<true>({
@@ -290,6 +297,12 @@ async function handleSubmit(values: Record<string, any>) {
               <FormMessage />
             </FormItem>
           </FormField>
+
+          <FormItem v-if="props.mode === 'edit'">
+            <FormLabel>Roles</FormLabel>
+            <Skeleton v-if="isPrefilling" class="h-9" />
+            <RoleSelector v-else v-model="editRoles" :options="roleOptions" />
+          </FormItem>
         </form>
 
         <DialogFooter class="pt-6">
