@@ -46,12 +46,12 @@ async function handleRouteRefresh() {
       </div>
     </div>
     <div class="flex items-center gap-2 ml-4">
+      <SidebarTrigger :size="18" class="rounded-lg cursor-pointer" />
       <DataTableRefreshButton
         class="rounded-lg cursor-pointer"
         aria-label="Reload users route"
         @refresh="handleRouteRefresh"
       />
-      <SidebarTrigger :size="18" class="rounded-lg cursor-pointer" />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
       <AppBreadcrumb :items="breadcrumb" />
     </div>
