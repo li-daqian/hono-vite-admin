@@ -8,7 +8,7 @@ import type {
   VisibilityState,
 } from '@tanstack/vue-table'
 import type { UserPageItem } from './users-columns'
-import { getUserPage } from '@admin/client'
+import { getRole, getUserPage } from '@admin/client'
 import { DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
 import {
   Table,
@@ -21,7 +21,7 @@ import {
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { cn } from '@admin/lib/utils'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { ref, shallowRef, watch } from 'vue'
+import { onMounted, ref, shallowRef, watch } from 'vue'
 import DataTableBulkActions from './data-table-bulk-actions.vue'
 import { usersColumns } from './users-columns'
 
@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<{
   refreshKey: 0,
 })
 
-const filters: DataTableFilterField[] = [
+const filters = ref<DataTableFilterField[]>([
   {
     columnId: 'status',
     title: 'Status',
@@ -40,7 +40,12 @@ const filters: DataTableFilterField[] = [
       { label: 'Disabled', value: 'DISABLED' },
     ],
   },
-]
+  {
+    columnId: 'roles',
+    title: 'Roles',
+    options: [],
+  },
+])
 
 const tableData = shallowRef<UserPageItem[]>([])
 const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 10 })
@@ -127,6 +132,20 @@ async function fetchUsers() {
   }
 }
 
+async function fetchRolesForFilter() {
+  const response = await getRole<true>()
+  const roles = response.data || []
+  filters.value = filters.value.map((filter) => {
+    if (filter.columnId === 'roles') {
+      return {
+        ...filter,
+        options: roles.map(role => ({ label: role.name, value: role.id })),
+      }
+    }
+    return filter
+  })
+}
+
 function getColumnMetaClass(column: ReturnType<typeof table.getAllLeafColumns>[number], key: 'className' | 'thClassName' | 'tdClassName') {
   const meta = column.columnDef.meta as Record<string, string> | undefined
   return meta?.[key]
@@ -150,6 +169,10 @@ watch([pagination, sorting, columnFilters], () => {
 
 watch(() => props.refreshKey, () => {
   void fetchUsers()
+})
+
+onMounted(() => {
+  void fetchRolesForFilter()
 })
 </script>
 
