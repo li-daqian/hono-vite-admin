@@ -9,13 +9,12 @@ import { SIDEBAR_WIDTH, useSidebar } from '@admin/components/ui/sidebar/utils'
 import AppBreadcrumb from '@admin/pages/home/components/AppBreadcrumb.vue'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
 import { useMenuStore } from '@admin/stores/menu'
+import { usePageRefreshStore } from '@admin/stores/page-refresh'
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 
 const menuStore = useMenuStore()
 const sidebar = useSidebar()
-const route = useRoute()
-const router = useRouter()
+const pageRefreshStore = usePageRefreshStore()
 
 const breadcrumb = computed(() => {
   return menuStore.breadcrumb
@@ -25,15 +24,8 @@ const logoAreaWidth = computed(() => {
   return sidebar.isMobile.value ? 'auto' : SIDEBAR_WIDTH
 })
 
-async function handleRouteRefresh() {
-  await router.replace({
-    path: route.path,
-    query: {
-      ...route.query,
-      __refresh: String(Date.now()),
-    },
-    hash: route.hash,
-  })
+function handleRouteRefresh() {
+  pageRefreshStore.refresh()
 }
 </script>
 
