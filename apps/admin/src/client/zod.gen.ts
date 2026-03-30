@@ -267,6 +267,10 @@ export const zGetUserPageData = z.object({
         status: z.union([
             z.array(z.enum(['ACTIVE', 'DISABLED'])),
             z.null()
+        ]).optional().default(null),
+        roleIds: z.union([
+            z.array(z.string()),
+            z.null()
         ]).optional().default(null)
     })
 });

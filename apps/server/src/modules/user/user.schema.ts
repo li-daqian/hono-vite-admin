@@ -105,6 +105,20 @@ export const UserPaginationRequestSchema = PaginationQuerySchema.extend({
       description: 'Filter users by one or more account statuses',
       example: [UserStatus.ACTIVE, UserStatus.DISABLED],
     }),
+  roleIds: z.preprocess(
+    (val) => {
+      if (val === '')
+        return undefined
+      if (typeof val === 'string')
+        return [val]
+      return val
+    },
+    z.array(z.string()).nullable().default(null),
+  )
+    .openapi({
+      description: 'Filter users by one or more role IDs',
+      example: ['01HZY4QG2R1X0ABCDEF1234567'],
+    }),
 })
 export type UserPaginationRequest = z.infer<typeof UserPaginationRequestSchema>
 export const UserPaginationResponseSchema = PaginatedResponseSchema(UserProfileResponseSchema)

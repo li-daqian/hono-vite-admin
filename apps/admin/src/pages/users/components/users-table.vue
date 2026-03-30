@@ -104,6 +104,7 @@ const table = useVueTable({
 async function fetchUsers() {
   const usernameFilter = columnFilters.value.find(filter => filter.id === 'username')?.value
   const statusFilter = columnFilters.value.find(filter => filter.id === 'status')?.value
+  const rolesFilter = columnFilters.value.find(filter => filter.id === 'roles')?.value
 
   const query: FetchRequestParams = {
     page: pagination.value.pageIndex + 1,
@@ -111,6 +112,7 @@ async function fetchUsers() {
     sort: sorting.value.map(item => `${item.id} ${item.desc ? 'desc' : 'asc'}`).join(',') || undefined,
     search: typeof usernameFilter === 'string' && usernameFilter.trim().length > 0 ? usernameFilter.trim() : undefined,
     status: Array.isArray(statusFilter) && statusFilter.length > 0 ? statusFilter : undefined,
+    roleIds: Array.isArray(rolesFilter) && rolesFilter.length > 0 ? rolesFilter : undefined,
   }
 
   try {

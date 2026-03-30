@@ -92,11 +92,14 @@ class UserService {
   }
 
   async getUserPage(query: UserPaginationRequest): Promise<UserPaginationResponse> {
-    const { page, pageSize, search, status, sort } = query
+    const { page, pageSize, search, status, roleIds, sort } = query
     const skip = (page - 1) * pageSize
 
     const where = {
       ...(status && { status: { in: status } }),
+      ...(roleIds && roleIds.length > 0 && {
+        roles: { some: { roleId: { in: roleIds } } },
+      }),
       ...(search
         ? {
             OR: [

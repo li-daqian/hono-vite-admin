@@ -453,6 +453,10 @@ export type GetUserPageData = {
          * Filter users by one or more account statuses
          */
         status?: Array<'ACTIVE' | 'DISABLED'> | null;
+        /**
+         * Filter users by one or more role IDs
+         */
+        roleIds?: Array<string> | null;
     };
     url: '/user/page';
 };
