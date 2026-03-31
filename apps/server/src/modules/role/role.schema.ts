@@ -32,3 +32,15 @@ export const RoleDeleteResponseSchema = z.object({
   deletedCount: z.number().int().nonnegative().openapi({ description: 'Number of roles deleted', example: 1 }),
 })
 export type RoleDeleteResponse = z.infer<typeof RoleDeleteResponseSchema>
+
+export const RolePermissionsResponseSchema = z.object({
+  menuIds: z.array(z.string()).openapi({ description: 'Granted menu IDs', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
+  actionIds: z.array(z.string()).openapi({ description: 'Granted action IDs', example: ['01HZY4QG2R1X0ABCDEF7654321'] }),
+}).openapi('RolePermissionsResponseSchema')
+export type RolePermissionsResponse = z.infer<typeof RolePermissionsResponseSchema>
+
+export const RolePermissionsUpdateRequestSchema = z.object({
+  menuIds: z.array(z.string()).openapi({ description: 'Menu IDs to grant', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
+  actionIds: z.array(z.string()).openapi({ description: 'Action IDs to grant', example: ['01HZY4QG2R1X0ABCDEF7654321'] }),
+})
+export type RolePermissionsUpdateRequest = z.infer<typeof RolePermissionsUpdateRequestSchema>

@@ -3,9 +3,12 @@ import type {
   RoleCreateResponse,
   RoleDeleteResponse,
   RoleListResponse,
+  RolePermissionsResponse,
+  RolePermissionsUpdateRequest,
   RoleProfileResponse,
   RoleUpdateRequest,
 } from '@server/src/modules/role/role.schema'
+import { PermissionType } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 
@@ -83,6 +86,66 @@ class RoleService {
     return {
       deletedCount: 1,
     }
+  }
+
+  async getRolePermissions(roleId: string): Promise<RolePermissionsResponse> {
+    const role = await prisma.role.findUnique({ where: { id: roleId } })
+    if (!role) {
+      throw BusinessError.NotFound('Role not found')
+    }
+
+    const rolePermissions = await prisma.rolePermission.findMany({
+      where: { roleId },
+      include: { permission: true },
+    })
+
+    const menuIds = rolePermissions
+      .filter(rp => rp.permission.type === PermissionType.MENU)
+      .map(rp => rp.permission.targetId)
+    const actionIds = rolePermissions
+      .filter(rp => rp.permission.type === PermissionType.ACTION)
+      .map(rp => rp.permission.targetId)
+
+    return { menuIds, actionIds }
+  }
+
+  async updateRolePermissions(roleId: string, request: RolePermissionsUpdateRequest): Promise<RolePermissionsResponse> {
+    const role = await prisma.role.findUnique({ where: { id: roleId } })
+    if (!role) {
+      throw BusinessError.NotFound('Role not found')
+    }
+
+    const permissionEntries = [
+      ...request.menuIds.map(id => ({ type: PermissionType.MENU, targetId: id })),
+      ...request.actionIds.map(id => ({ type: PermissionType.ACTION, targetId: id })),
+    ]
+
+    await prisma.$transaction(async (tx) => {
+      // Upsert all needed permissions
+      for (const entry of permissionEntries) {
+        await tx.permission.upsert({
+          where: { type_targetId: { type: entry.type, targetId: entry.targetId } },
+          create: { type: entry.type, targetId: entry.targetId },
+          update: {},
+        })
+      }
+
+      const permissions = await tx.permission.findMany({
+        where: {
+          OR: permissionEntries.map(e => ({ type: e.type, targetId: e.targetId })),
+        },
+      })
+
+      // Replace all role permissions
+      await tx.rolePermission.deleteMany({ where: { roleId } })
+      if (permissions.length > 0) {
+        await tx.rolePermission.createMany({
+          data: permissions.map(p => ({ roleId, permissionId: p.id })),
+        })
+      }
+    })
+
+    return { menuIds: request.menuIds, actionIds: request.actionIds }
   }
 
   private async isRoleNameUnique(name: string): Promise<boolean> {

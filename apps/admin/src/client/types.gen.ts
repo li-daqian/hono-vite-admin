@@ -47,6 +47,54 @@ export type AuthMenuSchema = {
     actions: Array<AuthActionSchema>;
 };
 
+export type MenuActionSchema = {
+    /**
+     * Action ID
+     */
+    id: string;
+    /**
+     * Action name
+     */
+    name: string;
+    /**
+     * Action description
+     */
+    description: string | null;
+};
+
+export type MenuItemSchema = {
+    /**
+     * Menu ID
+     */
+    id: string;
+    /**
+     * Menu name
+     */
+    name: string;
+    /**
+     * Menu path
+     */
+    path: string | null;
+    /**
+     * Display order
+     */
+    order: number;
+    /**
+     * Parent menu ID
+     */
+    parentId: string | null;
+    /**
+     * Actions under this menu
+     */
+    actions: Array<MenuActionSchema>;
+    /**
+     * Child menus
+     */
+    children: Array<MenuItemSchema>;
+};
+
+export type MenuTreeResponseSchema = Array<MenuItemSchema>;
+
 export type RoleProfileResponseSchema = {
     /**
      * Unique identifier for the role
@@ -63,6 +111,17 @@ export type RoleProfileResponseSchema = {
 };
 
 export type RoleListResponseSchema = Array<RoleProfileResponseSchema>;
+
+export type RolePermissionsResponseSchema = {
+    /**
+     * Granted menu IDs
+     */
+    menuIds: Array<string>;
+    /**
+     * Granted action IDs
+     */
+    actionIds: Array<string>;
+};
 
 export type UserProfileResponseSchema = {
     /**
@@ -282,6 +341,22 @@ export type GetAuthMenusResponses = {
 
 export type GetAuthMenusResponse = GetAuthMenusResponses[keyof GetAuthMenusResponses];
 
+export type GetMenuData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/menu';
+};
+
+export type GetMenuResponses = {
+    /**
+     * Menu tree retrieved successfully
+     */
+    200: MenuTreeResponseSchema;
+};
+
+export type GetMenuResponse = GetMenuResponses[keyof GetMenuResponses];
+
 export type GetRoleData = {
     body?: never;
     path?: never;
@@ -412,6 +487,57 @@ export type PutRoleByIdResponses = {
 };
 
 export type PutRoleByIdResponse = PutRoleByIdResponses[keyof PutRoleByIdResponses];
+
+export type GetRoleByIdPermissionsData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/role/{id}/permissions';
+};
+
+export type GetRoleByIdPermissionsResponses = {
+    /**
+     * Role permissions retrieved successfully
+     */
+    200: RolePermissionsResponseSchema;
+};
+
+export type GetRoleByIdPermissionsResponse = GetRoleByIdPermissionsResponses[keyof GetRoleByIdPermissionsResponses];
+
+export type PutRoleByIdPermissionsData = {
+    body: {
+        /**
+         * Menu IDs to grant
+         */
+        menuIds: Array<string>;
+        /**
+         * Action IDs to grant
+         */
+        actionIds: Array<string>;
+    };
+    path: {
+        /**
+         * Role ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/role/{id}/permissions';
+};
+
+export type PutRoleByIdPermissionsResponses = {
+    /**
+     * Role permissions updated successfully
+     */
+    200: RolePermissionsResponseSchema;
+};
+
+export type PutRoleByIdPermissionsResponse = PutRoleByIdPermissionsResponses[keyof PutRoleByIdPermissionsResponses];
 
 export type GetUserProfileData = {
     body?: never;

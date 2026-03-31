@@ -27,6 +27,33 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
     actions: z.array(zAuthActionSchema).describe('Menu actions')
 });
 
+export const zMenuActionSchema = z.object({
+    id: z.string().describe('Action ID'),
+    name: z.string().describe('Action name'),
+    description: z.union([
+        z.string(),
+        z.null()
+    ])
+});
+
+export const zMenuItemSchema: z.AnyZodObject = z.object({
+    id: z.string().describe('Menu ID'),
+    name: z.string().describe('Menu name'),
+    path: z.union([
+        z.string(),
+        z.null()
+    ]),
+    order: z.number().int().describe('Display order'),
+    parentId: z.union([
+        z.string(),
+        z.null()
+    ]),
+    actions: z.array(zMenuActionSchema).describe('Actions under this menu'),
+    children: z.array(z.lazy(() => zMenuItemSchema)).describe('Child menus')
+});
+
+export const zMenuTreeResponseSchema = z.array(zMenuItemSchema);
+
 export const zRoleProfileResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the role'),
     name: z.string().describe('Unique role name'),
@@ -37,6 +64,11 @@ export const zRoleProfileResponseSchema = z.object({
 });
 
 export const zRoleListResponseSchema = z.array(zRoleProfileResponseSchema);
+
+export const zRolePermissionsResponseSchema = z.object({
+    menuIds: z.array(z.string()).describe('Granted menu IDs'),
+    actionIds: z.array(z.string()).describe('Granted action IDs')
+});
 
 export const zUserProfileResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the user'),
@@ -157,6 +189,17 @@ export const zGetAuthMenusData = z.object({
  */
 export const zGetAuthMenusResponse = z.array(zAuthMenuSchema).describe('List of menus accessible to the user');
 
+export const zGetMenuData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Menu tree retrieved successfully
+ */
+export const zGetMenuResponse = zMenuTreeResponseSchema;
+
 export const zGetRoleData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -238,6 +281,35 @@ export const zPutRoleByIdData = z.object({
  * Role updated successfully
  */
 export const zPutRoleByIdResponse = zRoleProfileResponseSchema;
+
+export const zGetRoleByIdPermissionsData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Role ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Role permissions retrieved successfully
+ */
+export const zGetRoleByIdPermissionsResponse = zRolePermissionsResponseSchema;
+
+export const zPutRoleByIdPermissionsData = z.object({
+    body: z.object({
+        menuIds: z.array(z.string()).describe('Menu IDs to grant'),
+        actionIds: z.array(z.string()).describe('Action IDs to grant')
+    }),
+    path: z.object({
+        id: z.string().describe('Role ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Role permissions updated successfully
+ */
+export const zPutRoleByIdPermissionsResponse = zRolePermissionsResponseSchema;
 
 export const zGetUserProfileData = z.object({
     body: z.never().optional(),

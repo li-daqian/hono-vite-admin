@@ -5,6 +5,8 @@ import {
   RoleCreateResponseSchema,
   RoleDeleteResponseSchema,
   RoleListResponseSchema,
+  RolePermissionsResponseSchema,
+  RolePermissionsUpdateRequestSchema,
   RoleProfileResponseSchema,
   RoleUpdateRequestSchema,
 } from '@server/src/modules/role/role.schema'
@@ -80,6 +82,41 @@ export const deleteRoleRoute = createRoute({
   },
   responses: {
     200: { description: 'Role deleted successfully', content: { 'application/json': { schema: RoleDeleteResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware],
+  tags: ['Role'],
+})
+
+export const getRolePermissionsRoute = createRoute({
+  path: '/{id}/permissions',
+  method: 'get',
+  description: 'Get role permissions',
+  request: {
+    params: z.object({
+      id: z.string().openapi({ description: 'Role ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+    }),
+  },
+  responses: {
+    200: { description: 'Role permissions retrieved successfully', content: { 'application/json': { schema: RolePermissionsResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware],
+  tags: ['Role'],
+})
+
+export const updateRolePermissionsRoute = createRoute({
+  path: '/{id}/permissions',
+  method: 'put',
+  description: 'Update role permissions',
+  request: {
+    params: z.object({
+      id: z.string().openapi({ description: 'Role ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+    }),
+    body: { required: true, content: { 'application/json': { schema: RolePermissionsUpdateRequestSchema } } },
+  },
+  responses: {
+    200: { description: 'Role permissions updated successfully', content: { 'application/json': { schema: RolePermissionsResponseSchema } } },
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware],
