@@ -357,6 +357,22 @@ export type GetMenuResponses = {
 
 export type GetMenuResponse = GetMenuResponses[keyof GetMenuResponses];
 
+export type GetMenuOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/menu/options';
+};
+
+export type GetMenuOptionsResponses = {
+    /**
+     * Permission options retrieved successfully
+     */
+    200: MenuTreeResponseSchema;
+};
+
+export type GetMenuOptionsResponse = GetMenuOptionsResponses[keyof GetMenuOptionsResponses];
+
 export type GetRoleData = {
     body?: never;
     path?: never;

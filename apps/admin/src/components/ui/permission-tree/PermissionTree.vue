@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MenuItemSchema, RolePermissionsResponseSchema } from '@admin/client'
-import { getMenu } from '@admin/client'
+import { getMenuOptions } from '@admin/client'
 import { Loader2 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
 import PermissionTreeNode from './PermissionTreeNode.vue'
@@ -19,9 +19,26 @@ const isLoading = ref(true)
 const selectedMenuIds = computed(() => new Set(props.modelValue.menuIds))
 const selectedActionIds = computed(() => new Set(props.modelValue.actionIds))
 
+function buildTreeIndexes(nodes: MenuItemSchema[], parentId: string | null = null) {
+  const nodeById = new Map<string, MenuItemSchema>()
+  const parentById = new Map<string, string | null>()
+
+  const visit = (items: MenuItemSchema[], currentParentId: string | null) => {
+    for (const node of items) {
+      nodeById.set(node.id, node)
+      parentById.set(node.id, currentParentId)
+      visit(node.children, node.id)
+    }
+  }
+
+  visit(nodes, parentId)
+
+  return { nodeById, parentById }
+}
+
 onMounted(async () => {
   try {
-    const res = await getMenu<true>()
+    const res = await getMenuOptions<true>()
     tree.value = res.data
   }
   finally {
@@ -29,17 +46,19 @@ onMounted(async () => {
   }
 })
 
-function buildAncestorMap(nodes: MenuItemSchema[], ancestors: string[] = []): Map<string, string[]> {
-  const map = new Map<string, string[]>()
-  for (const node of nodes) {
-    map.set(node.id, ancestors)
-    const childMap = buildAncestorMap(node.children, [...ancestors, node.id])
-    childMap.forEach((v, k) => map.set(k, v))
-  }
-  return map
-}
+const treeIndexes = computed(() => buildTreeIndexes(tree.value))
 
-const ancestorMap = computed(() => buildAncestorMap(tree.value))
+function getAncestorIds(menuId: string): string[] {
+  const ancestorIds: string[] = []
+  let currentId = treeIndexes.value.parentById.get(menuId) ?? null
+
+  while (currentId) {
+    ancestorIds.push(currentId)
+    currentId = treeIndexes.value.parentById.get(currentId) ?? null
+  }
+
+  return ancestorIds
+}
 
 function getAllMenuIds(node: MenuItemSchema): string[] {
   return [node.id, ...node.children.flatMap(getAllMenuIds)]
@@ -47,6 +66,28 @@ function getAllMenuIds(node: MenuItemSchema): string[] {
 
 function getAllActionIds(node: MenuItemSchema): string[] {
   return [...node.actions.map(a => a.id), ...node.children.flatMap(getAllActionIds)]
+}
+
+function hasSelectedDescendants(node: MenuItemSchema, menuIds: Set<string>, actionIds: Set<string>): boolean {
+  return node.actions.some(action => actionIds.has(action.id))
+    || node.children.some(child => menuIds.has(child.id) || hasSelectedDescendants(child, menuIds, actionIds))
+}
+
+function syncAncestorMenus(startMenuId: string | null, menuIds: Set<string>, actionIds: Set<string>) {
+  let currentId = startMenuId
+
+  while (currentId) {
+    const currentNode = treeIndexes.value.nodeById.get(currentId)
+    if (!currentNode)
+      break
+
+    if (hasSelectedDescendants(currentNode, menuIds, actionIds))
+      menuIds.add(currentId)
+    else
+      menuIds.delete(currentId)
+
+    currentId = treeIndexes.value.parentById.get(currentId) ?? null
+  }
 }
 
 function toggleMenu(node: MenuItemSchema, currentState: boolean | 'indeterminate') {
@@ -57,16 +98,14 @@ function toggleMenu(node: MenuItemSchema, currentState: boolean | 'indeterminate
   const newActionIds = new Set(selectedActionIds.value)
 
   if (currentState !== true) {
-    // Unchecked or indeterminate → check all: add self + all descendants + ancestors
     allMenuIds.forEach(id => newMenuIds.add(id))
     allActionIds.forEach(id => newActionIds.add(id))
-    const ancestors = ancestorMap.value.get(node.id) ?? []
-    ancestors.forEach(id => newMenuIds.add(id))
+    getAncestorIds(node.id).forEach(id => newMenuIds.add(id))
   }
   else {
-    // Fully checked → uncheck: remove self + all descendants
     allMenuIds.forEach(id => newMenuIds.delete(id))
     allActionIds.forEach(id => newActionIds.delete(id))
+    syncAncestorMenus(treeIndexes.value.parentById.get(node.id) ?? null, newMenuIds, newActionIds)
   }
 
   emit('update:modelValue', { menuIds: [...newMenuIds], actionIds: [...newActionIds] })
@@ -78,13 +117,12 @@ function toggleAction(node: MenuItemSchema, actionId: string, checked: boolean) 
 
   if (checked) {
     newActionIds.add(actionId)
-    // Auto-check parent menu and all ancestors
     newMenuIds.add(node.id)
-    const ancestors = ancestorMap.value.get(node.id) ?? []
-    ancestors.forEach(id => newMenuIds.add(id))
+    getAncestorIds(node.id).forEach(id => newMenuIds.add(id))
   }
   else {
     newActionIds.delete(actionId)
+    syncAncestorMenus(node.id, newMenuIds, newActionIds)
   }
 
   emit('update:modelValue', { menuIds: [...newMenuIds], actionIds: [...newActionIds] })
@@ -110,7 +148,6 @@ function toggleAction(node: MenuItemSchema, actionId: string, checked: boolean) 
         :depth="0"
         :selected-menu-ids="selectedMenuIds"
         :selected-action-ids="selectedActionIds"
-        :ancestor-map="ancestorMap"
         @toggle-menu="toggleMenu"
         @toggle-action="toggleAction"
       />

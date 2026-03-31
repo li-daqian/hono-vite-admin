@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import RolesActionDialog from './roles-action-dialog.vue'
 import RolesDeleteDialog from './roles-delete-dialog.vue'
+import RolesPermissionsDialog from './roles-permissions-dialog.vue'
 import { useRoles } from './roles-provider.vue'
 
 const emit = defineEmits<{
@@ -24,6 +25,12 @@ function handleAddOpenChange(value: boolean) {
 
 function handleEditOpenChange(value: boolean) {
   setOpen(value ? 'edit' : null)
+  if (!value)
+    setCurrentRow(null)
+}
+
+function handlePermissionsOpenChange(value: boolean) {
+  setOpen(value ? 'permissions' : null)
   if (!value)
     setCurrentRow(null)
 }
@@ -53,6 +60,15 @@ function handleDeleteOpenChange(value: boolean) {
     mode="edit"
     @success="emit('success')"
     @update:open="handleEditOpenChange"
+  />
+
+  <RolesPermissionsDialog
+    v-if="currentRow"
+    :id="editRoleId"
+    :open="open === 'permissions'"
+    :role-name="currentRow.name"
+    @success="emit('success')"
+    @update:open="handlePermissionsOpenChange"
   />
 
   <RolesDeleteDialog

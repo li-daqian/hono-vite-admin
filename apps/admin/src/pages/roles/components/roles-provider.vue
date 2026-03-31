@@ -4,7 +4,7 @@ import type { InjectionKey, Ref } from 'vue'
 import { defineComponent, inject, provide, ref } from 'vue'
 
 export type RoleItem = RoleProfileResponseSchema
-export type RolesDialogType = 'add' | 'edit' | 'delete'
+export type RolesDialogType = 'add' | 'edit' | 'permissions' | 'delete'
 
 export interface RolesContextType {
   open: Ref<RolesDialogType | null>

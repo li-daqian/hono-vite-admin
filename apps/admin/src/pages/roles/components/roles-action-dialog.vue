@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { PostRoleData, PutRoleByIdData, RolePermissionsResponseSchema } from '@admin/client'
-import { getRoleById, getRoleByIdPermissions, postRole, putRoleById, putRoleByIdPermissions } from '@admin/client'
+import type { PostRoleData, PutRoleByIdData } from '@admin/client'
+import { getRoleById, postRole, putRoleById } from '@admin/client'
 import { Button } from '@admin/components/ui/button'
 import {
   Dialog,
@@ -19,8 +19,6 @@ import {
   FormMessage,
 } from '@admin/components/ui/form'
 import { Input } from '@admin/components/ui/input'
-import { PermissionTree } from '@admin/components/ui/permission-tree'
-import { Separator } from '@admin/components/ui/separator'
 import { Skeleton } from '@admin/components/ui/skeleton'
 import { Textarea } from '@admin/components/ui/textarea'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -47,8 +45,6 @@ const validationSchema = computed(() => toTypedSchema(z.object({
 const initialValues = { name: '', description: '' }
 const isPrefilling = ref(props.mode === 'edit')
 
-const permissions = ref<RolePermissionsResponseSchema>({ menuIds: [], actionIds: [] })
-
 function handleOpenChange(value: boolean) {
   emit('update:open', value)
 }
@@ -62,15 +58,11 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
     }
 
     try {
-      const [roleRes, permRes] = await Promise.all([
-        getRoleById<true>({ path: { id: props.id } }),
-        getRoleByIdPermissions<true>({ path: { id: props.id } }),
-      ])
+      const roleRes = await getRoleById<true>({ path: { id: props.id } })
       setValues({
         name: roleRes.data.name,
         description: roleRes.data.description ?? '',
       })
-      permissions.value = permRes.data
     }
     finally {
       isPrefilling.value = false
@@ -80,7 +72,6 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
   }
 
   setValues(initialValues)
-  permissions.value = { menuIds: [], actionIds: [] }
   isPrefilling.value = false
 }
 
@@ -92,11 +83,7 @@ async function handleSubmit(values: Record<string, any>) {
       name: values.name.trim(),
       description,
     }
-    const created = await postRole<true>({ body: payload })
-    await putRoleByIdPermissions<true>({
-      path: { id: created.data.id },
-      body: permissions.value,
-    })
+    await postRole<true>({ body: payload })
     toast.success(`Role "${payload.name}" created.`)
     emit('success')
     handleOpenChange(false)
@@ -112,10 +99,7 @@ async function handleSubmit(values: Record<string, any>) {
     name: values.name.trim(),
     description,
   }
-  await Promise.all([
-    putRoleById<true>({ path: { id: props.id }, body: payload }),
-    putRoleByIdPermissions<true>({ path: { id: props.id }, body: permissions.value }),
-  ])
+  await putRoleById<true>({ path: { id: props.id }, body: payload })
   toast.success(`Role "${payload.name}" updated.`)
   emit('success')
   handleOpenChange(false)
@@ -169,19 +153,6 @@ async function handleSubmit(values: Record<string, any>) {
                 <FormMessage />
               </FormItem>
             </FormField>
-
-            <Separator />
-
-            <div class="space-y-2">
-              <p class="text-sm font-medium leading-none">
-                Permissions
-              </p>
-              <p class="text-xs text-muted-foreground">
-                Select menus and actions this role can access.
-              </p>
-              <Skeleton v-if="isPrefilling" class="h-40" />
-              <PermissionTree v-else v-model="permissions" />
-            </div>
           </div>
 
           <DialogFooter class="pt-4 shrink-0">

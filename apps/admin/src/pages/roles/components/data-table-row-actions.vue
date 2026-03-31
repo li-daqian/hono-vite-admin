@@ -9,7 +9,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
-import { Ellipsis, Pencil, Trash2 } from 'lucide-vue-next'
+import { Ellipsis, KeyRound, Pencil, Trash2 } from 'lucide-vue-next'
 import { useRoles } from './roles-provider.vue'
 
 const props = defineProps<{
@@ -26,6 +26,11 @@ function handleEdit() {
 function handleDelete() {
   setCurrentRow(props.row)
   setOpen('delete')
+}
+
+function handlePermissions() {
+  setCurrentRow(props.row)
+  setOpen('permissions')
 }
 </script>
 
@@ -47,6 +52,13 @@ function handleDelete() {
         Edit
         <DropdownMenuShortcut>
           <Pencil :size="16" />
+        </DropdownMenuShortcut>
+      </DropdownMenuItem>
+
+      <DropdownMenuItem @click="handlePermissions">
+        Permissions
+        <DropdownMenuShortcut>
+          <KeyRound :size="16" />
         </DropdownMenuShortcut>
       </DropdownMenuItem>
 

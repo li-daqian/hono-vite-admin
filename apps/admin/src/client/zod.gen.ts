@@ -200,6 +200,17 @@ export const zGetMenuData = z.object({
  */
 export const zGetMenuResponse = zMenuTreeResponseSchema;
 
+export const zGetMenuOptionsData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Permission options retrieved successfully
+ */
+export const zGetMenuOptionsResponse = zMenuTreeResponseSchema;
+
 export const zGetRoleData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
