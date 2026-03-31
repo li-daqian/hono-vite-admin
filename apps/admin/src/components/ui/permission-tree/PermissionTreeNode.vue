@@ -19,6 +19,7 @@ const props = defineProps<{
   selectedMenuIds: Set<string>
   selectedActionIds: Set<string>
   ancestorMap: Map<string, string[]>
+  description?: string
 }>()
 
 const emit = defineEmits<{
@@ -79,8 +80,8 @@ const menuCheckState = computed<boolean | 'indeterminate'>(() => {
         <span class="text-sm select-none cursor-pointer" @click="emit('toggleMenu', node, menuCheckState)">
           {{ node.name }}
         </span>
-        <span v-if="node.path" class="ml-auto text-xs text-muted-foreground font-mono hidden group-hover:block">
-          {{ node.path }}
+        <span v-if="description" class="ml-auto text-xs text-muted-foreground truncate max-w-[40%]">
+          {{ description }}
         </span>
       </div>
 

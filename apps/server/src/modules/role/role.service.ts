@@ -121,6 +121,12 @@ class RoleService {
     ]
 
     await prisma.$transaction(async (tx) => {
+      // Always clear existing permissions first
+      await tx.rolePermission.deleteMany({ where: { roleId } })
+
+      if (permissionEntries.length === 0)
+        return
+
       // Upsert all needed permissions
       for (const entry of permissionEntries) {
         await tx.permission.upsert({
@@ -136,13 +142,9 @@ class RoleService {
         },
       })
 
-      // Replace all role permissions
-      await tx.rolePermission.deleteMany({ where: { roleId } })
-      if (permissions.length > 0) {
-        await tx.rolePermission.createMany({
-          data: permissions.map(p => ({ roleId, permissionId: p.id })),
-        })
-      }
+      await tx.rolePermission.createMany({
+        data: permissions.map(p => ({ roleId, permissionId: p.id })),
+      })
     })
 
     return { menuIds: request.menuIds, actionIds: request.actionIds }

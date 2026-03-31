@@ -56,15 +56,15 @@ function toggleMenu(node: MenuItemSchema, currentState: boolean | 'indeterminate
   const newMenuIds = new Set(selectedMenuIds.value)
   const newActionIds = new Set(selectedActionIds.value)
 
-  if (currentState === false) {
-    // Check: add all descendants + self + ancestors
+  if (currentState !== true) {
+    // Unchecked or indeterminate → check all: add self + all descendants + ancestors
     allMenuIds.forEach(id => newMenuIds.add(id))
     allActionIds.forEach(id => newActionIds.add(id))
     const ancestors = ancestorMap.value.get(node.id) ?? []
     ancestors.forEach(id => newMenuIds.add(id))
   }
   else {
-    // Uncheck: remove self + all descendants
+    // Fully checked → uncheck: remove self + all descendants
     allMenuIds.forEach(id => newMenuIds.delete(id))
     allActionIds.forEach(id => newActionIds.delete(id))
   }
