@@ -26,7 +26,7 @@ describe('role permission tree helpers', () => {
         id: 'dashboard',
         name: 'Dashboard',
         type: PermissionType.MENU,
-        description: '/dashboard',
+        description: '',
         enable: false,
         children: [],
       },
@@ -34,7 +34,7 @@ describe('role permission tree helpers', () => {
         id: 'settings',
         name: 'Settings',
         type: PermissionType.MENU,
-        description: '/settings',
+        description: '',
         enable: true,
         children: [
           {
@@ -49,7 +49,7 @@ describe('role permission tree helpers', () => {
             id: 'users',
             name: 'Users',
             type: PermissionType.MENU,
-            description: '/settings/users',
+            description: '',
             enable: true,
             children: [
               {

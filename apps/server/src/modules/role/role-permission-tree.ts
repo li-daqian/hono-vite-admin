@@ -45,7 +45,7 @@ export function buildRolePermissionsTree(
     id: menu.id,
     name: menu.name,
     type: PermissionType.MENU,
-    description: menu.path,
+    description: '',
     enable: grantedPermissionKeys.has(createPermissionKey({ type: PermissionType.MENU, targetId: menu.id })),
     children: [
       ...(actionsByMenuId[menu.id] ?? []).map(action => ({
