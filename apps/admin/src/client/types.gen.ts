@@ -112,16 +112,36 @@ export type RoleProfileResponseSchema = {
 
 export type RoleListResponseSchema = Array<RoleProfileResponseSchema>;
 
-export type RolePermissionsResponseSchema = {
+export type RolePermissionTreeNodeSchema = {
     /**
-     * Granted menu IDs
+     * Permission target ID
      */
-    menuIds: Array<string>;
+    id: string;
     /**
-     * Granted action IDs
+     * Permission display name
      */
-    actionIds: Array<string>;
+    name: string;
+    /**
+     * Permission node type
+     */
+    type: 'MENU' | 'ACTION';
+    /**
+     * Permission description
+     */
+    description: string | null;
+    /**
+     * Whether the permission is enabled for the role
+     */
+    enable: boolean;
+    /**
+     * Child permission nodes
+     */
+    children: Array<RolePermissionTreeNodeSchema>;
 };
+
+export type RolePermissionsResponseSchema = Array<RolePermissionTreeNodeSchema>;
+
+export type RolePermissionsUpdateRequestSchema = Array<RolePermissionTreeNodeSchema>;
 
 export type UserProfileResponseSchema = {
     /**
@@ -357,22 +377,6 @@ export type GetMenuResponses = {
 
 export type GetMenuResponse = GetMenuResponses[keyof GetMenuResponses];
 
-export type GetMenuOptionsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/menu/options';
-};
-
-export type GetMenuOptionsResponses = {
-    /**
-     * Permission options retrieved successfully
-     */
-    200: MenuTreeResponseSchema;
-};
-
-export type GetMenuOptionsResponse = GetMenuOptionsResponses[keyof GetMenuOptionsResponses];
-
 export type GetRoleData = {
     body?: never;
     path?: never;
@@ -526,16 +530,7 @@ export type GetRoleByIdPermissionsResponses = {
 export type GetRoleByIdPermissionsResponse = GetRoleByIdPermissionsResponses[keyof GetRoleByIdPermissionsResponses];
 
 export type PutRoleByIdPermissionsData = {
-    body: {
-        /**
-         * Menu IDs to grant
-         */
-        menuIds: Array<string>;
-        /**
-         * Action IDs to grant
-         */
-        actionIds: Array<string>;
-    };
+    body: RolePermissionsUpdateRequestSchema;
     path: {
         /**
          * Role ID

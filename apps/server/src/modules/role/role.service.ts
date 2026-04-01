@@ -8,9 +8,9 @@ import type {
   RoleProfileResponse,
   RoleUpdateRequest,
 } from '@server/src/modules/role/role.schema'
-import { PermissionType } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
+import { buildRolePermissionsTree, flattenEnabledRolePermissions } from '@server/src/modules/role/role-permission-tree'
 
 class RoleService {
   async createRole(request: RoleCreateRequest): Promise<RoleCreateResponse> {
@@ -94,19 +94,25 @@ class RoleService {
       throw BusinessError.NotFound('Role not found')
     }
 
-    const rolePermissions = await prisma.rolePermission.findMany({
-      where: { roleId },
-      include: { permission: true },
-    })
+    const [rolePermissions, menus, actions] = await Promise.all([
+      prisma.rolePermission.findMany({
+        where: { roleId },
+        include: { permission: true },
+      }),
+      prisma.menu.findMany({
+        orderBy: { order: 'asc' },
+      }),
+      prisma.action.findMany(),
+    ])
 
-    const menuIds = rolePermissions
-      .filter(rp => rp.permission.type === PermissionType.MENU)
-      .map(rp => rp.permission.targetId)
-    const actionIds = rolePermissions
-      .filter(rp => rp.permission.type === PermissionType.ACTION)
-      .map(rp => rp.permission.targetId)
-
-    return { menuIds, actionIds }
+    return buildRolePermissionsTree(
+      menus,
+      actions,
+      rolePermissions.map(({ permission }) => ({
+        type: permission.type,
+        targetId: permission.targetId,
+      })),
+    )
   }
 
   async updateRolePermissions(roleId: string, request: RolePermissionsUpdateRequest): Promise<RolePermissionsResponse> {
@@ -115,19 +121,14 @@ class RoleService {
       throw BusinessError.NotFound('Role not found')
     }
 
-    const permissionEntries = [
-      ...request.menuIds.map(id => ({ type: PermissionType.MENU, targetId: id })),
-      ...request.actionIds.map(id => ({ type: PermissionType.ACTION, targetId: id })),
-    ]
+    const permissionEntries = flattenEnabledRolePermissions(request)
 
     await prisma.$transaction(async (tx) => {
-      // Always clear existing permissions first
       await tx.rolePermission.deleteMany({ where: { roleId } })
 
       if (permissionEntries.length === 0)
         return
 
-      // Upsert all needed permissions
       for (const entry of permissionEntries) {
         await tx.permission.upsert({
           where: { type_targetId: { type: entry.type, targetId: entry.targetId } },
@@ -147,7 +148,7 @@ class RoleService {
       })
     })
 
-    return { menuIds: request.menuIds, actionIds: request.actionIds }
+    return request
   }
 
   private async isRoleNameUnique(name: string): Promise<boolean> {

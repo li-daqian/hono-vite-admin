@@ -1,56 +1,11 @@
-import type { MenuActionSchema, MenuItemSchema } from '@admin/client'
+import type { RolePermissionTreeNodeSchema } from '@admin/client'
 
+export type PermissionTreeNode = RolePermissionTreeNodeSchema
 export type PermissionTreeCheckState = boolean | 'indeterminate'
-
-export interface PermissionTreeAction {
-  id: string
-  name: string
-  description: string | null
-  parentId: string
-}
-
-export interface PermissionTreeNode {
-  id: string
-  name: string
-  description: string | null
-  parentId: string | null
-  children: PermissionTreeNode[]
-  actions: PermissionTreeAction[]
-}
 
 export interface PermissionTreeIndexes {
   nodeById: Map<string, PermissionTreeNode>
   parentById: Map<string, string | null>
-}
-
-function mapMenuActionToPermissionTreeAction(
-  action: MenuActionSchema,
-  parentId: string,
-): PermissionTreeAction {
-  return {
-    id: action.id,
-    name: action.name,
-    description: action.description,
-    parentId,
-  }
-}
-
-function mapMenuItemToPermissionTreeNode(
-  menu: MenuItemSchema,
-  parentId: string | null,
-): PermissionTreeNode {
-  return {
-    id: menu.id,
-    name: menu.name,
-    description: menu.path,
-    parentId,
-    actions: menu.actions.map(action => mapMenuActionToPermissionTreeAction(action, menu.id)),
-    children: menu.children.map(child => mapMenuItemToPermissionTreeNode(child, menu.id)),
-  }
-}
-
-export function mapMenuTreeToPermissionTree(nodes: MenuItemSchema[]): PermissionTreeNode[] {
-  return nodes.map(node => mapMenuItemToPermissionTreeNode(node, null))
 }
 
 export function buildPermissionTreeIndexes(
@@ -73,40 +28,78 @@ export function buildPermissionTreeIndexes(
   return { nodeById, parentById }
 }
 
-export function getAllMenuIds(node: PermissionTreeNode): string[] {
-  return [node.id, ...node.children.flatMap(getAllMenuIds)]
+export function clonePermissionTree(nodes: PermissionTreeNode[]): PermissionTreeNode[] {
+  return nodes.map(node => ({
+    ...node,
+    children: clonePermissionTree(node.children),
+  }))
 }
 
-export function getAllActionIds(node: PermissionTreeNode): string[] {
-  return [...node.actions.map(action => action.id), ...node.children.flatMap(getAllActionIds)]
-}
+export function getNodeCheckState(node: PermissionTreeNode): PermissionTreeCheckState {
+  const childStates = node.children.map(getNodeCheckState)
 
-export function hasSelectedDescendants(
-  node: PermissionTreeNode,
-  menuIds: Set<string>,
-  actionIds: Set<string>,
-): boolean {
-  return node.actions.some(action => actionIds.has(action.id))
-    || node.children.some(child => menuIds.has(child.id) || hasSelectedDescendants(child, menuIds, actionIds))
-}
+  if (childStates.length === 0)
+    return node.enable
 
-export function getNodeCheckState(
-  node: PermissionTreeNode,
-  selectedMenuIds: Set<string>,
-  selectedActionIds: Set<string>,
-): PermissionTreeCheckState {
-  const allMenus = getAllMenuIds(node)
-  const allActions = getAllActionIds(node)
+  const everyChildChecked = childStates.every(state => state === true)
+  const everyChildUnchecked = childStates.every(state => state === false)
 
-  const checkedMenus = allMenus.filter(id => selectedMenuIds.has(id)).length
-  const checkedActions = allActions.filter(id => selectedActionIds.has(id)).length
-
-  const totalChecked = checkedMenus + checkedActions
-  const totalItems = allMenus.length + allActions.length
-
-  if (totalChecked === 0)
-    return false
-  if (totalChecked === totalItems)
+  if (node.enable && everyChildChecked)
     return true
+
+  if (!node.enable && everyChildUnchecked)
+    return false
+
   return 'indeterminate'
+}
+
+export function setNodeAndDescendantsEnabled(node: PermissionTreeNode, enabled: boolean): void {
+  node.enable = enabled
+  node.children.forEach(child => setNodeAndDescendantsEnabled(child, enabled))
+}
+
+export function syncAncestorEnableState(
+  nodeId: string,
+  indexes: PermissionTreeIndexes,
+): void {
+  let currentId = indexes.parentById.get(nodeId) ?? null
+
+  while (currentId) {
+    const currentNode = indexes.nodeById.get(currentId)
+    if (!currentNode)
+      break
+
+    currentNode.enable = currentNode.children.some(child => child.enable || getNodeCheckState(child) !== false)
+    currentId = indexes.parentById.get(currentId) ?? null
+  }
+}
+
+export function togglePermissionNode(
+  tree: PermissionTreeNode[],
+  nodeId: string,
+  checked: boolean,
+): PermissionTreeNode[] {
+  const nextTree = clonePermissionTree(tree)
+  const indexes = buildPermissionTreeIndexes(nextTree)
+  const node = indexes.nodeById.get(nodeId)
+  if (!node)
+    return nextTree
+
+  setNodeAndDescendantsEnabled(node, checked)
+
+  if (checked) {
+    let currentId = indexes.parentById.get(nodeId) ?? null
+    while (currentId) {
+      const currentNode = indexes.nodeById.get(currentId)
+      if (!currentNode)
+        break
+      currentNode.enable = true
+      currentId = indexes.parentById.get(currentId) ?? null
+    }
+  }
+  else {
+    syncAncestorEnableState(nodeId, indexes)
+  }
+
+  return nextTree
 }

@@ -2,9 +2,9 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import { getAuthMenusResponseTransformer, getMenuOptionsResponseTransformer, getMenuResponseTransformer, getUserByIdResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer, putUserByIdResponseTransformer } from './transformers.gen';
-import type { DeleteRoleByIdData, DeleteRoleByIdResponses, DeleteUserBatchData, DeleteUserBatchResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetMenuData, GetMenuOptionsData, GetMenuOptionsResponses, GetMenuResponses, GetRoleByIdData, GetRoleByIdPermissionsData, GetRoleByIdPermissionsResponses, GetRoleByIdResponses, GetRoleData, GetRoleResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostRoleData, PostRoleResponses, PostUserData, PostUserResponses, PutRoleByIdData, PutRoleByIdPermissionsData, PutRoleByIdPermissionsResponses, PutRoleByIdResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
-import { zDeleteRoleByIdData, zDeleteRoleByIdResponse, zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetMenuData, zGetMenuOptionsData, zGetMenuOptionsResponse, zGetMenuResponse, zGetRoleByIdData, zGetRoleByIdPermissionsData, zGetRoleByIdPermissionsResponse, zGetRoleByIdResponse, zGetRoleData, zGetRoleResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostRoleData, zPostRoleResponse, zPostUserData, zPostUserResponse, zPutRoleByIdData, zPutRoleByIdPermissionsData, zPutRoleByIdPermissionsResponse, zPutRoleByIdResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
+import { getAuthMenusResponseTransformer, getMenuResponseTransformer, getRoleByIdPermissionsResponseTransformer, getUserByIdResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postUserResponseTransformer, putRoleByIdPermissionsResponseTransformer, putUserByIdResponseTransformer } from './transformers.gen';
+import type { DeleteRoleByIdData, DeleteRoleByIdResponses, DeleteUserBatchData, DeleteUserBatchResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetMenuData, GetMenuResponses, GetRoleByIdData, GetRoleByIdPermissionsData, GetRoleByIdPermissionsResponses, GetRoleByIdResponses, GetRoleData, GetRoleResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostRoleData, PostRoleResponses, PostUserData, PostUserResponses, PutRoleByIdData, PutRoleByIdPermissionsData, PutRoleByIdPermissionsResponses, PutRoleByIdResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
+import { zDeleteRoleByIdData, zDeleteRoleByIdResponse, zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetMenuData, zGetMenuResponse, zGetRoleByIdData, zGetRoleByIdPermissionsData, zGetRoleByIdPermissionsResponse, zGetRoleByIdResponse, zGetRoleData, zGetRoleResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostRoleData, zPostRoleResponse, zPostUserData, zPostUserResponse, zPutRoleByIdData, zPutRoleByIdPermissionsData, zPutRoleByIdPermissionsResponse, zPutRoleByIdResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -102,19 +102,6 @@ export const getMenu = <ThrowOnError extends boolean = false>(options?: Options<
 });
 
 /**
- * Get full menu tree with actions for permission configuration
- */
-export const getMenuOptions = <ThrowOnError extends boolean = false>(options?: Options<GetMenuOptionsData, ThrowOnError>) => (options?.client ?? client).get<GetMenuOptionsResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zGetMenuOptionsData.parseAsync(data),
-    responseTransformer: getMenuOptionsResponseTransformer,
-    responseType: 'json',
-    responseValidator: async (data) => await zGetMenuOptionsResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/menu/options',
-    ...options
-});
-
-/**
  * Get role list
  */
 export const getRole = <ThrowOnError extends boolean = false>(options?: Options<GetRoleData, ThrowOnError>) => (options?.client ?? client).get<GetRoleResponses, unknown, ThrowOnError>({
@@ -187,6 +174,7 @@ export const putRoleById = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const getRoleByIdPermissions = <ThrowOnError extends boolean = false>(options: Options<GetRoleByIdPermissionsData, ThrowOnError>) => (options.client ?? client).get<GetRoleByIdPermissionsResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zGetRoleByIdPermissionsData.parseAsync(data),
+    responseTransformer: getRoleByIdPermissionsResponseTransformer,
     responseType: 'json',
     responseValidator: async (data) => await zGetRoleByIdPermissionsResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -199,6 +187,7 @@ export const getRoleByIdPermissions = <ThrowOnError extends boolean = false>(opt
  */
 export const putRoleByIdPermissions = <ThrowOnError extends boolean = false>(options: Options<PutRoleByIdPermissionsData, ThrowOnError>) => (options.client ?? client).put<PutRoleByIdPermissionsResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPutRoleByIdPermissionsData.parseAsync(data),
+    responseTransformer: putRoleByIdPermissionsResponseTransformer,
     responseType: 'json',
     responseValidator: async (data) => await zPutRoleByIdPermissionsResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],

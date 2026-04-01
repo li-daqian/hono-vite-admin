@@ -65,10 +65,21 @@ export const zRoleProfileResponseSchema = z.object({
 
 export const zRoleListResponseSchema = z.array(zRoleProfileResponseSchema);
 
-export const zRolePermissionsResponseSchema = z.object({
-    menuIds: z.array(z.string()).describe('Granted menu IDs'),
-    actionIds: z.array(z.string()).describe('Granted action IDs')
+export const zRolePermissionTreeNodeSchema: z.AnyZodObject = z.object({
+    id: z.string().describe('Permission target ID'),
+    name: z.string().describe('Permission display name'),
+    type: z.enum(['MENU', 'ACTION']).describe('Permission node type'),
+    description: z.union([
+        z.string(),
+        z.null()
+    ]),
+    enable: z.boolean().describe('Whether the permission is enabled for the role'),
+    children: z.array(z.lazy(() => zRolePermissionTreeNodeSchema)).describe('Child permission nodes')
 });
+
+export const zRolePermissionsResponseSchema = z.array(zRolePermissionTreeNodeSchema);
+
+export const zRolePermissionsUpdateRequestSchema = z.array(zRolePermissionTreeNodeSchema);
 
 export const zUserProfileResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the user'),
@@ -200,17 +211,6 @@ export const zGetMenuData = z.object({
  */
 export const zGetMenuResponse = zMenuTreeResponseSchema;
 
-export const zGetMenuOptionsData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: z.never().optional()
-});
-
-/**
- * Permission options retrieved successfully
- */
-export const zGetMenuOptionsResponse = zMenuTreeResponseSchema;
-
 export const zGetRoleData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -307,10 +307,7 @@ export const zGetRoleByIdPermissionsData = z.object({
 export const zGetRoleByIdPermissionsResponse = zRolePermissionsResponseSchema;
 
 export const zPutRoleByIdPermissionsData = z.object({
-    body: z.object({
-        menuIds: z.array(z.string()).describe('Menu IDs to grant'),
-        actionIds: z.array(z.string()).describe('Action IDs to grant')
-    }),
+    body: zRolePermissionsUpdateRequestSchema,
     path: z.object({
         id: z.string().describe('Role ID')
     }),

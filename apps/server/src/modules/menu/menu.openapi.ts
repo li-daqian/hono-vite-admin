@@ -13,15 +13,3 @@ export const getMenuTreeRoute: ReturnType<typeof createRoute> = createRoute({
   middleware: [authMiddleware],
   tags: ['Menu'],
 })
-
-export const getMenuPermissionOptionsRoute: ReturnType<typeof createRoute> = createRoute({
-  path: '/options',
-  method: 'get',
-  description: 'Get full menu tree with actions for permission configuration',
-  responses: {
-    200: { description: 'Permission options retrieved successfully', content: { 'application/json': { schema: MenuTreeResponseSchema } } },
-  },
-  security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
-  tags: ['Menu'],
-})

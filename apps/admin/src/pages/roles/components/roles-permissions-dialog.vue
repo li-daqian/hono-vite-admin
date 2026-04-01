@@ -28,7 +28,7 @@ const emit = defineEmits<{
 
 const isPrefilling = ref(false)
 const isSubmitting = ref(false)
-const permissions = ref<RolePermissionsResponseSchema>({ menuIds: [], actionIds: [] })
+const permissions = ref<RolePermissionsResponseSchema>([])
 
 function handleOpenChange(value: boolean) {
   emit('update:open', value)
@@ -84,7 +84,7 @@ async function handleSubmit() {
       <DialogHeader class="text-start shrink-0">
         <DialogTitle>Edit Permissions</DialogTitle>
         <DialogDescription>
-          Configure which menus and actions the role can access.
+          Configure which permission nodes the role can access.
         </DialogDescription>
       </DialogHeader>
 

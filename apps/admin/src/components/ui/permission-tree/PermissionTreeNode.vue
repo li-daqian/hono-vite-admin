@@ -17,24 +17,16 @@ defineOptions({ name: 'PermissionTreeNode' })
 const props = defineProps<{
   node: PermissionTreeNodeModel
   depth: number
-  selectedMenuIds: Set<string>
-  selectedActionIds: Set<string>
+  state: PermissionTreeCheckState
 }>()
 
 const emit = defineEmits<{
-  toggleMenu: [node: PermissionTreeNodeModel, state: PermissionTreeCheckState]
-  toggleAction: [node: PermissionTreeNodeModel, actionId: string, checked: boolean]
+  toggle: [nodeId: string, state: PermissionTreeCheckState]
 }>()
 
 const isOpen = ref(true)
 
-const hasChildren = computed(() => props.node.children.length > 0 || props.node.actions.length > 0)
-
-const menuCheckState = computed(() => getNodeCheckState(props.node, props.selectedMenuIds, props.selectedActionIds))
-
-function handleActionCheckedChange(node: PermissionTreeNodeModel, actionId: string, checked: boolean | 'indeterminate') {
-  emit('toggleAction', node, actionId, checked === true)
-}
+const hasChildren = computed(() => props.node.children.length > 0)
 </script>
 
 <template>
@@ -42,7 +34,7 @@ function handleActionCheckedChange(node: PermissionTreeNodeModel, actionId: stri
     <Collapsible v-model:open="isOpen">
       <div
         class="group flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 hover:bg-muted/50"
-        @click="emit('toggleMenu', node, menuCheckState)"
+        @click="emit('toggle', node.id, state)"
       >
         <CollapsibleTrigger as-child>
           <button
@@ -58,9 +50,9 @@ function handleActionCheckedChange(node: PermissionTreeNodeModel, actionId: stri
         </CollapsibleTrigger>
 
         <Checkbox
-          :checked="menuCheckState"
+          :checked="state"
           @click.stop
-          @update:checked="emit('toggleMenu', node, menuCheckState)"
+          @update:checked="emit('toggle', node.id, state)"
         />
         <span class="text-sm select-none">
           {{ node.name }}
@@ -71,38 +63,13 @@ function handleActionCheckedChange(node: PermissionTreeNodeModel, actionId: stri
       </div>
 
       <CollapsibleContent>
-        <!-- Actions -->
-        <div
-          v-for="action in node.actions"
-          :key="action.id"
-          :style="{ paddingLeft: `${(depth + 1) * 16 + 4}px` }"
-          class="flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 hover:bg-muted/50"
-          @click="emit('toggleAction', node, action.id, !selectedActionIds.has(action.id))"
-        >
-          <span class="invisible size-4 shrink-0" />
-          <Checkbox
-            :checked="selectedActionIds.has(action.id)"
-            @click.stop
-            @update:checked="handleActionCheckedChange(node, action.id, $event)"
-          />
-          <span class="text-sm text-muted-foreground select-none">
-            {{ action.name }}
-          </span>
-          <span v-if="action.description" class="ml-1 text-xs text-muted-foreground/60">
-            — {{ action.description }}
-          </span>
-        </div>
-
-        <!-- Child menus -->
         <PermissionTreeNode
           v-for="child in node.children"
           :key="child.id"
           :node="child"
           :depth="depth + 1"
-          :selected-menu-ids="selectedMenuIds"
-          :selected-action-ids="selectedActionIds"
-          @toggle-menu="(n, s) => emit('toggleMenu', n, s)"
-          @toggle-action="(n, id, c) => emit('toggleAction', n, id, c)"
+          :state="getNodeCheckState(child)"
+          @toggle="(id, childState) => emit('toggle', id, childState)"
         />
       </CollapsibleContent>
     </Collapsible>

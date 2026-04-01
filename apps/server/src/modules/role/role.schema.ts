@@ -1,4 +1,5 @@
 import { z } from '@hono/zod-openapi'
+import { PermissionType } from '@server/generated/prisma/enums'
 
 export const RoleBaseResponseSchema = z.object({
   id: z.string().openapi({ description: 'Unique identifier for the role', example: '01HZY4QG2R1X0ABCDEF1234567' }),
@@ -33,14 +34,32 @@ export const RoleDeleteResponseSchema = z.object({
 })
 export type RoleDeleteResponse = z.infer<typeof RoleDeleteResponseSchema>
 
-export const RolePermissionsResponseSchema = z.object({
-  menuIds: z.array(z.string()).openapi({ description: 'Granted menu IDs', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
-  actionIds: z.array(z.string()).openapi({ description: 'Granted action IDs', example: ['01HZY4QG2R1X0ABCDEF7654321'] }),
-}).openapi('RolePermissionsResponseSchema')
+export interface RolePermissionTreeNode {
+  id: string
+  name: string
+  type: PermissionType
+  description: string | null
+  enable: boolean
+  children: RolePermissionTreeNode[]
+}
+
+export const RolePermissionTreeNodeSchema: z.ZodType<RolePermissionTreeNode> = z.object({
+  id: z.string().openapi({ description: 'Permission target ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+  name: z.string().openapi({ description: 'Permission display name', example: 'Dashboard' }),
+  type: z.nativeEnum(PermissionType).openapi({ description: 'Permission node type', example: 'MENU' }),
+  description: z.string().nullable().openapi({ description: 'Permission description', example: '/dashboard' }),
+  enable: z.boolean().openapi({ description: 'Whether the permission is enabled for the role', example: true }),
+  get children(): z.ZodArray<typeof RolePermissionTreeNodeSchema> {
+    return z.array(RolePermissionTreeNodeSchema).openapi({
+      type: 'array',
+      items: { $ref: '#/components/schemas/RolePermissionTreeNodeSchema' },
+      description: 'Child permission nodes',
+    })
+  },
+}).openapi('RolePermissionTreeNodeSchema')
+
+export const RolePermissionsResponseSchema = z.array(RolePermissionTreeNodeSchema).openapi('RolePermissionsResponseSchema')
 export type RolePermissionsResponse = z.infer<typeof RolePermissionsResponseSchema>
 
-export const RolePermissionsUpdateRequestSchema = z.object({
-  menuIds: z.array(z.string()).openapi({ description: 'Menu IDs to grant', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
-  actionIds: z.array(z.string()).openapi({ description: 'Action IDs to grant', example: ['01HZY4QG2R1X0ABCDEF7654321'] }),
-})
+export const RolePermissionsUpdateRequestSchema = z.array(RolePermissionTreeNodeSchema).openapi('RolePermissionsUpdateRequestSchema')
 export type RolePermissionsUpdateRequest = z.infer<typeof RolePermissionsUpdateRequestSchema>

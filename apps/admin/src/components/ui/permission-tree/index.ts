@@ -1,5 +1,4 @@
 export type {
-  PermissionTreeAction,
   PermissionTreeCheckState,
   PermissionTreeIndexes,
   PermissionTreeNode as PermissionTreeNodeModel,
