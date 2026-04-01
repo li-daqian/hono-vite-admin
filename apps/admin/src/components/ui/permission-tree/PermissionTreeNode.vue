@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MenuItemSchema } from '@admin/client'
+import type { PermissionTreeCheckState, PermissionTreeNode as PermissionTreeNodeModel } from './model'
 import { Checkbox } from '@admin/components/ui/checkbox'
 import {
   Collapsible,
@@ -9,53 +9,30 @@ import {
 import { cn } from '@admin/lib/utils'
 import { ChevronRight } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
+import { getNodeCheckState } from './model'
 import PermissionTreeNode from './PermissionTreeNode.vue'
 
 defineOptions({ name: 'PermissionTreeNode' })
 
 const props = defineProps<{
-  node: MenuItemSchema
+  node: PermissionTreeNodeModel
   depth: number
   selectedMenuIds: Set<string>
   selectedActionIds: Set<string>
-  description?: string
 }>()
 
 const emit = defineEmits<{
-  toggleMenu: [node: MenuItemSchema, state: boolean | 'indeterminate']
-  toggleAction: [node: MenuItemSchema, actionId: string, checked: boolean]
+  toggleMenu: [node: PermissionTreeNodeModel, state: PermissionTreeCheckState]
+  toggleAction: [node: PermissionTreeNodeModel, actionId: string, checked: boolean]
 }>()
 
 const isOpen = ref(true)
 
 const hasChildren = computed(() => props.node.children.length > 0 || props.node.actions.length > 0)
 
-function getAllMenuIds(node: MenuItemSchema): string[] {
-  return [node.id, ...node.children.flatMap(getAllMenuIds)]
-}
+const menuCheckState = computed(() => getNodeCheckState(props.node, props.selectedMenuIds, props.selectedActionIds))
 
-function getAllActionIds(node: MenuItemSchema): string[] {
-  return [...node.actions.map(a => a.id), ...node.children.flatMap(getAllActionIds)]
-}
-
-const menuCheckState = computed<boolean | 'indeterminate'>(() => {
-  const allMenus = getAllMenuIds(props.node)
-  const allActions = getAllActionIds(props.node)
-
-  const checkedMenus = allMenus.filter(id => props.selectedMenuIds.has(id)).length
-  const checkedActions = allActions.filter(id => props.selectedActionIds.has(id)).length
-
-  const totalChecked = checkedMenus + checkedActions
-  const totalItems = allMenus.length + allActions.length
-
-  if (totalChecked === 0)
-    return false
-  if (totalChecked === totalItems)
-    return true
-  return 'indeterminate'
-})
-
-function handleActionCheckedChange(node: MenuItemSchema, actionId: string, checked: boolean | 'indeterminate') {
+function handleActionCheckedChange(node: PermissionTreeNodeModel, actionId: string, checked: boolean | 'indeterminate') {
   emit('toggleAction', node, actionId, checked === true)
 }
 </script>
@@ -88,8 +65,8 @@ function handleActionCheckedChange(node: MenuItemSchema, actionId: string, check
         <span class="text-sm select-none">
           {{ node.name }}
         </span>
-        <span v-if="description" class="ml-auto text-xs text-muted-foreground truncate max-w-[40%]">
-          {{ description }}
+        <span v-if="node.description" class="ml-auto text-xs text-muted-foreground truncate max-w-[40%]">
+          {{ node.description }}
         </span>
       </div>
 

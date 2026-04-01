@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import type { MenuItemSchema, RolePermissionsResponseSchema } from '@admin/client'
+import type { PermissionTreeCheckState, PermissionTreeNode as PermissionTreeNodeModel } from './model'
 import { getMenuOptions } from '@admin/client'
 import { Loader2 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
+import {
+  buildPermissionTreeIndexes,
+  getAllActionIds,
+  getAllMenuIds,
+  hasSelectedDescendants,
+  mapMenuTreeToPermissionTree,
+} from './model'
 import PermissionTreeNode from './PermissionTreeNode.vue'
 
 const props = defineProps<{
@@ -13,40 +21,23 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: RolePermissionsResponseSchema): void
 }>()
 
-const tree = ref<MenuItemSchema[]>([])
+const tree = ref<PermissionTreeNodeModel[]>([])
 const isLoading = ref(true)
 
 const selectedMenuIds = computed(() => new Set(props.modelValue.menuIds))
 const selectedActionIds = computed(() => new Set(props.modelValue.actionIds))
 
-function buildTreeIndexes(nodes: MenuItemSchema[], parentId: string | null = null) {
-  const nodeById = new Map<string, MenuItemSchema>()
-  const parentById = new Map<string, string | null>()
-
-  const visit = (items: MenuItemSchema[], currentParentId: string | null) => {
-    for (const node of items) {
-      nodeById.set(node.id, node)
-      parentById.set(node.id, currentParentId)
-      visit(node.children, node.id)
-    }
-  }
-
-  visit(nodes, parentId)
-
-  return { nodeById, parentById }
-}
-
 onMounted(async () => {
   try {
     const res = await getMenuOptions<true>()
-    tree.value = res.data
+    tree.value = mapMenuTreeToPermissionTree(res.data as MenuItemSchema[])
   }
   finally {
     isLoading.value = false
   }
 })
 
-const treeIndexes = computed(() => buildTreeIndexes(tree.value))
+const treeIndexes = computed(() => buildPermissionTreeIndexes(tree.value))
 
 function getAncestorIds(menuId: string): string[] {
   const ancestorIds: string[] = []
@@ -58,19 +49,6 @@ function getAncestorIds(menuId: string): string[] {
   }
 
   return ancestorIds
-}
-
-function getAllMenuIds(node: MenuItemSchema): string[] {
-  return [node.id, ...node.children.flatMap(getAllMenuIds)]
-}
-
-function getAllActionIds(node: MenuItemSchema): string[] {
-  return [...node.actions.map(a => a.id), ...node.children.flatMap(getAllActionIds)]
-}
-
-function hasSelectedDescendants(node: MenuItemSchema, menuIds: Set<string>, actionIds: Set<string>): boolean {
-  return node.actions.some(action => actionIds.has(action.id))
-    || node.children.some(child => menuIds.has(child.id) || hasSelectedDescendants(child, menuIds, actionIds))
 }
 
 function syncAncestorMenus(startMenuId: string | null, menuIds: Set<string>, actionIds: Set<string>) {
@@ -90,7 +68,7 @@ function syncAncestorMenus(startMenuId: string | null, menuIds: Set<string>, act
   }
 }
 
-function toggleMenu(node: MenuItemSchema, currentState: boolean | 'indeterminate') {
+function toggleMenu(node: PermissionTreeNodeModel, currentState: PermissionTreeCheckState) {
   const allMenuIds = getAllMenuIds(node)
   const allActionIds = getAllActionIds(node)
 
@@ -111,7 +89,7 @@ function toggleMenu(node: MenuItemSchema, currentState: boolean | 'indeterminate
   emit('update:modelValue', { menuIds: [...newMenuIds], actionIds: [...newActionIds] })
 }
 
-function toggleAction(node: MenuItemSchema, actionId: string, checked: boolean) {
+function toggleAction(node: PermissionTreeNodeModel, actionId: string, checked: boolean) {
   const newActionIds = new Set(selectedActionIds.value)
   const newMenuIds = new Set(selectedMenuIds.value)
 
