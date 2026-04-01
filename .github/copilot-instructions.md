@@ -1,92 +1,51 @@
 # Copilot Instructions for hono-vite-admin
 
-## Architecture Overview
-**Turborepo monorepo**: Admin SPA in `apps/admin` (Vue 3 + Vite + Tailwind v4), API backend in `apps/server` (Hono + Zod OpenAPI + Prisma/PostgreSQL, Bun runtime). Full-stack TypeScript with shared ESLint/TypeScript configs in `packages/`.
+## Build, test, and lint commands
 
-## Essential Commands
-- **Install**: `pnpm install` (Node ≥20, pnpm@9)
-- **Root dev**: `pnpm dev` (both apps hot-reload)
-- **Admin dev**: `pnpm --filter @hono-vite-admin/admin dev` (Vite on localhost:5173)
-- **Server dev**: `pnpm --filter @hono-vite-admin/server dev` (Bun on localhost:3000, hot-reload)
-- **DB reset**: `cd apps/server && pnpm prisma:reset` (generate → migrate reset → seed)
-- **Build/Lint/Types**: `pnpm build|lint|check-types` (all apps via Turbo)
+- Install dependencies from the repo root with `pnpm install` (Node `>=20`, root `packageManager` is `pnpm@10.27.0`).
+- Run both apps in development with `pnpm dev`.
+- Run only the admin app with `pnpm --filter @hono-vite-admin/admin dev`.
+- Run only the server app with `pnpm --filter @hono-vite-admin/server dev`.
+- Build everything with `pnpm build`.
+- Lint everything with `pnpm lint`.
+- Run the repo test pipeline with `pnpm test`. Today that mainly runs the server Bun test task; the admin package uses Vitest but does not expose a package-level `test` script yet.
+- Run server tests directly with `pnpm --filter @hono-vite-admin/server test`.
+- Run a single server test file with `pnpm --filter @hono-vite-admin/server exec bun test src/utils/date.test.ts`.
+- Run a single admin test file with `pnpm --filter @hono-vite-admin/admin exec vitest run src/lib/utils.test.ts`.
+- Run autofix linting per package with `pnpm --filter @hono-vite-admin/admin lint:fix` or `pnpm --filter @hono-vite-admin/server lint:fix`.
+- Run the existing type-check pipeline with `pnpm check-types`. The server has a dedicated `check-types` script; the admin app performs type-checking as part of `pnpm --filter @hono-vite-admin/admin build` via `vue-tsc -b`.
+- Reset and reseed the database with `pnpm prisma:reset` from the repo root, or `pnpm --filter @hono-vite-admin/server prisma:reset`.
+- Regenerate the admin API client after server OpenAPI changes with `pnpm openapi-ts` from the root, or `pnpm --filter @hono-vite-admin/admin openapi-ts`.
 
-## API Server Patterns (apps/server)
+## High-level architecture
 
-**Request Flow**: Entry point `src/index.ts` stacks middlewares in strict order: CORS → holdContext (AsyncLocalStorage) → requestId → traceLogger → error/404 handlers. Routes mounted at `/api/v1` from `src/openapi/openapi.ts`. Auth guards applied per-route via `middleware: [authMiddleware]` in route definitions, bypassing auth for login/refresh endpoints.
+This is a Turborepo monorepo with two main apps:
 
-**Creating API Endpoints**:
-1. Define Zod schemas in `src/schemas/` with `.openapi()` metadata (example: [src/schemas/auth.schema.ts](../apps/server/src/schemas/auth.schema.ts))
-2. Create route in `src/routes/` using `createRoute({ path, method, request, responses, security, middleware, tags })`
-3. Register handler with `api.openapi(route, handler)`; extract body via `c.req.json<Type>()`
-4. Add service logic in `src/service/` (e.g., `authService.login()`)
-5. Register route function in [src/openapi/registerRoutes.ts](../apps/server/src/openapi/registerRoutes.ts)
-6. Routes auto-expose at `/api/v1/openapi.json` and Swagger UI at `/docs` (non-prod only)
+- `apps/server`: Bun + Hono API server with OpenAPI generated from Zod route definitions and Prisma/PostgreSQL for persistence.
+- `apps/admin`: Vue 3 + Vite admin SPA that consumes the generated OpenAPI client.
 
-**Error Handling**: Throw `BusinessError` subclasses from [src/common/exception.ts](../apps/server/src/common/exception.ts) (e.g., `BusinessError.Unauthorized()`, `BusinessError.BadRequest()`). Middleware's `onErrorHandler` catches, logs via pino, returns JSON error with `requestId` for tracing.
+The API server entry point is `apps/server/src/index.ts`. Requests pass through global middleware in a fixed order: CORS, async context storage, request ID assignment, and per-request tracing/logger setup. The app mounts two versioned APIs at `/api/v1` and `/api/v2`, and Swagger is configured from those OpenAPI documents rather than from a single hand-maintained route registry.
 
-**Authentication**: [src/middleware/auth.middleware.ts](../apps/server/src/middleware/auth.middleware.ts) extracts bearer token from `Authorization` header, verifies via `jwtService.verifyAccessToken()`. Sets `authPayload` on context; retrieve in handlers via `getLoginUser()`. Use `security: [{ Bearer: [] }]` and `middleware: [authMiddleware]` in route config. Tokens: access (short-lived, `TOKEN_EXPIRY`), refresh (long-lived, stored in DB & httpOnly cookie, `REFRESH_TOKEN_EXPIRY`).
+Versioned APIs are assembled in `apps/server/src/openapi/v1.ts` and `apps/server/src/openapi/v2.ts`. New server modules are mounted there. `createApi()` in `apps/server/src/openapi/openapi.ts` centralizes the OpenAPIHono setup and converts Zod validation failures into `BusinessError.BadRequest(...)`, so route handlers should rely on that flow instead of adding parallel validation/error plumbing.
 
-**Logging & Tracing**: Each request gets UUID `requestId` and per-request pino logger from `traceLogger`. Access logger via `logger()` helper; include `requestId` in responses for request tracing. Log level via `LOG_LEVEL` env.
+The main full-stack contract is OpenAPI-driven. Server route/schema changes flow into `apps/admin/openapi-ts.config.ts`, which generates `apps/admin/src/client/`. Frontend code should call generated functions and use generated schema/types instead of hand-writing request shapes.
 
-**Path Alias**: Use `@server/src/...` imports (tsconfig.json configured).
+The admin app boots in `apps/admin/src/main.ts`: it configures the generated client through `setupAxios()`, installs Pinia with persisted state, loads dynamic routes from menu data, and then mounts the router. The axios integration in `apps/admin/src/lib/axios.ts` is the central place for auth headers, refresh-token retries, toast error handling, and generated-client validation error surfacing.
 
-## Database (Prisma)
-- **Schema** ([apps/server/prisma/schema.prisma](../apps/server/prisma/schema.prisma)): ULID string IDs, `relationMode = "prisma"` (no DB-level FK constraints)
-- **Models**: User (with status, salt for bcrypt), Role, Permission, Menu, Action, RefreshToken; junction tables for m2m relations
-- **Generated client** in `generated/prisma/` (committed, regenerated via `prisma generate`)
-- **Seeding** ([apps/server/prisma/seed.ts](../apps/server/prisma/seed.ts)): Runs on `prisma:reset`; bootstraps admin user from env (`ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_ROLE_NAME`, `ADMIN_EMAIL`)
-- **Password hashing**: bcryptjs with per-user salt; verify via `bcrypt.hash(input, user.salt) === user.password`
+Authorization and navigation are menu-driven. The backend seeds menu/action IDs in `apps/server/prisma/seed.ts`, exposes permitted menus/actions through auth endpoints, and the frontend stores them in `apps/admin/src/stores/menu.ts`. `apps/admin/src/router/dynamic-routes.ts` turns those menus into Vue Router routes, while `apps/admin/src/router/route-meta.ts` maps stable menu IDs such as `dashboard`, `access.users`, and `access.roles` to actual page components and icons. When adding a new navigable page, backend menu IDs, seeded permissions, and frontend `routeMetaConfigMap` need to stay aligned.
 
-## Admin UI Patterns (apps/admin)
+The auth lifecycle spans both apps. The server issues access tokens plus refresh tokens, stores refresh tokens in the database, and supports refresh via cookie/body. The admin client retries `401` responses by calling `postAuthRefresh`, deduplicates concurrent refreshes in `useAuthStore`, and then retries the original request. Protected routes depend on `router.beforeEach()` calling `useAuthStore().fetchMe()`, which refreshes first and then loads the current user.
 
-**Build & Code Generation**: Vite config ([vite.config.ts](../apps/admin/vite.config.ts)) includes `@tailwindcss/vite` plugin. OpenAPI client generator ([openapi-ts.config.ts](../apps/admin/openapi-ts.config.ts)) reads `/api/v1/openapi.json` → generates `src/client/` (run manually after server changes: `cd apps/admin && pnpm exec openapi-ts --output src/client`). Entry: [src/main.ts](../apps/admin/src/main.ts) sets up Pinia, Vue Router, axios interceptors.
+## Key conventions
 
-**API Integration**: Generated client ([src/client/](../apps/admin/src/client)) provides typed request functions (e.g., `postAuthLogin`, `getUserProfile`). [src/lib/axios.ts](../apps/admin/src/lib/axios.ts) configures interceptors: auto-attach bearer token, handle 401 → refresh token → retry, logout on 401 with redirect to login. Refresh token stored in httpOnly cookie; fallback to body parameter. Concurrent refresh requests deduplicated via closure pattern.
-
-**Routing & Auth**: [src/router/index.ts](../apps/admin/src/router/index.ts) defines routes, with `authWhitelist` for login page. `beforeEach` guard fetches user profile for protected routes; 401 triggers axios interceptor logout. Route names centralized in [src/router/route-name.ts](../apps/admin/src/router/route-name.ts). NProgress integration for navigation feedback.
-
-**State Management**: Pinia stores in `src/stores/`: [auth.ts](../apps/admin/src/stores/auth.ts) (accessToken), [user.ts](../apps/admin/src/stores/user.ts) (profile). Minimal stores—avoid side effects; axios interceptors handle token refresh. Use getters for computed state (e.g., `isAuthenticated`).
-
-**Styling**: Tailwind v4 via `@tailwindcss/vite` + `tw-animate-css` plugin. CSS vars in [src/style.css](../apps/admin/src/style.css) (oklch color space); dark mode via `@custom-variant dark`. Component library under `src/components/ui/` (shadcn style, pre-generated). Compose UI with Tailwind classes.
-
-**Components**: Vue 3 `<script setup>` (no `<script>` blocks). Path alias `@admin` → `src/`. Example: [src/components/GlobalHeader.vue](../apps/admin/src/components/GlobalHeader.vue). Prefer composables in `src/lib/` for shared logic.
-
-## Environment Variables
-**Server** (`apps/server/.env`):
-- `DATABASE_URL` (PostgreSQL), `NODE_ENV`, `FRONTEND_DOMAIN`, `LOG_LEVEL`
-- `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_ROLE_NAME`, `ADMIN_EMAIL` (seeded on `prisma:reset`)
-- `JWT_SECRET`, `TOKEN_EXPIRY` (e.g., "15m"), `REFRESH_TOKEN_EXPIRY` (e.g., "7d")
-
-**Admin** (`apps/admin/.env.local`):
-- `VITE_API_URL` (e.g., `http://localhost:3000`)
-
-## Key Integration Flows
-
-**Login**: User submits form → Admin calls `postAuthLogin({ body: { username, password } })` → Server validates via `authService.login()`, returns `accessToken` & `refreshToken` (in cookie + body) → Axios interceptor captures, stores in Pinia auth store → Router redirects to home, `beforeEach` fetches user profile.
-
-**Token Refresh**: Protected endpoint returns 401 → Axios `onError` calls `postAuthRefresh()` → Server generates new token → Interceptor updates Pinia, retries original request → Concurrent refreshes deduplicated via closure promise.
-
-**Route Navigation**: Router `beforeEach` starts NProgress → For protected routes, calls `getUserProfile()` → On 401, axios handles logout + redirect to login with redirect query → Pinia store cleared.
-
-## Adding Features
-
-**New API Endpoint**:
-1. Add Zod schema in `src/schemas/` with `.openapi()` metadata
-2. Define route in `src/routes/` with `createRoute` (add `security: [{ Bearer: [] }]` + `middleware: [authMiddleware]` if protected)
-3. Add service method in `src/service/`
-4. Register route in [src/openapi/registerRoutes.ts](../apps/server/src/openapi/registerRoutes.ts)
-5. Regenerate admin client: `cd apps/admin && pnpm exec openapi-ts --output src/client`
-
-**Database Change**:
-1. Edit [apps/server/prisma/schema.prisma](../apps/server/prisma/schema.prisma)
-2. Run `cd apps/server && pnpm prisma generate`
-3. Run `pnpm prisma migrate dev --name description` or `pnpm prisma:reset` to reset & reseed
-4. Update [apps/server/prisma/seed.ts](../apps/server/prisma/seed.ts) if needed
-
-**New Admin Page**:
-1. Create `.vue` in `src/pages/` with `<script setup>` syntax
-2. Add route name to [src/router/route-name.ts](../apps/admin/src/router/route-name.ts), route to [src/router/index.ts](../apps/admin/src/router/index.ts)
-3. Use generated client functions for API calls; store in Pinia if needed
-4. Style with Tailwind classes using theme vars from [src/style.css](../apps/admin/src/style.css)
-5. Exclude from `authWhitelist` if auth-required
+- Use the path aliases already configured in each app: `@server/src/...` on the server and `@admin/...` in the admin app.
+- On the server, prefer module-oriented files under `apps/server/src/modules/*` and mount module apps in `openapi/v1.ts` or `openapi/v2.ts` instead of wiring routes ad hoc in `index.ts`.
+- Server endpoints are expected to use Zod/OpenAPI route definitions plus `api.openapi(...)`; keep request/response typing in schemas and generated clients, not in duplicated manual DTOs.
+- Throw `BusinessError` variants from `apps/server/src/common/exception.ts` for expected application failures so the shared error middleware can log and shape the JSON response consistently with `requestId`.
+- Prisma uses `relationMode = "prisma"` and string IDs. Do not assume database-level foreign key enforcement when changing relations.
+- Menu and action permissions are modeled separately. Backend permission assignment APIs exchange `{ menuIds, actionIds }`, and admin permission UIs should preserve that contract even if they use richer internal view models.
+- Seeded menu IDs are meaningful application identifiers, not incidental database values. Frontend dynamic route mapping depends on those IDs remaining stable across seed, permissions, and `routeMetaConfigMap`.
+- In the admin app, keep side effects concentrated in shared infrastructure layers like axios interceptors and stores. Existing stores are intentionally small; avoid moving request retry/logout behavior into random page components.
+- The admin menu store persists menus to `localStorage`, so route-building code should assume menu data may already exist before the first network fetch in a session.
+- When server OpenAPI changes affect the frontend contract, regenerate `apps/admin/src/client/` instead of editing generated files by hand.
+- Vue components use `<script setup>` and existing UI building blocks under `apps/admin/src/components/ui/`. Prefer following nearby component patterns instead of introducing a different composition style.
