@@ -50,9 +50,9 @@ const hasChildren = computed(() => props.node.children.length > 0)
         </CollapsibleTrigger>
 
         <Checkbox
-          :checked="state"
+          :model-value="state"
           @click.stop
-          @update:checked="emit('toggle', node.id, state)"
+          @update:model-value="emit('toggle', node.id, state)"
         />
         <span class="text-sm select-none">
           {{ node.name }}
