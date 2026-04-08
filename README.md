@@ -4,9 +4,10 @@
 
 Deploy the API as a separate Vercel project with the Root Directory set to `apps/server`.
 
-- Vercel uses `apps/server/index.ts` as the project entry and reuses the existing `src/index.ts` Hono app.
-- `apps/server/vercel.json` disables the package `build` script on Vercel, so the deploy does not run `prisma migrate deploy`, `prisma db seed`, or the Bun bundle step.
-- `apps/server/package.json` now runs `prisma generate` in `postinstall`, so the generated Prisma client is available during Vercel installs.
+- Set the Vercel project Root Directory to `apps/server`.
+- `apps/server/vercel.json` forces a dedicated Vercel build command instead of running the package `build` script, so deploys do not execute `prisma migrate deploy` or `prisma db seed`.
+- `pnpm build:vercel` bundles the server entry into `apps/server/api/[[...route]].js`, which resolves the `@server/...` path aliases at build time and lets one function handle all `/api/*` routes.
+- `apps/server/package.json` runs `prisma generate` in `postinstall`, so the generated Prisma client is available during Vercel installs.
 
 ## Read-only deployment mode
 
