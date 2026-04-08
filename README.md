@@ -6,6 +6,7 @@ Deploy the API as a separate Vercel project with the Root Directory set to `apps
 
 - Set the Vercel project Root Directory to `apps/server`.
 - `apps/server/vercel.json` forces a dedicated Vercel build command instead of running the package `build` script, so deploys do not execute `prisma migrate deploy` or `prisma db seed`.
+- `apps/server/vercel.json` also sets `outputDirectory` to `.` so Vercel treats the app root as the deployment output and picks up the generated `api/` function instead of expecting a `public/` folder.
 - `pnpm build:vercel` bundles `apps/server/vercel.entry.ts` into `apps/server/api/[[...route]].js`, which resolves the `@server/...` path aliases at build time and lets one function handle all `/api/*` routes.
 - `apps/server/package.json` runs `prisma generate` in `postinstall`, so the generated Prisma client is available during Vercel installs.
 
