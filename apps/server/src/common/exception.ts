@@ -45,4 +45,8 @@ export class BusinessError extends Error {
   public static UsernameAlreadyExists() {
     return this.BadRequest('Username already exists', 'UsernameAlreadyExists')
   }
+
+  public static ReadOnlyModeEnabled() {
+    return this.Forbidden('This deployment is running in read-only mode. Data changes are disabled.', 'ReadOnlyModeEnabled')
+  }
 }

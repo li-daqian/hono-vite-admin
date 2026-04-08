@@ -1,3 +1,9 @@
+# Hono Vite Admin
+
+## Read-only deployment mode
+
+Set `READ_ONLY_MODE=true` in your Vercel project environment variables to make the deployment read-only. All read requests keep working, login/refresh/logout stay available, and business write APIs return `ReadOnlyModeEnabled` instead of mutating data.
+
 # Turborepo starter
 
 This Turborepo starter is maintained by the Turborepo core team.

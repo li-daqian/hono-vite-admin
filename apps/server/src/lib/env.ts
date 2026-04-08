@@ -1,7 +1,18 @@
+function parseBooleanEnv(value: string | undefined): boolean {
+  if (!value) {
+    return false
+  }
+
+  return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase())
+}
+
 export function getEnv() {
   return {
     isProduction: process.env.NODE_ENV === 'production',
     frontendDomain: process.env.FRONTEND_DOMAIN!,
+    deployment: {
+      readOnlyMode: parseBooleanEnv(process.env.READ_ONLY_MODE),
+    },
 
     database: {
       url: process.env.DATABASE_URL!,

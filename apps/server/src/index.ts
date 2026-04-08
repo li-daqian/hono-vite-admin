@@ -2,6 +2,7 @@ import { API_V1_BASE_PATH, API_V2_BASE_PATH } from '@server/src/common/constant'
 import { holdContext } from '@server/src/middleware/context.middleware'
 import { corsMiddleware } from '@server/src/middleware/cors.middleware'
 import { onErrorHandler, onNotFoundHandler } from '@server/src/middleware/expcetion.middleware'
+import { readOnlyMiddleware } from '@server/src/middleware/readonly.middleware'
 import { requestIdMiddleware } from '@server/src/middleware/requestId.middleware'
 import { traceLogger } from '@server/src/middleware/trace.middleware'
 import { setUpUnifiedSwagger } from '@server/src/openapi/swagger'
@@ -17,6 +18,7 @@ app.use('*', corsMiddleware)
 app.use('*', holdContext)
 app.use('*', requestIdMiddleware)
 app.use('*', traceLogger)
+app.use('*', readOnlyMiddleware)
 
 // Error handling
 app.notFound(onNotFoundHandler)
