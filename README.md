@@ -1,5 +1,13 @@
 # Hono Vite Admin
 
+## Vercel deployment
+
+Deploy the API as a separate Vercel project with the Root Directory set to `apps/server`.
+
+- Vercel uses `apps/server/index.ts` as the project entry and reuses the existing `src/index.ts` Hono app.
+- `apps/server/vercel.json` disables the package `build` script on Vercel, so the deploy does not run `prisma migrate deploy`, `prisma db seed`, or the Bun bundle step.
+- `apps/server/package.json` now runs `prisma generate` in `postinstall`, so the generated Prisma client is available during Vercel installs.
+
 ## Read-only deployment mode
 
 Set `READ_ONLY_MODE=true` in your Vercel project environment variables to make the deployment read-only. All read requests keep working, login/refresh/logout stay available, and business write APIs return `ReadOnlyModeEnabled` instead of mutating data.
