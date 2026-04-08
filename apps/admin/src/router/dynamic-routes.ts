@@ -17,6 +17,7 @@ function buildRoutesFromMenus(menus: AuthMenuSchema[]): RouteRecordRaw[] {
             component: routeMetaConfig.component,
             meta: {
               requiresAuth: true,
+              menuId: menu.id,
               actions: menu.actions,
             },
           })

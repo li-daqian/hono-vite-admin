@@ -1,5 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { authMiddleware } from '@server/src/middleware/auth.middleware'
+import { requireActionPermission } from '@server/src/middleware/permission.middleware'
 import {
   UserBatchDeleteRequestSchema,
   UserBatchDeleteResponseSchema,
@@ -12,6 +13,12 @@ import {
   UserProfileResponseSchema,
   UserUpdateRequestSchema,
 } from '@server/src/modules/user/user.schema'
+
+const USER_ACTIONS = {
+  CREATE: 'access.users.create',
+  EDIT: 'access.users.edit',
+  DELETE: 'access.users.delete',
+} as const
 
 export const getUserDetailRoute = createRoute({
   path: '/{id}',
@@ -26,7 +33,7 @@ export const getUserDetailRoute = createRoute({
     200: { description: 'User detail retrieved successfully', content: { 'application/json': { schema: UserProfileResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.EDIT)],
   tags: ['User'],
 })
 
@@ -39,7 +46,7 @@ export const createUserRoute = createRoute({
     201: { description: 'User created successfully', content: { 'application/json': { schema: UserCreateResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.CREATE)],
   tags: ['User'],
 })
 
@@ -84,7 +91,7 @@ export const updateUserRoute = createRoute({
     200: { description: 'User updated successfully', content: { 'application/json': { schema: UserProfileResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.EDIT)],
   tags: ['User'],
 })
 
@@ -99,7 +106,7 @@ export const deleteUsersBatchRoute = createRoute({
     200: { description: 'Users deleted successfully', content: { 'application/json': { schema: UserBatchDeleteResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.DELETE)],
   tags: ['User'],
 })
 
@@ -114,6 +121,6 @@ export const updateUserStatusBatchRoute = createRoute({
     200: { description: 'User status updated successfully', content: { 'application/json': { schema: UserBatchStatusUpdateResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.EDIT)],
   tags: ['User'],
 })

@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@admin/components/ui/tooltip'
+import { usePageActionPermissions } from '@admin/lib/permissions'
 import { Trash2, UserCheck, UserX } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
@@ -27,6 +28,9 @@ const emit = defineEmits<{
 const showDeleteConfirm = ref(false)
 const isStatusUpdating = ref(false)
 const selectedRows = computed(() => props.table.getFilteredSelectedRowModel().rows)
+const permissions = usePageActionPermissions()
+const editPermission = computed(() => permissions.resolve('edit', { subject: 'users' }))
+const deletePermission = computed(() => permissions.resolve('delete', { subject: 'users' }))
 
 async function handleBulkStatusChange(status: 'ACTIVE' | 'DISABLED') {
   const selectedUsers = selectedRows.value.map(row => row.original)
@@ -64,61 +68,67 @@ function handleDeleteSuccess() {
   <BulkActionsToolbar :table="props.table" entity-name="user">
     <Tooltip>
       <TooltipTrigger as-child>
-        <Button
-          variant="outline"
-          size="icon"
-          class="size-8"
-          :disabled="isStatusUpdating"
-          aria-label="Activate selected users"
-          title="Activate selected users"
-          @click="() => handleBulkStatusChange('ACTIVE')"
-        >
-          <UserCheck />
-          <span class="sr-only">Activate selected users</span>
-        </Button>
+        <span class="inline-flex">
+          <Button
+            variant="outline"
+            size="icon"
+            class="size-8"
+            :disabled="isStatusUpdating || !editPermission.allowed"
+            aria-label="Activate selected users"
+            title="Activate selected users"
+            @click="() => handleBulkStatusChange('ACTIVE')"
+          >
+            <UserCheck />
+            <span class="sr-only">Activate selected users</span>
+          </Button>
+        </span>
       </TooltipTrigger>
       <TooltipContent>
-        <p>Activate selected users</p>
+        <p>{{ editPermission.reason ?? 'Activate selected users' }}</p>
       </TooltipContent>
     </Tooltip>
 
     <Tooltip>
       <TooltipTrigger as-child>
-        <Button
-          variant="outline"
-          size="icon"
-          class="size-8"
-          :disabled="isStatusUpdating"
-          aria-label="Deactivate selected users"
-          title="Deactivate selected users"
-          @click="() => handleBulkStatusChange('DISABLED')"
-        >
-          <UserX />
-          <span class="sr-only">Deactivate selected users</span>
-        </Button>
+        <span class="inline-flex">
+          <Button
+            variant="outline"
+            size="icon"
+            class="size-8"
+            :disabled="isStatusUpdating || !editPermission.allowed"
+            aria-label="Deactivate selected users"
+            title="Deactivate selected users"
+            @click="() => handleBulkStatusChange('DISABLED')"
+          >
+            <UserX />
+            <span class="sr-only">Deactivate selected users</span>
+          </Button>
+        </span>
       </TooltipTrigger>
       <TooltipContent>
-        <p>Deactivate selected users</p>
+        <p>{{ editPermission.reason ?? 'Deactivate selected users' }}</p>
       </TooltipContent>
     </Tooltip>
 
     <Tooltip>
       <TooltipTrigger as-child>
-        <Button
-          variant="destructive"
-          size="icon"
-          class="size-8"
-          :disabled="isStatusUpdating"
-          aria-label="Delete selected users"
-          title="Delete selected users"
-          @click="showDeleteConfirm = true"
-        >
-          <Trash2 />
-          <span class="sr-only">Delete selected users</span>
-        </Button>
+        <span class="inline-flex">
+          <Button
+            variant="destructive"
+            size="icon"
+            class="size-8"
+            :disabled="isStatusUpdating || !deletePermission.allowed"
+            aria-label="Delete selected users"
+            title="Delete selected users"
+            @click="showDeleteConfirm = true"
+          >
+            <Trash2 />
+            <span class="sr-only">Delete selected users</span>
+          </Button>
+        </span>
       </TooltipTrigger>
       <TooltipContent>
-        <p>Delete selected users</p>
+        <p>{{ deletePermission.reason ?? 'Delete selected users' }}</p>
       </TooltipContent>
     </Tooltip>
   </BulkActionsToolbar>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UserProfileResponseSchema } from '@admin/client'
+import PermissionTooltip from '@admin/components/PermissionTooltip.vue'
 import { Button } from '@admin/components/ui/button'
 import {
   DropdownMenu,
@@ -9,7 +10,9 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
+import { usePageActionPermissions } from '@admin/lib/permissions'
 import { Ellipsis, Trash2, UserPen } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { useUsers } from './users-provider.vue'
 
 type User = UserProfileResponseSchema
@@ -19,6 +22,9 @@ const props = defineProps<{
 }>()
 
 const { setOpen, setCurrentRow } = useUsers()
+const permissions = usePageActionPermissions()
+const editPermission = computed(() => permissions.resolve('edit', { subject: 'users' }))
+const deletePermission = computed(() => permissions.resolve('delete', { subject: 'users' }))
 
 function handleEdit() {
   setCurrentRow(props.row)
@@ -45,21 +51,29 @@ function handleDelete() {
     </DropdownMenuTrigger>
 
     <DropdownMenuContent align="end" class="w-40">
-      <DropdownMenuItem @click="handleEdit">
-        Edit
-        <DropdownMenuShortcut>
-          <UserPen :size="16" />
-        </DropdownMenuShortcut>
-      </DropdownMenuItem>
+      <PermissionTooltip :message="editPermission.reason" wrapper-class="block w-full">
+        <DropdownMenuItem :disabled="!editPermission.allowed" @click="handleEdit">
+          Edit
+          <DropdownMenuShortcut>
+            <UserPen :size="16" />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </PermissionTooltip>
 
       <DropdownMenuSeparator />
 
-      <DropdownMenuItem class="text-destructive focus:text-destructive" @click="handleDelete">
-        Delete
-        <DropdownMenuShortcut>
-          <Trash2 :size="16" />
-        </DropdownMenuShortcut>
-      </DropdownMenuItem>
+      <PermissionTooltip :message="deletePermission.reason" wrapper-class="block w-full">
+        <DropdownMenuItem
+          class="text-destructive focus:text-destructive"
+          :disabled="!deletePermission.allowed"
+          @click="handleDelete"
+        >
+          Delete
+          <DropdownMenuShortcut>
+            <Trash2 :size="16" />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </PermissionTooltip>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>

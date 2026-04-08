@@ -3,6 +3,29 @@ import type { BreadcrumbItemType } from '@admin/pages/home/components/AppBreadcr
 import { getAuthMenus } from '@admin/client'
 import { defineStore } from 'pinia'
 
+function findMenuTrailByPath(
+  menus: AuthMenuSchema[],
+  targetPath: string,
+  parents: AuthMenuSchema[] = [],
+): AuthMenuSchema[] | undefined {
+  for (const menu of menus) {
+    const nextParents = [...parents, menu]
+
+    if (menu.path === targetPath) {
+      return nextParents
+    }
+
+    if (menu.children.length > 0) {
+      const foundTrail = findMenuTrailByPath(menu.children, targetPath, nextParents)
+      if (foundTrail) {
+        return foundTrail
+      }
+    }
+  }
+
+  return undefined
+}
+
 export const useMenuStore = defineStore('menu', {
   state: () => ({
     menus: [] as AuthMenuSchema[],
@@ -26,6 +49,15 @@ export const useMenuStore = defineStore('menu', {
       return find(state.menus)
     },
 
+    currentMenu(state): AuthMenuSchema | undefined {
+      if (!state.currentPath) {
+        return undefined
+      }
+
+      const trail = findMenuTrailByPath(state.menus, state.currentPath)
+      return trail ? trail[trail.length - 1] : undefined
+    },
+
     /**
      * based on current path build breadcrumb list
      */
@@ -34,34 +66,7 @@ export const useMenuStore = defineStore('menu', {
         return []
       }
 
-      const pathStack: AuthMenuSchema[] = []
-
-      const findPath = (
-        menus: AuthMenuSchema[],
-        parents: AuthMenuSchema[] = [],
-      ): boolean => {
-        for (const menu of menus) {
-          const newParents = [...parents, menu]
-
-          // find the menu with current path
-          if (menu.path === state.currentPath) {
-            pathStack.push(...newParents)
-            return true
-          }
-
-          // if have children continue to find
-          if (menu.children && menu.children.length > 0) {
-            const found = findPath(menu.children, newParents)
-            if (found)
-              return true
-          }
-        }
-        return false
-      }
-
-      findPath(state.menus)
-
-      return pathStack.map((menu, _index) => ({
+      return (findMenuTrailByPath(state.menus, state.currentPath) ?? []).map(menu => ({
         label: menu.name,
         href: menu.path ? menu.path : undefined,
       }))
@@ -79,8 +84,10 @@ export const useMenuStore = defineStore('menu', {
     },
   },
 
-  persist: {
-    storage: localStorage,
-    pick: ['menus'],
-  },
+  persist: typeof window !== 'undefined'
+    ? {
+        storage: localStorage,
+        pick: ['menus'],
+      }
+    : false,
 })

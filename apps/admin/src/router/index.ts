@@ -9,6 +9,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
+    menuId?: string
     actions?: Array<AuthActionSchema>
   }
 }

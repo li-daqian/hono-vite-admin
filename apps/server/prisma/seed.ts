@@ -36,6 +36,7 @@ const menus = [
         actions: [
           { code: 'create', name: 'Create', description: 'Create role' },
           { code: 'edit', name: 'Edit', description: 'Edit role' },
+          { code: 'permissions', name: 'Manage Permissions', description: 'Manage role permissions' },
           { code: 'delete', name: 'Delete', description: 'Delete role' },
         ],
       },

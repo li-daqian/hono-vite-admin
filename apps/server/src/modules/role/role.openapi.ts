@@ -1,5 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { authMiddleware } from '@server/src/middleware/auth.middleware'
+import { requireActionPermission } from '@server/src/middleware/permission.middleware'
 import {
   RoleCreateRequestSchema,
   RoleCreateResponseSchema,
@@ -10,6 +11,13 @@ import {
   RoleProfileResponseSchema,
   RoleUpdateRequestSchema,
 } from '@server/src/modules/role/role.schema'
+
+const ROLE_ACTIONS = {
+  CREATE: 'access.roles.create',
+  EDIT: 'access.roles.edit',
+  DELETE: 'access.roles.delete',
+  PERMISSIONS: 'access.roles.permissions',
+} as const
 
 export const getRoleDetailRoute = createRoute({
   path: '/{id}',
@@ -24,7 +32,7 @@ export const getRoleDetailRoute = createRoute({
     200: { description: 'Role detail retrieved successfully', content: { 'application/json': { schema: RoleProfileResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(ROLE_ACTIONS.EDIT)],
   tags: ['Role'],
 })
 
@@ -49,7 +57,7 @@ export const createRoleRoute = createRoute({
     201: { description: 'Role created successfully', content: { 'application/json': { schema: RoleCreateResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(ROLE_ACTIONS.CREATE)],
   tags: ['Role'],
 })
 
@@ -67,7 +75,7 @@ export const updateRoleRoute = createRoute({
     200: { description: 'Role updated successfully', content: { 'application/json': { schema: RoleProfileResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(ROLE_ACTIONS.EDIT)],
   tags: ['Role'],
 })
 
@@ -84,7 +92,7 @@ export const deleteRoleRoute = createRoute({
     200: { description: 'Role deleted successfully', content: { 'application/json': { schema: RoleDeleteResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(ROLE_ACTIONS.DELETE)],
   tags: ['Role'],
 })
 
@@ -101,7 +109,7 @@ export const getRolePermissionsRoute = createRoute({
     200: { description: 'Role permissions retrieved successfully', content: { 'application/json': { schema: RolePermissionsResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(ROLE_ACTIONS.PERMISSIONS)],
   tags: ['Role'],
 })
 
@@ -119,6 +127,6 @@ export const updateRolePermissionsRoute = createRoute({
     200: { description: 'Role permissions updated successfully', content: { 'application/json': { schema: RolePermissionsResponseSchema } } },
   },
   security: [{ Bearer: [] }],
-  middleware: [authMiddleware],
+  middleware: [authMiddleware, requireActionPermission(ROLE_ACTIONS.PERMISSIONS)],
   tags: ['Role'],
 })
