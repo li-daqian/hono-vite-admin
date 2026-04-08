@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "test": "bun test --coverage",
-    "build": "bun build src/index.ts --outdir dist --target bun",
+    "build": "prisma generate && bun build src/index.ts --outdir dist --target bun",
     "start": "bun run dist/index.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "check-types": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
     "prisma:reset": "prisma generate && prisma migrate reset && prisma db push && prisma db seed"
   },
   "dependencies": {
