@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "test": "bun test --coverage",
-    "build": "prisma migrate deploy && prisma db seed && prisma generate && bun build src/index.ts --outfile dist/index.cjs --target node --format cjs",
-    "start": "node dist/index.cjs",
+    "build": "prisma migrate deploy && prisma db seed && prisma generate && bun build src/index.ts --outdir dist --target node",
+    "start": "bun run dist/index.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "check-types": "tsc --noEmit",
