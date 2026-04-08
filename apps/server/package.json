@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "test": "bun test --coverage",
-    "build": "prisma migrate deploy && prisma generate && bun build src/index.ts --outdir dist --target bun",
+    "build": "prisma migrate deploy && prisma db seed && prisma generate && bun build src/index.ts --outdir dist --target bun",
     "start": "bun run dist/index.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
