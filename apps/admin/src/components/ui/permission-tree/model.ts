@@ -44,7 +44,7 @@ export function getNodeCheckState(node: PermissionTreeNode): PermissionTreeCheck
   const everyChildChecked = childStates.every(state => state === true)
   const everyChildUnchecked = childStates.every(state => state === false)
 
-  if (node.enable && everyChildChecked)
+  if (node.enable && (everyChildChecked || everyChildUnchecked))
     return true
 
   if (!node.enable && everyChildUnchecked)
@@ -56,22 +56,6 @@ export function getNodeCheckState(node: PermissionTreeNode): PermissionTreeCheck
 export function setNodeAndDescendantsEnabled(node: PermissionTreeNode, enabled: boolean): void {
   node.enable = enabled
   node.children.forEach(child => setNodeAndDescendantsEnabled(child, enabled))
-}
-
-export function syncAncestorEnableState(
-  nodeId: string,
-  indexes: PermissionTreeIndexes,
-): void {
-  let currentId = indexes.parentById.get(nodeId) ?? null
-
-  while (currentId) {
-    const currentNode = indexes.nodeById.get(currentId)
-    if (!currentNode)
-      break
-
-    currentNode.enable = currentNode.children.some(child => child.enable || getNodeCheckState(child) !== false)
-    currentId = indexes.parentById.get(currentId) ?? null
-  }
 }
 
 export function togglePermissionNode(
@@ -96,9 +80,6 @@ export function togglePermissionNode(
       currentNode.enable = true
       currentId = indexes.parentById.get(currentId) ?? null
     }
-  }
-  else {
-    syncAncestorEnableState(nodeId, indexes)
   }
 
   return nextTree

@@ -53,16 +53,17 @@ describe('permission tree model', () => {
     expect(getNodeCheckState(settingsNode)).toBe('indeterminate')
   })
 
-  it('clears ancestors when the last selected descendant is toggled off', () => {
+  it('keeps ancestors enabled when the last selected descendant is toggled off', () => {
     const enabledTree = togglePermissionNode(createTree(), 'users:edit', true)
     const nextTree = togglePermissionNode(enabledTree, 'users:edit', false)
     const settingsNode = nextTree[0]!
     const usersNode = settingsNode.children[1]!
 
-    expect(settingsNode.enable).toBe(false)
-    expect(usersNode.enable).toBe(false)
+    expect(settingsNode.enable).toBe(true)
+    expect(usersNode.enable).toBe(true)
     expect(usersNode.children[0]!.enable).toBe(false)
-    expect(getNodeCheckState(settingsNode)).toBe(false)
+    expect(getNodeCheckState(usersNode)).toBe(true)
+    expect(getNodeCheckState(settingsNode)).toBe('indeterminate')
   })
 
   it('toggles a menu recursively for all descendants', () => {
