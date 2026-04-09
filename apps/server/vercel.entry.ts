@@ -3,8 +3,6 @@ import path from 'node:path'
 import { parse } from 'dotenv'
 import { handle } from 'hono/vercel'
 
-import app from './src/index'
-
 function loadEnvFile(filename: string, existingKeys: Set<string>) {
   const filePath = path.resolve(process.cwd(), filename)
   if (!existsSync(filePath)) {
@@ -22,5 +20,8 @@ function loadEnvFile(filename: string, existingKeys: Set<string>) {
 const existingEnvKeys = new Set(Object.keys(process.env))
 loadEnvFile('.env', existingEnvKeys)
 loadEnvFile('.env.production', existingEnvKeys)
+
+// eslint-disable-next-line antfu/no-top-level-await
+const { default: app } = await import('./src/index')
 
 export default handle(app)
