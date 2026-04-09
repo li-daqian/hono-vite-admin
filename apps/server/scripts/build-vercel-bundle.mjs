@@ -14,6 +14,7 @@ await esbuild.build({
   entryPoints: [path.join(appRoot, 'vercel.entry.ts')],
   outfile: path.join(outdir, 'index.js'),
   bundle: true,
+  external: ['hono'],
   platform: 'node',
   format: 'esm',
   target: 'node20',
