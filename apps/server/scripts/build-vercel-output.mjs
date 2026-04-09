@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -51,6 +51,13 @@ writeFileSync(
     type: 'module',
   }, null, 2)}\n`,
 )
+
+for (const filename of ['.env', '.env.production']) {
+  const sourceFile = path.join(appRoot, filename)
+  if (existsSync(sourceFile)) {
+    copyFileSync(sourceFile, path.join(functionRoot, filename))
+  }
+}
 
 writeFileSync(
   path.join(outputRoot, 'config.json'),
