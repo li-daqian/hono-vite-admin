@@ -2,13 +2,63 @@
 
 ## Vercel deployment
 
-Deploy the API as a separate Vercel project with the Root Directory set to `apps/server`.
+Deploy the frontend and API as two separate Vercel projects.
 
-- Set the Vercel project Root Directory to `apps/server`.
-- `apps/server/vercel.json` forces a dedicated Vercel build command instead of running the package `build` script, so deploys do not execute `prisma migrate deploy` or `prisma db seed`.
-- `apps/server/vercel.json` also sets `outputDirectory` to `.` so Vercel treats the app root as the deployment output and picks up the generated `api/` function instead of expecting a `public/` folder.
-- `pnpm build:vercel` bundles `apps/server/vercel.entry.ts` into `apps/server/api/[...route].js`, which resolves the `@server/...` path aliases at build time and lets one function handle all `/api/*` routes.
-- `apps/server/package.json` runs `prisma generate` in `postinstall`, so the generated Prisma client is available during Vercel installs.
+### API project
+
+Point the Vercel project to `apps/server` and let Vercel detect the `api/[...route].ts` function directly.
+
+- Root Directory: `apps/server`
+- Framework Preset: `Other`
+- Install Command: leave empty and use the Vercel default
+- Build Command: leave empty
+- Output Directory: leave empty
+- Node.js Version: 20 or later
+- Production Domain: use a dedicated API domain such as `api.example.com`
+
+The server now uses [`apps/server/api/[...route].ts`](/home/lidaqian/Code/hono-vite-admin/apps/server/api/[...route].ts), so Vercel treats it as a native function project and no longer expects a `public` directory or a custom build artifact.
+
+Required environment variables for the API project:
+
+- `DATABASE_URL`
+- `FRONTEND_DOMAIN`
+- `JWT_SECRET`
+- `TOKEN_EXPIRY`
+- `REFRESH_TOKEN_EXPIRY`
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `ADMIN_ROLE_NAME`
+- `ADMIN_EMAIL`
+- `LOG_LEVEL`
+- `READ_ONLY_MODE` (optional)
+
+Set `FRONTEND_DOMAIN` to the frontend hostname only, without protocol. Example: `admin.example.com`.
+
+`apps/server/package.json` still runs `prisma generate` in `postinstall`, so Prisma Client is generated during the Vercel install step. Database migrations and seed scripts stay out of the Vercel build pipeline.
+
+### Frontend project
+
+Deploy the admin app as a separate Vercel project.
+
+- Root Directory: `apps/admin`
+- Framework Preset: `Vite`
+- Install Command: leave empty and use the Vercel default
+- Build Command: leave empty
+- Output Directory: `dist`
+- Node.js Version: 20 or later
+
+Required environment variables for the frontend project:
+
+- `VITE_API_BASE_URL`
+
+Set `VITE_API_BASE_URL` to the API origin without a trailing `/api/v1`. Example: `https://api.example.com`.
+
+### Recommended topology
+
+- Frontend project: `https://admin.example.com`
+- API project: `https://api.example.com`
+- `FRONTEND_DOMAIN=admin.example.com`
+- `VITE_API_BASE_URL=https://api.example.com`
 
 ## Read-only deployment mode
 

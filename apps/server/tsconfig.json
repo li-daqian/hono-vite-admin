@@ -20,6 +20,6 @@
   "include": [
     "src/**/*",
     "prisma/seed.ts",
-    "vercel.entry.ts"
+    "api/**/*.ts"
   ]
 }
