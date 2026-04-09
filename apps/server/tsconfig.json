@@ -19,7 +19,6 @@
   },
   "include": [
     "src/**/*",
-    "prisma/seed.ts",
-    "vercel.entry.ts"
+    "prisma/seed.ts"
   ]
 }

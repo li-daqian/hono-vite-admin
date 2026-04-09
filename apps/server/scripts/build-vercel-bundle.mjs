@@ -11,7 +11,7 @@ rmSync(outdir, { recursive: true, force: true })
 mkdirSync(outdir, { recursive: true })
 
 await esbuild.build({
-  entryPoints: [path.join(appRoot, 'vercel.entry.ts')],
+  entryPoints: [path.join(appRoot, 'src', 'index.ts')],
   outfile: path.join(outdir, 'index.js'),
   bundle: true,
   external: ['hono'],
@@ -19,6 +19,14 @@ await esbuild.build({
   format: 'esm',
   target: 'node20',
   tsconfig: path.join(appRoot, 'tsconfig.json'),
+  banner: {
+    js: [
+      `import { existsSync as __existsSync } from 'node:fs';`,
+      `import { config as __dotenvConfig } from 'dotenv';`,
+      `if (__existsSync(new URL('./.env.production', import.meta.url))) __dotenvConfig({ path: new URL('./.env.production', import.meta.url), override: false });`,
+      `if (__existsSync(new URL('./.env', import.meta.url))) __dotenvConfig({ path: new URL('./.env', import.meta.url), override: false });`,
+    ].join('\n'),
+  },
 })
 
 writeFileSync(
