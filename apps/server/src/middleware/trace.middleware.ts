@@ -5,13 +5,15 @@ import { getRequestId } from '@server/src/middleware/requestId.middleware'
 import pino from 'pino'
 import pretty from 'pino-pretty'
 
+const shouldColorizeLogs = Boolean(process.stdout.isTTY) && !process.env.VERCEL
+
 // Create the base logger instance
 const baseLogger = pino(
   {
     level: getEnv().log.level,
   },
   pretty({
-    colorize: true,
+    colorize: shouldColorizeLogs,
     translateTime: 'SYS:standard',
     ignore: 'pid,hostname',
     messageFormat: '{msg}',

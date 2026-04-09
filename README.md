@@ -6,17 +6,23 @@ Deploy the frontend and API as two separate Vercel projects.
 
 ### API project
 
-Point the Vercel project to `apps/server` and let Vercel detect the `api/[...route].ts` function directly.
+Point the Vercel project to `apps/server` and use the repository Vercel config.
 
 - Root Directory: `apps/server`
-- Framework Preset: `Other`
-- Install Command: leave empty and use the Vercel default
-- Build Command: leave empty
-- Output Directory: leave empty
+- Framework Preset: `Hono`
+- Install Command: leave empty and use [`apps/server/vercel.json`](/home/lidaqian/Code/hono-vite-admin/apps/server/vercel.json)
+- Build Command: leave empty and use [`apps/server/vercel.json`](/home/lidaqian/Code/hono-vite-admin/apps/server/vercel.json)
+- Output Directory: leave empty and use [`apps/server/vercel.json`](/home/lidaqian/Code/hono-vite-admin/apps/server/vercel.json)
 - Node.js Version: 20 or later
 - Production Domain: use a dedicated API domain such as `api.example.com`
 
-The server now uses [`apps/server/api/[...route].ts`](/home/lidaqian/Code/hono-vite-admin/apps/server/api/[...route].ts), so Vercel treats it as a native function project and no longer expects a `public` directory or a custom build artifact.
+The API deployment uses:
+
+- [`apps/server/vercel.json`](/home/lidaqian/Code/hono-vite-admin/apps/server/vercel.json) to configure Vercel
+- [`apps/server/scripts/build-vercel-bundle.mjs`](/home/lidaqian/Code/hono-vite-admin/apps/server/scripts/build-vercel-bundle.mjs) to bundle the server with `esbuild`
+- [`apps/server/dist/index.js`](/home/lidaqian/Code/hono-vite-admin/apps/server/dist/index.js) as the final deployment artifact
+
+This is intentional. Vercel's Hono zero-config flow does not resolve the project's TypeScript path aliases, so the API is bundled before deployment to keep `@server/*` imports working.
 
 Required environment variables for the API project:
 
@@ -34,7 +40,7 @@ Required environment variables for the API project:
 
 Set `FRONTEND_DOMAIN` to the frontend hostname only, without protocol. Example: `admin.example.com`.
 
-`apps/server/package.json` still runs `prisma generate` in `postinstall`, so Prisma Client is generated during the Vercel install step. Database migrations and seed scripts stay out of the Vercel build pipeline.
+[`apps/server/package.json`](/home/lidaqian/Code/hono-vite-admin/apps/server/package.json) still runs `prisma generate` in `postinstall`, so Prisma Client is generated during the Vercel install step. Database migrations and seed scripts stay out of the Vercel build pipeline.
 
 ### Frontend project
 
