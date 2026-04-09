@@ -46,6 +46,13 @@ writeFileSync(
 )
 
 writeFileSync(
+  path.join(functionRoot, 'package.json'),
+  `${JSON.stringify({
+    type: 'module',
+  }, null, 2)}\n`,
+)
+
+writeFileSync(
   path.join(outputRoot, 'config.json'),
   `${JSON.stringify({
     version: 3,
