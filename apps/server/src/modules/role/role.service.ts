@@ -10,6 +10,7 @@ import type {
 } from '@server/src/modules/role/role.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
+import { auditService } from '@server/src/modules/audit/audit.service'
 import { buildRolePermissionsTree, flattenEnabledRolePermissions } from '@server/src/modules/role/role-permission-tree'
 
 class RoleService {
@@ -18,11 +19,21 @@ class RoleService {
       throw BusinessError.BadRequest('Role name already exists', 'RoleNameAlreadyExists')
     }
 
-    const role = await prisma.role.create({
-      data: {
-        name: request.name,
-        description: request.description,
-      },
+    const role = await prisma.$transaction(async (tx) => {
+      const createdRole = await tx.role.create({
+        data: {
+          name: request.name,
+          description: request.description,
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'role',
+        action: 'create',
+        requestSnapshot: request,
+      })
+
+      return createdRole
     })
 
     return role
@@ -59,12 +70,25 @@ class RoleService {
       throw BusinessError.BadRequest('Role name already exists', 'RoleNameAlreadyExists')
     }
 
-    const updatedRole = await prisma.role.update({
-      where: { id: roleId },
-      data: {
-        name: request.name,
-        description: request.description,
-      },
+    const updatedRole = await prisma.$transaction(async (tx) => {
+      const nextRole = await tx.role.update({
+        where: { id: roleId },
+        data: {
+          name: request.name,
+          description: request.description,
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'role',
+        action: 'update',
+        requestSnapshot: {
+          id: roleId,
+          ...request,
+        },
+      })
+
+      return nextRole
     })
 
     return updatedRole
@@ -79,8 +103,16 @@ class RoleService {
       throw BusinessError.NotFound('Role not found')
     }
 
-    await prisma.role.delete({
-      where: { id: roleId },
+    await prisma.$transaction(async (tx) => {
+      await tx.role.delete({
+        where: { id: roleId },
+      })
+
+      await auditService.record(tx, {
+        module: 'role',
+        action: 'delete',
+        requestSnapshot: { id: roleId },
+      })
     })
 
     return {
@@ -126,25 +158,33 @@ class RoleService {
     await prisma.$transaction(async (tx) => {
       await tx.rolePermission.deleteMany({ where: { roleId } })
 
-      if (permissionEntries.length === 0)
-        return
+      if (permissionEntries.length > 0) {
+        for (const entry of permissionEntries) {
+          await tx.permission.upsert({
+            where: { type_targetId: { type: entry.type, targetId: entry.targetId } },
+            create: { type: entry.type, targetId: entry.targetId },
+            update: {},
+          })
+        }
 
-      for (const entry of permissionEntries) {
-        await tx.permission.upsert({
-          where: { type_targetId: { type: entry.type, targetId: entry.targetId } },
-          create: { type: entry.type, targetId: entry.targetId },
-          update: {},
+        const permissions = await tx.permission.findMany({
+          where: {
+            OR: permissionEntries.map(e => ({ type: e.type, targetId: e.targetId })),
+          },
+        })
+
+        await tx.rolePermission.createMany({
+          data: permissions.map(p => ({ roleId, permissionId: p.id })),
         })
       }
 
-      const permissions = await tx.permission.findMany({
-        where: {
-          OR: permissionEntries.map(e => ({ type: e.type, targetId: e.targetId })),
+      await auditService.record(tx, {
+        module: 'role',
+        action: 'permissions-update',
+        requestSnapshot: {
+          id: roleId,
+          permissions: request,
         },
-      })
-
-      await tx.rolePermission.createMany({
-        data: permissions.map(p => ({ roleId, permissionId: p.id })),
       })
     })
 

@@ -40,6 +40,12 @@ const menus = [
           { code: 'delete', name: 'Delete', description: 'Delete role' },
         ],
       },
+      {
+        code: 'audit',
+        name: 'Audit Logs',
+        path: '/access/audit',
+        order: 3,
+      },
     ],
   },
 ]

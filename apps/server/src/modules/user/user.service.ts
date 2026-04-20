@@ -11,6 +11,7 @@ import type {
 } from '@server/src/modules/user/user.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
+import { auditService } from '@server/src/modules/audit/audit.service'
 import { buildOrderBy, paginate } from '@server/src/utils/pagination'
 import bcrypt from 'bcryptjs'
 
@@ -46,27 +47,37 @@ class UserService {
     const hashedPassword = await bcrypt.hash(request.password, salt)
 
     // Create user in DB
-    const user = await prisma.user.create({
-      data: {
-        username: request.username,
-        password: hashedPassword,
-        salt,
-        email: request.email,
-        phone: request.phone,
-        displayName: request.displayName,
-        ...(request.roleIds && request.roleIds.length > 0 && {
-          roles: {
-            create: request.roleIds.map(roleId => ({
-              role: { connect: { id: roleId } },
-            })),
-          },
-        }),
-      },
-      include: {
-        roles: {
-          select: this.userRoleSelection,
+    const user = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          username: request.username,
+          password: hashedPassword,
+          salt,
+          email: request.email,
+          phone: request.phone,
+          displayName: request.displayName,
+          ...(request.roleIds && request.roleIds.length > 0 && {
+            roles: {
+              create: request.roleIds.map(roleId => ({
+                role: { connect: { id: roleId } },
+              })),
+            },
+          }),
         },
-      },
+        include: {
+          roles: {
+            select: this.userRoleSelection,
+          },
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'user',
+        action: 'create',
+        requestSnapshot: request,
+      })
+
+      return createdUser
     })
 
     // Remove sensitive info before returning
@@ -157,30 +168,43 @@ class UserService {
       throw BusinessError.UsernameAlreadyExists()
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        username: request.username,
-        email: request.email,
-        phone: request.phone,
-        displayName: request.displayName,
-        status: request.status,
-        ...(request.roleIds !== undefined && {
-          roles: {
-            deleteMany: {},
-            create: request.roleIds.map(roleId => ({
-              role: {
-                connect: { id: roleId },
-              },
-            })),
-          },
-        }),
-      },
-      include: {
-        roles: {
-          select: this.userRoleSelection,
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const nextUser = await tx.user.update({
+        where: { id: userId },
+        data: {
+          username: request.username,
+          email: request.email,
+          phone: request.phone,
+          displayName: request.displayName,
+          status: request.status,
+          ...(request.roleIds !== undefined && {
+            roles: {
+              deleteMany: {},
+              create: request.roleIds.map(roleId => ({
+                role: {
+                  connect: { id: roleId },
+                },
+              })),
+            },
+          }),
         },
-      },
+        include: {
+          roles: {
+            select: this.userRoleSelection,
+          },
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'user',
+        action: 'update',
+        requestSnapshot: {
+          id: userId,
+          ...request,
+        },
+      })
+
+      return nextUser
     })
 
     const { password, salt, ...safeUser } = updatedUser
@@ -193,8 +217,18 @@ class UserService {
       throw BusinessError.BadRequest('userIds must not be empty')
     }
 
-    const result = await prisma.user.deleteMany({
-      where: { id: { in: uniqueUserIds } },
+    const result = await prisma.$transaction(async (tx) => {
+      const deletedUsers = await tx.user.deleteMany({
+        where: { id: { in: uniqueUserIds } },
+      })
+
+      await auditService.record(tx, {
+        module: 'user',
+        action: 'batch-delete',
+        requestSnapshot: { userIds: uniqueUserIds },
+      })
+
+      return deletedUsers
     })
 
     return {
@@ -208,9 +242,19 @@ class UserService {
       throw BusinessError.BadRequest('userIds must not be empty')
     }
 
-    const result = await prisma.user.updateMany({
-      where: { id: { in: uniqueUserIds } },
-      data: { status },
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedUsers = await tx.user.updateMany({
+        where: { id: { in: uniqueUserIds } },
+        data: { status },
+      })
+
+      await auditService.record(tx, {
+        module: 'user',
+        action: 'status-update',
+        requestSnapshot: { userIds: uniqueUserIds, status },
+      })
+
+      return updatedUsers
     })
 
     return {

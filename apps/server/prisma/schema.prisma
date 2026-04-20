@@ -123,6 +123,27 @@ model RefreshToken {
   @@map("refresh_token")
 }
 
+model AuditLog {
+  id                 String   @id @default(ulid())
+  module             String
+  action             String
+  operatorId         String   @map("operator_id")
+  operatorUsername   String   @map("operator_username")
+  operatorDisplayName String? @map("operator_display_name")
+  method             String
+  path               String
+  ip                 String?
+  userAgent          String?  @map("user_agent")
+  requestId          String   @map("request_id")
+  requestSnapshot    Json?    @map("request_snapshot")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([module])
+  @@index([operatorId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
 enum UserStatus {
   ACTIVE
   DISABLED

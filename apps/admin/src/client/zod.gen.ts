@@ -11,6 +11,55 @@ export const zErrorResponse = z.object({
     requestId: z.string()
 }).describe('Standard error response envelope');
 
+export const zAuditLogListItemSchema = z.object({
+    id: z.string().describe('Unique identifier of the audit log entry'),
+    module: z.enum(['user', 'role']).describe('Audited module identifier'),
+    action: z.string().describe('Audited action identifier'),
+    operatorId: z.string().describe('ID of the operator who performed the action'),
+    operatorUsername: z.string().describe('Username of the operator'),
+    operatorDisplayName: z.union([
+        z.string(),
+        z.null()
+    ]),
+    method: z.string().describe('HTTP method of the audited request'),
+    path: z.string().describe('Request path of the audited request'),
+    ip: z.union([
+        z.string(),
+        z.null()
+    ]),
+    userAgent: z.union([
+        z.string(),
+        z.null()
+    ]),
+    requestId: z.string().describe('Request ID associated with the audited request'),
+    createdAt: z.string().datetime().describe('Timestamp when the audit log entry was created')
+});
+
+export const zPaginationMetaSchema = z.object({
+    totalItem: z.number().int().describe('Total number of items'),
+    totalPage: z.number().int().describe('Total number of pages'),
+    page: z.number().int().describe('Current page number'),
+    pageSize: z.number().int().describe('Number of items per page'),
+    nextPage: z.union([
+        z.number().int(),
+        z.null()
+    ]),
+    previousPage: z.union([
+        z.number().int(),
+        z.null()
+    ]),
+    hasNext: z.boolean().describe('Indicates if there is a next page'),
+    hasPrevious: z.boolean().describe('Indicates if there is a previous page'),
+    sort: z.union([
+        z.string(),
+        z.null()
+    ])
+});
+
+export const zAuditLogDetailResponseSchema = zAuditLogListItemSchema.and(z.object({
+    requestSnapshot: z.unknown().describe('Redacted snapshot of request parameters recorded for the audit entry').optional()
+}));
+
 export const zAuthActionSchema = z.object({
     id: z.string().describe('Action ID'),
     name: z.string().describe('Action name')
@@ -105,26 +154,47 @@ export const zUserProfileResponseSchema = z.object({
     updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 });
 
-export const zPaginationMetaSchema = z.object({
-    totalItem: z.number().int().describe('Total number of items'),
-    totalPage: z.number().int().describe('Total number of pages'),
-    page: z.number().int().describe('Current page number'),
-    pageSize: z.number().int().describe('Number of items per page'),
-    nextPage: z.union([
-        z.number().int(),
-        z.null()
-    ]),
-    previousPage: z.union([
-        z.number().int(),
-        z.null()
-    ]),
-    hasNext: z.boolean().describe('Indicates if there is a next page'),
-    hasPrevious: z.boolean().describe('Indicates if there is a previous page'),
-    sort: z.union([
-        z.string(),
-        z.null()
-    ])
+export const zGetAuditPageData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        page: z.number().int().gte(1).describe('Page number for pagination'),
+        pageSize: z.number().int().gte(1).lte(100).describe('Number of items per page'),
+        sort: z.union([
+            z.string(),
+            z.null()
+        ]).optional().default(null),
+        search: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        modules: z.union([
+            z.array(z.enum(['user', 'role']).describe('Audited module identifier')),
+            z.null()
+        ]).optional().default(null)
+    })
 });
+
+/**
+ * Standard paginated response envelope
+ */
+export const zGetAuditPageResponse = z.object({
+    items: z.array(zAuditLogListItemSchema).describe('List of items for the current page'),
+    meta: zPaginationMetaSchema
+}).describe('Standard paginated response envelope');
+
+export const zGetAuditByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Audit log ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Audit log detail retrieved successfully
+ */
+export const zGetAuditByIdResponse = zAuditLogDetailResponseSchema;
 
 export const zGetAuthPrefillData = z.object({
     body: z.never().optional(),

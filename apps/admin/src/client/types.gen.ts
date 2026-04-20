@@ -13,6 +13,103 @@ export type ErrorResponse = {
     requestId: string;
 };
 
+export type AuditLogListItemSchema = {
+    /**
+     * Unique identifier of the audit log entry
+     */
+    id: string;
+    /**
+     * Audited module identifier
+     */
+    module: 'user' | 'role';
+    /**
+     * Audited action identifier
+     */
+    action: string;
+    /**
+     * ID of the operator who performed the action
+     */
+    operatorId: string;
+    /**
+     * Username of the operator
+     */
+    operatorUsername: string;
+    /**
+     * Display name of the operator when available
+     */
+    operatorDisplayName: string | null;
+    /**
+     * HTTP method of the audited request
+     */
+    method: string;
+    /**
+     * Request path of the audited request
+     */
+    path: string;
+    /**
+     * Client IP address
+     */
+    ip: string | null;
+    /**
+     * Client user agent
+     */
+    userAgent: string | null;
+    /**
+     * Request ID associated with the audited request
+     */
+    requestId: string;
+    /**
+     * Timestamp when the audit log entry was created
+     */
+    createdAt: Date;
+};
+
+export type PaginationMetaSchema = {
+    /**
+     * Total number of items
+     */
+    totalItem: number;
+    /**
+     * Total number of pages
+     */
+    totalPage: number;
+    /**
+     * Current page number
+     */
+    page: number;
+    /**
+     * Number of items per page
+     */
+    pageSize: number;
+    /**
+     * Next page number, null if current page is the last
+     */
+    nextPage: number | null;
+    /**
+     * Previous page number, null if current page is the first
+     */
+    previousPage: number | null;
+    /**
+     * Indicates if there is a next page
+     */
+    hasNext: boolean;
+    /**
+     * Indicates if there is a previous page
+     */
+    hasPrevious: boolean;
+    /**
+     * Sorting criteria used for the current page
+     */
+    sort: string | null;
+};
+
+export type AuditLogDetailResponseSchema = AuditLogListItemSchema & {
+    /**
+     * Redacted snapshot of request parameters recorded for the audit entry
+     */
+    requestSnapshot?: unknown;
+};
+
 export type AuthActionSchema = {
     /**
      * Action ID
@@ -191,44 +288,69 @@ export type UserProfileResponseSchema = {
     updatedAt: Date;
 };
 
-export type PaginationMetaSchema = {
-    /**
-     * Total number of items
-     */
-    totalItem: number;
-    /**
-     * Total number of pages
-     */
-    totalPage: number;
-    /**
-     * Current page number
-     */
-    page: number;
-    /**
-     * Number of items per page
-     */
-    pageSize: number;
-    /**
-     * Next page number, null if current page is the last
-     */
-    nextPage: number | null;
-    /**
-     * Previous page number, null if current page is the first
-     */
-    previousPage: number | null;
-    /**
-     * Indicates if there is a next page
-     */
-    hasNext: boolean;
-    /**
-     * Indicates if there is a previous page
-     */
-    hasPrevious: boolean;
-    /**
-     * Sorting criteria used for the current page
-     */
-    sort: string | null;
+export type GetAuditPageData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Page number for pagination
+         */
+        page: number;
+        /**
+         * Number of items per page
+         */
+        pageSize: number;
+        /**
+         * Sorting criteria in the format "field direction" or "field direction, field direction", e.g. "createdAt desc, username asc"
+         */
+        sort?: string | null;
+        /**
+         * Search audit logs by operator, action, path, request ID, or IP address
+         */
+        search?: string | null;
+        /**
+         * Filter audit logs by one or more module identifiers
+         */
+        modules?: Array<'user' | 'role'> | null;
+    };
+    url: '/audit/page';
 };
+
+export type GetAuditPageResponses = {
+    /**
+     * Standard paginated response envelope
+     */
+    200: {
+        /**
+         * List of items for the current page
+         */
+        items: Array<AuditLogListItemSchema>;
+        meta: PaginationMetaSchema;
+    };
+};
+
+export type GetAuditPageResponse = GetAuditPageResponses[keyof GetAuditPageResponses];
+
+export type GetAuditByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Audit log ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/audit/{id}';
+};
+
+export type GetAuditByIdResponses = {
+    /**
+     * Audit log detail retrieved successfully
+     */
+    200: AuditLogDetailResponseSchema;
+};
+
+export type GetAuditByIdResponse = GetAuditByIdResponses[keyof GetAuditByIdResponses];
 
 export type GetAuthPrefillData = {
     body?: never;
