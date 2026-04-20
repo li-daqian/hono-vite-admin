@@ -1,0 +1,5 @@
+- 部署admin也在action中控制，先部署成功server后再部署admin，admin的projectId变量名=VERCEL_ADMIN_PROJECT_ID，还需要一个VITE_API_BASE_URL变量。
+- 二级菜单 Audit Logs 去除icon。
+- 在浏览器第一次打开https://admin.lidaqian.me/dashboard时可以访问，但是刷新页面后就显示404了。
+- 增加登录/登出日志。
+- 增加用户修改密码功能。
