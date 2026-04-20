@@ -1,0 +1,101 @@
+name: Deploy server and admin to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-server:
+    name: Migrate and deploy server
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply production migrations
+        run: pnpm --filter @hono-vite-admin/server exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Pull Vercel project settings (Server)
+        working-directory: apps/server
+        run: pnpm dlx vercel@latest pull --yes --environment=production --token "${{ secrets.VERCEL_TOKEN }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_SERVER_PROJECT_ID }}
+
+      - name: Deploy Server to Vercel
+        working-directory: apps/server
+        run: |
+          pnpm dlx vercel@latest deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}" \
+            --build-env READ_ONLY_MODE="${{ vars.READ_ONLY_MODE }}" \
+            --build-env FRONTEND_DOMAIN="${{ vars.FRONTEND_DOMAIN }}" \
+            --build-env DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --env READ_ONLY_MODE="${{ vars.READ_ONLY_MODE }}" \
+            --env FRONTEND_DOMAIN="${{ vars.FRONTEND_DOMAIN }}" \
+            --env DATABASE_URL="${{ secrets.DATABASE_URL }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_SERVER_PROJECT_ID }}
+
+  deploy-admin:
+    name: Deploy Admin Dashboard
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull Vercel project settings (Admin)
+        working-directory: apps/admin
+        run: pnpm dlx vercel@latest pull --yes --environment=production --token "${{ secrets.VERCEL_TOKEN }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
+
+      - name: Deploy Admin to Vercel
+        working-directory: apps/admin
+        run: |
+          pnpm dlx vercel@latest deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}" \
+            --build-env VITE_API_BASE_URL="${{ vars.VITE_API_BASE_URL }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}

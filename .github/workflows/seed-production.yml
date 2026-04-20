@@ -1,0 +1,46 @@
+name: Seed production database
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type seed-production to run prisma db seed against production
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seed-production
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    name: Run production seed
+    if: ${{ github.event.inputs.confirmation == 'seed-production' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run production seed
+        run: pnpm --filter @hono-vite-admin/server exec prisma db seed
