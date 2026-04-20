@@ -48,11 +48,9 @@ jobs:
         run: pnpm --filter @hono-vite-admin/server exec prisma migrate deploy
 
       - name: Pull Vercel project settings
-        working-directory: apps/server
         run: pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
 
       - name: Deploy to Vercel production
-        working-directory: apps/server
         run: |
           pnpm dlx vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN" \
             --build-env READ_ONLY_MODE="$READ_ONLY_MODE" \
