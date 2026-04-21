@@ -53,6 +53,8 @@ Deploy the admin app as a separate Vercel project.
 - Output Directory: `dist`
 - Node.js Version: 20 or later
 
+The frontend deployment uses [`apps/admin/vercel.json`](/home/lidaqian/Code/hono-vite-admin/apps/admin/vercel.json) to add the SPA history fallback required by Vue Router's `createWebHistory()`, so direct visits and refreshes to routes like `/dashboard` rewrite to `index.html` instead of returning a Vercel 404.
+
 Required environment variables for the frontend project:
 
 - `VITE_API_BASE_URL`
