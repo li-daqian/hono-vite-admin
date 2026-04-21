@@ -59,6 +59,16 @@ Required environment variables for the frontend project:
 
 Set `VITE_API_BASE_URL` to the API origin without a trailing `/api/v1`. Example: `https://api.example.com`.
 
+### GitHub Actions deployment
+
+[`/.github/workflows/deploy-vercel-production.yml`](/home/lidaqian/Code/hono-vite-admin/.github/workflows/deploy-vercel-production.yml) deploys the production API first and only deploys the admin project after the server deployment succeeds.
+
+Required GitHub Actions production environment configuration:
+
+- Secrets: `DATABASE_URL`, `VERCEL_ORG_ID`, `VERCEL_TOKEN`, `VERCEL_SERVER_PROJECT_ID`, `VERCEL_ADMIN_PROJECT_ID`
+- Variables: `FRONTEND_DOMAIN`, `VITE_API_BASE_URL`
+- Optional variable: `READ_ONLY_MODE`
+
 ### Recommended topology
 
 - Frontend project: `https://admin.example.com`

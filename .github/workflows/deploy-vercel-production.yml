@@ -1,4 +1,4 @@
-name: Deploy server to Vercel
+name: Deploy Vercel production
 
 on:
   push:
@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Migrate and deploy
+  deploy-server:
+    name: Deploy server
     runs-on: ubuntu-latest
     environment: production
     env:
@@ -62,3 +62,41 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_SERVER_PROJECT_ID }}
+
+  deploy-admin:
+    name: Deploy admin
+    runs-on: ubuntu-latest
+    needs: deploy-server
+    environment: production
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Pull Vercel project settings
+        run: pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Deploy admin to Vercel production
+        run: |
+          pnpm dlx vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN" \
+            --build-env VITE_API_BASE_URL="$VITE_API_BASE_URL" \
+            --env VITE_API_BASE_URL="$VITE_API_BASE_URL"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
