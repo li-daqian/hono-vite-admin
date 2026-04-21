@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next'
 import type { RouteComponent } from 'vue-router'
-import { FileText, LayoutDashboard, ShieldIcon } from 'lucide-vue-next'
+import { LayoutDashboard, ShieldIcon } from 'lucide-vue-next'
 
 export interface RouteMetaConfig {
   component?: RouteComponent
@@ -17,7 +17,6 @@ export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
   },
   'access.audit': {
     component: () => import('@admin/pages/audit/index.vue'),
-    icon: FileText,
   },
   'access.users': {
     component: () => import('@admin/pages/users/index.vue'),
