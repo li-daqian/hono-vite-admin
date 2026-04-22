@@ -78,101 +78,105 @@ watch(
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+      <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <template v-if="isLoading">
-          <Skeleton class="h-24" />
-          <Skeleton class="h-72" />
+          <div class="space-y-4">
+            <Skeleton class="h-24" />
+            <Skeleton class="h-72" />
+          </div>
         </template>
 
         <template v-else-if="detail">
-          <div class="grid gap-4 md:grid-cols-2">
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                Time
-              </p>
-              <p class="font-medium">
-                {{ formatAuditDateTime(detail.createdAt) }}
-              </p>
+          <div class="flex-1 space-y-4 overflow-y-auto pr-1">
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  Time
+                </p>
+                <p class="font-medium">
+                  {{ formatAuditDateTime(detail.createdAt) }}
+                </p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  Operator
+                </p>
+                <p class="font-medium">
+                  {{ formatAuditOperator(detail) }}
+                </p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  Category
+                </p>
+                <Badge variant="outline">
+                  {{ formatAuditLabel(detail.category) }}
+                </Badge>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  Module
+                </p>
+                <Badge variant="outline">
+                  {{ formatAuditLabel(detail.module) }}
+                </Badge>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  Action
+                </p>
+                <p class="font-medium">
+                  {{ formatAuditLabel(detail.action) }}
+                </p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  Path
+                </p>
+                <p class="font-mono text-sm break-all">
+                  {{ detail.method }} {{ detail.path }}
+                </p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  Request ID
+                </p>
+                <p class="font-mono text-sm break-all">
+                  {{ detail.requestId }}
+                </p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  IP
+                </p>
+                <p class="font-mono text-sm">
+                  {{ detail.ip ?? '—' }}
+                </p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-sm text-muted-foreground">
+                  User Agent
+                </p>
+                <p class="text-sm break-all">
+                  {{ detail.userAgent ?? '—' }}
+                </p>
+              </div>
             </div>
 
-            <div class="space-y-1">
+            <div class="space-y-2">
               <p class="text-sm text-muted-foreground">
-                Operator
+                Request Snapshot
               </p>
-              <p class="font-medium">
-                {{ formatAuditOperator(detail) }}
-              </p>
+              <pre class="max-h-80 overflow-auto rounded-md border bg-muted/40 p-4 font-mono text-xs leading-5 whitespace-pre-wrap break-all">{{ snapshotText }}</pre>
             </div>
-
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                Category
-              </p>
-              <Badge variant="outline">
-                {{ formatAuditLabel(detail.category) }}
-              </Badge>
-            </div>
-
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                Module
-              </p>
-              <Badge variant="outline">
-                {{ formatAuditLabel(detail.module) }}
-              </Badge>
-            </div>
-
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                Action
-              </p>
-              <p class="font-medium">
-                {{ formatAuditLabel(detail.action) }}
-              </p>
-            </div>
-
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                Path
-              </p>
-              <p class="font-mono text-sm break-all">
-                {{ detail.method }} {{ detail.path }}
-              </p>
-            </div>
-
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                Request ID
-              </p>
-              <p class="font-mono text-sm break-all">
-                {{ detail.requestId }}
-              </p>
-            </div>
-
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                IP
-              </p>
-              <p class="font-mono text-sm">
-                {{ detail.ip ?? '—' }}
-              </p>
-            </div>
-
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">
-                User Agent
-              </p>
-              <p class="text-sm break-all">
-                {{ detail.userAgent ?? '—' }}
-              </p>
-            </div>
-          </div>
-
-          <div class="min-h-0 flex-1 overflow-hidden">
-            <p class="mb-2 text-sm text-muted-foreground">
-              Request Snapshot
-            </p>
-            <pre class="h-full min-h-72 overflow-auto rounded-md border bg-muted/40 p-4 text-xs leading-5 whitespace-pre-wrap break-all">{{ snapshotText }}</pre>
           </div>
         </template>
 
