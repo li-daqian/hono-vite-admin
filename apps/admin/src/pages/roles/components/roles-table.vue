@@ -2,6 +2,7 @@
 import type { SortingState } from '@tanstack/vue-table'
 import type { RoleItem } from './roles-columns'
 import { getRole } from '@admin/client'
+import { DataTableLoadingRows } from '@admin/components/data-table'
 import {
   Table,
   TableBody,
@@ -97,7 +98,12 @@ watch(() => props.refreshKey, () => {
       </TableHeader>
 
       <TableBody>
-        <template v-if="table.getRowModel().rows.length">
+        <DataTableLoadingRows
+          v-if="isLoading"
+          :column-count="table.getVisibleLeafColumns().length"
+        />
+
+        <template v-else-if="table.getRowModel().rows.length">
           <TableRow
             v-for="row in table.getRowModel().rows"
             :key="row.id"
@@ -119,7 +125,7 @@ watch(() => props.refreshKey, () => {
 
         <TableRow v-else>
           <TableCell :colspan="rolesColumns.length" class="h-24 text-center text-muted-foreground">
-            {{ isLoading ? 'Loading roles...' : 'No results.' }}
+            No results.
           </TableCell>
         </TableRow>
       </TableBody>

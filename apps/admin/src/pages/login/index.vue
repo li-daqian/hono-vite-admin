@@ -57,44 +57,75 @@ async function handleLogin(values: Record<string, any>) {
       <div class="flex flex-col gap-6">
         <Form v-slot="{ handleSubmit, isSubmitting, setValues }" :validation-schema="validationSchema">
           <form @vue:mounted="() => onVueMounted(setValues)" @submit.prevent="handleSubmit(handleLogin)">
-            <div class="flex flex-col items-center gap-2 text-center">
-              <h1 class="text-xl font-bold">
-                Sign in to Admin
-              </h1>
-            </div>
+            <template v-if="loading">
+              <div class="flex flex-col gap-6">
+                <div class="flex flex-col items-center gap-2 text-center">
+                  <Skeleton class="h-7 w-36" />
+                </div>
 
-            <div class="space-y-4 mt-2">
-              <FormField v-slot="{ componentField }" name="username">
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl class="h-9">
-                    <Skeleton v-if="loading" />
-                    <Input v-else v-bind="componentField" type="text" placeholder="username" maxlength="50" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              </FormField>
+                <div class="mt-2 space-y-4">
+                  <div class="space-y-2">
+                    <Skeleton class="h-4 w-20" />
+                    <Skeleton class="h-9 w-full" />
+                  </div>
 
-              <FormField v-slot="{ componentField }" name="password">
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl class="h-9">
-                    <Skeleton v-if="loading" />
-                    <Input v-else v-bind="componentField" type="password" placeholder="password" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              </FormField>
+                  <div class="space-y-2">
+                    <Skeleton class="h-4 w-20" />
+                    <Skeleton class="h-9 w-full" />
+                  </div>
 
-              <Button type="submit" class="w-full" :disabled="isSubmitting">
-                <span v-if="isSubmitting">Signing in...</span>
-                <span v-else>Sign in</span>
-              </Button>
-            </div>
+                  <Skeleton class="h-9 w-full" />
+                </div>
+              </div>
+            </template>
+
+            <template v-else>
+              <div class="flex flex-col items-center gap-2 text-center">
+                <h1 class="text-xl font-bold">
+                  Sign in to Admin
+                </h1>
+              </div>
+
+              <div class="mt-2 space-y-4">
+                <FormField v-slot="{ componentField }" name="username">
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl class="h-9">
+                      <Input v-bind="componentField" type="text" placeholder="username" maxlength="50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </FormField>
+
+                <FormField v-slot="{ componentField }" name="password">
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl class="h-9">
+                      <Input v-bind="componentField" type="password" placeholder="password" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </FormField>
+
+                <Button
+                  type="submit"
+                  class="w-full"
+                  :class="isSubmitting ? 'animate-pulse' : undefined"
+                  :disabled="isSubmitting"
+                >
+                  <span v-if="isSubmitting">Signing in...</span>
+                  <span v-else>Sign in</span>
+                </Button>
+              </div>
+            </template>
           </form>
         </Form>
 
-        <p class="text-muted-foreground text-sm text-center">
+        <p v-if="loading" class="text-center">
+          <Skeleton class="mx-auto h-4 w-48" />
+        </p>
+
+        <p v-else class="text-muted-foreground text-sm text-center">
           Don't have an account?
           <a href="#" class="underline underline-offset-4">Sign up</a>
         </p>

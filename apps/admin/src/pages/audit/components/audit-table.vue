@@ -8,7 +8,7 @@ import type {
   VisibilityState,
 } from '@tanstack/vue-table'
 import { getAuditPage } from '@admin/client'
-import { DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
+import { DataTableLoadingRows, DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
 import {
   Table,
   TableBody,
@@ -121,6 +121,8 @@ const table = useVueTable({
 })
 
 async function fetchAuditLogs() {
+  isLoading.value = true
+
   const modulesFilter = columnFilters.value.find(filter => filter.id === 'module')?.value
 
   const query: GetAuditPageData['query'] = {
@@ -211,7 +213,12 @@ watch([pagination, sorting, columnFilters, globalFilter], () => {
         </TableHeader>
 
         <TableBody>
-          <template v-if="table.getRowModel().rows.length">
+          <DataTableLoadingRows
+            v-if="isLoading"
+            :column-count="table.getVisibleLeafColumns().length"
+          />
+
+          <template v-else-if="table.getRowModel().rows.length">
             <TableRow
               v-for="row in table.getRowModel().rows"
               :key="row.id"
@@ -233,7 +240,7 @@ watch([pagination, sorting, columnFilters, globalFilter], () => {
 
           <TableRow v-else>
             <TableCell :colspan="table.getVisibleLeafColumns().length" class="h-24 text-center text-muted-foreground">
-              {{ isLoading ? 'Loading audit logs...' : 'No results.' }}
+              No results.
             </TableCell>
           </TableRow>
         </TableBody>

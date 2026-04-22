@@ -9,7 +9,7 @@ import type {
 } from '@tanstack/vue-table'
 import type { UserPageItem } from './users-columns'
 import { getUserPage } from '@admin/client'
-import { DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
+import { DataTableLoadingRows, DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
 import {
   Table,
   TableBody,
@@ -105,6 +105,8 @@ const table = useVueTable({
 })
 
 async function fetchUsers() {
+  isLoading.value = true
+
   const usernameFilter = columnFilters.value.find(filter => filter.id === 'username')?.value
   const statusFilter = columnFilters.value.find(filter => filter.id === 'status')?.value
   const rolesFilter = columnFilters.value.find(filter => filter.id === 'roles')?.value
@@ -205,7 +207,12 @@ watch(() => props.refreshKey, () => {
         </TableHeader>
 
         <TableBody>
-          <template v-if="table.getRowModel().rows.length">
+          <DataTableLoadingRows
+            v-if="isLoading"
+            :column-count="table.getVisibleLeafColumns().length"
+          />
+
+          <template v-else-if="table.getRowModel().rows.length">
             <TableRow
               v-for="row in table.getRowModel().rows"
               :key="row.id"
@@ -228,7 +235,7 @@ watch(() => props.refreshKey, () => {
 
           <TableRow v-else>
             <TableCell :colspan="usersColumns.length" class="h-24 text-center text-muted-foreground">
-              {{ isLoading ? 'Loading users...' : 'No results.' }}
+              No results.
             </TableCell>
           </TableRow>
         </TableBody>

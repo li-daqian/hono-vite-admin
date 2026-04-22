@@ -102,7 +102,11 @@ async function handleSubmit() {
           <Button variant="outline" :disabled="isSubmitting" @click="handleOpenChange(false)">
             Cancel
           </Button>
-          <Button :disabled="isSubmitting || isPrefilling" @click="handleSubmit">
+          <Button
+            :disabled="isSubmitting || isPrefilling"
+            :class="isSubmitting ? 'animate-pulse' : undefined"
+            @click="handleSubmit"
+          >
             <span v-if="isSubmitting">Saving...</span>
             <span v-else>Save permissions</span>
           </Button>

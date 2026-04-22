@@ -311,7 +311,12 @@ async function handleSubmit(values: Record<string, any>) {
           <Button variant="outline" :disabled="isSubmitting" @click="handleOpenChange(false)">
             Cancel
           </Button>
-          <Button type="submit" form="user-action-form" :disabled="isSubmitting || isPrefilling">
+          <Button
+            type="submit"
+            form="user-action-form"
+            :disabled="isSubmitting || isPrefilling"
+            :class="isSubmitting ? 'animate-pulse' : undefined"
+          >
             <span v-if="isSubmitting">{{ props.mode === 'edit' ? 'Saving...' : 'Creating...' }}</span>
             <span v-else>{{ props.mode === 'edit' ? 'Save changes' : 'Create user' }}</span>
           </Button>

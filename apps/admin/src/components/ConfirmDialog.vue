@@ -72,6 +72,7 @@ function handleCancel() {
         <Button
           :variant="props.destructive ? 'destructive' : 'default'"
           :disabled="props.disabled || props.isLoading"
+          :class="props.isLoading ? 'animate-pulse' : undefined"
           @click="props.handleConfirm"
         >
           {{ props.confirmText }}
