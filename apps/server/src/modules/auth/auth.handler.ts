@@ -28,10 +28,6 @@ export const handleAuthRefresh: RouteHandler<typeof authRefreshRoute> = async (c
 
 export const handleAuthLogout: RouteHandler<typeof authLogoutRoute> = async (c) => {
   const refreshToken = refreshTokenCookie.get(c)
-  if (!refreshToken) {
-    return c.json({}, 200)
-  }
-
   const { userId } = getLoginUser(c)
   await authService.logout(userId, refreshToken)
 

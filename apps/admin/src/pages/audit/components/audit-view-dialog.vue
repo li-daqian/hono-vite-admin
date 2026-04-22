@@ -106,6 +106,15 @@ watch(
 
             <div class="space-y-1">
               <p class="text-sm text-muted-foreground">
+                Category
+              </p>
+              <Badge variant="outline">
+                {{ formatAuditLabel(detail.category) }}
+              </Badge>
+            </div>
+
+            <div class="space-y-1">
+              <p class="text-sm text-muted-foreground">
                 Module
               </p>
               <Badge variant="outline">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AuditLogListItemSchema } from '@admin/client'
-import type { DataTableFilterField, FetchRequestParams } from '@admin/components/data-table'
+import type { AuditLogListItemSchema, GetAuditPageData } from '@admin/client'
+import type { DataTableFilterField } from '@admin/components/data-table'
 import type {
   ColumnFiltersState,
   PaginationState,
@@ -24,16 +24,30 @@ import { computed, ref, shallowRef, watch } from 'vue'
 import { getAuditColumns } from './audit-columns'
 import AuditViewDialog from './audit-view-dialog.vue'
 
-const filters = computed<DataTableFilterField[]>(() => [
-  {
-    columnId: 'module',
-    title: 'Module',
-    options: [
-      { label: 'User', value: 'user' },
-      { label: 'Role', value: 'role' },
-    ],
-  },
-])
+const props = defineProps<{
+  mode: 'login' | 'operation'
+}>()
+
+const isLoginMode = computed(() => props.mode === 'login')
+
+const filters = computed<DataTableFilterField[]>(() => {
+  if (isLoginMode.value) {
+    return []
+  }
+
+  return [
+    {
+      columnId: 'module',
+      title: 'Module',
+      options: [
+        { label: 'User', value: 'user' },
+        { label: 'Role', value: 'role' },
+      ],
+    },
+  ]
+})
+
+const searchPlaceholder = computed(() => isLoginMode.value ? 'Search login logs...' : 'Search operation logs...')
 
 const tableData = shallowRef<AuditLogListItemSchema[]>([])
 const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 10 })
@@ -41,6 +55,7 @@ const totalPages = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = ref<VisibilityState>({
+  module: !isLoginMode.value,
   method: false,
   ip: false,
   requestId: false,
@@ -108,12 +123,15 @@ const table = useVueTable({
 async function fetchAuditLogs() {
   const modulesFilter = columnFilters.value.find(filter => filter.id === 'module')?.value
 
-  const query: FetchRequestParams = {
+  const query: GetAuditPageData['query'] = {
     page: pagination.value.pageIndex + 1,
     pageSize: pagination.value.pageSize,
     sort: sorting.value.map(item => `${item.id} ${item.desc ? 'desc' : 'asc'}`).join(',') || undefined,
     search: globalFilter.value.trim() || undefined,
-    modules: Array.isArray(modulesFilter) && modulesFilter.length > 0 ? modulesFilter : undefined,
+    categories: [props.mode],
+    modules: !isLoginMode.value && Array.isArray(modulesFilter) && modulesFilter.length > 0
+      ? modulesFilter as Array<'user' | 'role'>
+      : undefined,
   }
 
   try {
@@ -161,7 +179,7 @@ watch([pagination, sorting, columnFilters, globalFilter], () => {
   >
     <DataTableToolbar
       :table="table"
-      search-placeholder="Search audit logs..."
+      :search-placeholder="searchPlaceholder"
       :filters="filters"
     />
 
@@ -214,7 +232,7 @@ watch([pagination, sorting, columnFilters, globalFilter], () => {
           </template>
 
           <TableRow v-else>
-            <TableCell :colspan="columns.length" class="h-24 text-center text-muted-foreground">
+            <TableCell :colspan="table.getVisibleLeafColumns().length" class="h-24 text-center text-muted-foreground">
               {{ isLoading ? 'Loading audit logs...' : 'No results.' }}
             </TableCell>
           </TableRow>

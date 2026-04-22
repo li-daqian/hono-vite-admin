@@ -19,17 +19,21 @@ export type AuditLogListItemSchema = {
      */
     id: string;
     /**
+     * Audit log category
+     */
+    category: 'login' | 'operation';
+    /**
      * Audited module identifier
      */
-    module: 'user' | 'role';
+    module: 'auth' | 'user' | 'role';
     /**
      * Audited action identifier
      */
     action: string;
     /**
-     * ID of the operator who performed the action
+     * ID of the operator who performed the action when available
      */
-    operatorId: string;
+    operatorId: string | null;
     /**
      * Username of the operator
      */
@@ -309,9 +313,13 @@ export type GetAuditPageData = {
          */
         search?: string | null;
         /**
+         * Filter audit logs by one or more category identifiers
+         */
+        categories?: Array<'login' | 'operation'> | null;
+        /**
          * Filter audit logs by one or more module identifiers
          */
-        modules?: Array<'user' | 'role'> | null;
+        modules?: Array<'auth' | 'user' | 'role'> | null;
     };
     url: '/audit/page';
 };

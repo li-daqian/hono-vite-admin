@@ -7,6 +7,7 @@ import { getEnv } from '@server/src/lib/env'
 import { jwtService } from '@server/src/lib/jwt'
 import { prisma } from '@server/src/lib/prisma'
 import { logger } from '@server/src/middleware/trace.middleware'
+import { auditService } from '@server/src/modules/audit/audit.service'
 import { parseTimeDuration } from '@server/src/utils/date'
 import bcrypt from 'bcryptjs'
 
@@ -19,34 +20,69 @@ class AuthService {
   }
 
   async login(request: AuthLoginRequest): Promise<AuthLoginResponse> {
-    // Find user by username
     const user = await prisma.user.findUnique({
       where: { username: request.username },
     })
     if (!user) {
+      await this.recordLoginFailure({
+        operatorId: null,
+        operatorUsername: request.username,
+        operatorDisplayName: null,
+        reason: 'user-not-found',
+        username: request.username,
+      })
       throw BusinessError.UserOrPasswordIncorrect()
     }
     if (user.status !== UserStatus.ACTIVE) {
+      await this.recordLoginFailure({
+        operatorId: user.id,
+        operatorUsername: user.username,
+        operatorDisplayName: user.displayName,
+        reason: 'user-account-disabled',
+        username: user.username,
+      })
       throw BusinessError.BadRequest('User account is disabled', 'UserAccountDisabled')
     }
 
-    // Verify password
     const hashedInputPassword = await bcrypt.hash(request.password, user.salt)
     if (hashedInputPassword !== user.password) {
+      await this.recordLoginFailure({
+        operatorId: user.id,
+        operatorUsername: user.username,
+        operatorDisplayName: user.displayName,
+        reason: 'password-incorrect',
+        username: user.username,
+      })
       throw BusinessError.UserOrPasswordIncorrect()
     }
 
-    // Generate access token
     const accessToken = await jwtService.generateAccessToken(user.id)
-
-    // Generate refresh token
     const refreshTokenExpiry = getEnv().auth.refreshTokenExpiry
-    const refreshToken = await prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        token: randomUUID(),
-        expiresAt: parseTimeDuration(refreshTokenExpiry),
-      },
+    const refreshToken = await prisma.$transaction(async (tx) => {
+      const createdRefreshToken = await tx.refreshToken.create({
+        data: {
+          userId: user.id,
+          token: randomUUID(),
+          expiresAt: parseTimeDuration(refreshTokenExpiry),
+        },
+      })
+
+      await auditService.record(tx, {
+        category: 'login',
+        module: 'auth',
+        action: 'login-success',
+        operator: {
+          operatorId: user.id,
+          operatorUsername: user.username,
+          operatorDisplayName: user.displayName,
+        },
+        requestSnapshot: {
+          username: user.username,
+          result: 'success',
+        },
+      })
+
+      return createdRefreshToken
     })
 
     return {
@@ -77,10 +113,8 @@ class AuthService {
     newRefreshToken.token = randomUUID()
 
     if (slideMode) {
-      // In slide mode, extend the expiry of the existing token
       const refreshTokenExpiry = getEnv().auth.refreshTokenExpiry
-      const newExpiry = parseTimeDuration(refreshTokenExpiry)
-      newRefreshToken.expiresAt = newExpiry
+      newRefreshToken.expiresAt = parseTimeDuration(refreshTokenExpiry)
     }
 
     await prisma.refreshToken.update({
@@ -100,26 +134,43 @@ class AuthService {
     }
   }
 
-  async logout(userId: string, refreshToken: string): Promise<void> {
-    const existingToken = await prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+  async logout(userId: string, refreshToken?: string): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      let refreshTokenRevoked = false
+
+      if (refreshToken) {
+        const existingToken = await tx.refreshToken.findUnique({
+          where: { token: refreshToken },
+        })
+
+        if (!existingToken) {
+          logger().warn(`Refresh token not found during logout: ${refreshToken}`)
+        }
+        else if (existingToken.userId === userId) {
+          await tx.refreshToken.delete({ where: { token: refreshToken } })
+          refreshTokenRevoked = true
+        }
+        else {
+          logger().warn(
+            `Refresh token does not belong to the current user. `
+            + `refreshToken=${refreshToken}, `
+            + `currentUserId=${userId}, `
+            + `tokenUserId=${existingToken.userId}`,
+          )
+        }
+      }
+
+      await auditService.record(tx, {
+        category: 'login',
+        module: 'auth',
+        action: 'logout',
+        requestSnapshot: {
+          userId,
+          result: 'success',
+          refreshTokenRevoked,
+        },
+      })
     })
-
-    if (!existingToken) {
-      logger().warn(`Refresh token not found during logout: ${refreshToken}`)
-    }
-
-    if (existingToken && existingToken.userId === userId) {
-      await prisma.refreshToken.delete({ where: { token: refreshToken } })
-    }
-    else {
-      logger().warn(
-        `Refresh token does not belong to the current user. `
-        + `refreshToken=${refreshToken}, `
-        + `currentUserId=${userId}, `
-        + `tokenUserId=${existingToken?.userId}`,
-      )
-    }
   }
 
   async getUserMenus(userId: string): Promise<AuthMenuResponse> {
@@ -189,6 +240,30 @@ class AuthService {
     }
 
     return buildMenuNode(menusByParentId[''] || [])
+  }
+
+  private async recordLoginFailure(input: {
+    operatorId: string | null
+    operatorUsername: string
+    operatorDisplayName: string | null | undefined
+    reason: string
+    username: string
+  }) {
+    await auditService.record(prisma, {
+      category: 'login',
+      module: 'auth',
+      action: 'login-failed',
+      operator: {
+        operatorId: input.operatorId,
+        operatorUsername: input.operatorUsername,
+        operatorDisplayName: input.operatorDisplayName ?? null,
+      },
+      requestSnapshot: {
+        username: input.username,
+        result: 'failure',
+        reason: input.reason,
+      },
+    })
   }
 }
 

@@ -40,11 +40,24 @@ const menus = [
           { code: 'delete', name: 'Delete', description: 'Delete role' },
         ],
       },
+    ],
+  },
+  {
+    code: 'audit',
+    name: 'Audit',
+    order: 3,
+    children: [
       {
-        code: 'audit',
-        name: 'Audit Logs',
-        path: '/access/audit',
-        order: 3,
+        code: 'login',
+        name: 'Login Logs',
+        path: '/audit/login',
+        order: 1,
+      },
+      {
+        code: 'operation',
+        name: 'Operation Logs',
+        path: '/audit/operation',
+        order: 2,
       },
     ],
   },

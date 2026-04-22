@@ -13,9 +13,17 @@ export const zErrorResponse = z.object({
 
 export const zAuditLogListItemSchema = z.object({
     id: z.string().describe('Unique identifier of the audit log entry'),
-    module: z.enum(['user', 'role']).describe('Audited module identifier'),
+    category: z.enum(['login', 'operation']).describe('Audit log category'),
+    module: z.enum([
+        'auth',
+        'user',
+        'role'
+    ]).describe('Audited module identifier'),
     action: z.string().describe('Audited action identifier'),
-    operatorId: z.string().describe('ID of the operator who performed the action'),
+    operatorId: z.union([
+        z.string(),
+        z.null()
+    ]),
     operatorUsername: z.string().describe('Username of the operator'),
     operatorDisplayName: z.union([
         z.string(),
@@ -168,8 +176,16 @@ export const zGetAuditPageData = z.object({
             z.string().max(100),
             z.null()
         ]).optional().default(null),
+        categories: z.union([
+            z.array(z.enum(['login', 'operation']).describe('Audit log category')),
+            z.null()
+        ]).optional().default(null),
         modules: z.union([
-            z.array(z.enum(['user', 'role']).describe('Audited module identifier')),
+            z.array(z.enum([
+                'auth',
+                'user',
+                'role'
+            ]).describe('Audited module identifier')),
             z.null()
         ]).optional().default(null)
     })

@@ -124,21 +124,23 @@ model RefreshToken {
 }
 
 model AuditLog {
-  id                 String   @id @default(ulid())
-  module             String
-  action             String
-  operatorId         String   @map("operator_id")
-  operatorUsername   String   @map("operator_username")
-  operatorDisplayName String? @map("operator_display_name")
-  method             String
-  path               String
-  ip                 String?
-  userAgent          String?  @map("user_agent")
-  requestId          String   @map("request_id")
-  requestSnapshot    Json?    @map("request_snapshot")
-  createdAt          DateTime @default(now()) @map("created_at")
+  id                  String        @id @default(ulid())
+  category            AuditCategory @default(OPERATION)
+  module              String
+  action              String
+  operatorId          String?       @map("operator_id")
+  operatorUsername    String        @map("operator_username")
+  operatorDisplayName String?       @map("operator_display_name")
+  method              String
+  path                String
+  ip                  String?
+  userAgent           String?       @map("user_agent")
+  requestId           String        @map("request_id")
+  requestSnapshot     Json?         @map("request_snapshot")
+  createdAt           DateTime      @default(now()) @map("created_at")
 
-  @@index([module])
+  @@index([category, createdAt])
+  @@index([module, createdAt])
   @@index([operatorId])
   @@index([createdAt])
   @@map("audit_log")
@@ -156,4 +158,11 @@ enum PermissionType {
   ACTION
 
   @@map("permission_type")
+}
+
+enum AuditCategory {
+  LOGIN
+  OPERATION
+
+  @@map("audit_category")
 }

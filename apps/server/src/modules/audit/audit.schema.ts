@@ -5,7 +5,8 @@ function emptyStringToUndefined(value: unknown) {
   return value === '' ? undefined : value
 }
 
-export const AUDIT_MODULE_VALUES = ['user', 'role'] as const
+export const AUDIT_MODULE_VALUES = ['auth', 'user', 'role'] as const
+export const AUDIT_CATEGORY_VALUES = ['login', 'operation'] as const
 
 export const AuditModuleSchema = z.enum(AUDIT_MODULE_VALUES).openapi({
   description: 'Audited module identifier',
@@ -13,11 +14,18 @@ export const AuditModuleSchema = z.enum(AUDIT_MODULE_VALUES).openapi({
 })
 export type AuditModule = z.infer<typeof AuditModuleSchema>
 
+export const AuditCategorySchema = z.enum(AUDIT_CATEGORY_VALUES).openapi({
+  description: 'Audit log category',
+  example: 'operation',
+})
+export type AuditCategory = z.infer<typeof AuditCategorySchema>
+
 export const AuditLogListItemSchema = z.object({
   id: z.string().openapi({ description: 'Unique identifier of the audit log entry', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+  category: AuditCategorySchema,
   module: AuditModuleSchema,
   action: z.string().openapi({ description: 'Audited action identifier', example: 'create' }),
-  operatorId: z.string().openapi({ description: 'ID of the operator who performed the action', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+  operatorId: z.string().nullable().openapi({ description: 'ID of the operator who performed the action when available', example: '01HZY4QG2R1X0ABCDEF1234567' }),
   operatorUsername: z.string().openapi({ description: 'Username of the operator', example: 'admin' }),
   operatorDisplayName: z.string().nullable().openapi({ description: 'Display name of the operator when available', example: 'Administrator' }),
   method: z.string().openapi({ description: 'HTTP method of the audited request', example: 'POST' }),
@@ -47,6 +55,23 @@ export const AuditLogPaginationRequestSchema = PaginationQuerySchema.extend({
   ).openapi({
     description: 'Search audit logs by operator, action, path, request ID, or IP address',
     example: 'admin',
+  }),
+  categories: z.preprocess(
+    (value) => {
+      if (value === '') {
+        return undefined
+      }
+
+      if (typeof value === 'string') {
+        return [value]
+      }
+
+      return value
+    },
+    z.array(AuditCategorySchema).nullable().default(null),
+  ).openapi({
+    description: 'Filter audit logs by one or more category identifiers',
+    example: ['operation'],
   }),
   modules: z.preprocess(
     (value) => {

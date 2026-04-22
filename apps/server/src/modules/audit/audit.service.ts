@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@server/generated/prisma/client'
 import type { TransactionClient } from '@server/generated/prisma/internal/prismaNamespace'
 import type {
+  AuditCategory,
   AuditLogDetailResponse,
   AuditLogListItem,
   AuditLogPaginationRequest,
@@ -8,6 +9,7 @@ import type {
   AuditModule,
 } from '@server/src/modules/audit/audit.schema'
 import { Prisma } from '@server/generated/prisma/client'
+import { AuditCategory as PrismaAuditCategory } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
@@ -17,12 +19,29 @@ import { extractClientIp, sanitizeAuditPayload } from '@server/src/modules/audit
 import { buildOrderBy, paginate } from '@server/src/utils/pagination'
 
 export interface CreateAuditLogInput {
+  category?: AuditCategory
   module: AuditModule
   action: string
   requestSnapshot?: unknown
+  operator?: {
+    operatorId: string | null
+    operatorUsername: string
+    operatorDisplayName?: string | null
+  }
 }
 
 type AuditClient = PrismaClient | TransactionClient
+type AuditOperator = NonNullable<CreateAuditLogInput['operator']>
+
+const prismaAuditCategoryMap: Record<NonNullable<CreateAuditLogInput['category']>, PrismaAuditCategory> = {
+  login: PrismaAuditCategory.LOGIN,
+  operation: PrismaAuditCategory.OPERATION,
+}
+
+const apiAuditCategoryMap: Record<PrismaAuditCategory, AuditCategory> = {
+  [PrismaAuditCategory.LOGIN]: 'login',
+  [PrismaAuditCategory.OPERATION]: 'operation',
+}
 
 class AuditService {
   async record(client: AuditClient, input: CreateAuditLogInput): Promise<void> {
@@ -32,23 +51,17 @@ class AuditService {
       throw new Error('Audit logging requires an active request context.')
     }
 
-    const { userId } = getLoginUser(context)
     const requestSnapshot = sanitizeAuditPayload(input.requestSnapshot)
-    const operator = await client.user.findUnique({
-      where: { id: userId },
-      select: {
-        username: true,
-        displayName: true,
-      },
-    })
+    const operator = await this.resolveOperator(client, context, input.operator)
 
     await client.auditLog.create({
       data: {
+        category: prismaAuditCategoryMap[input.category ?? 'operation'],
         module: input.module,
         action: input.action,
-        operatorId: userId,
-        operatorUsername: operator?.username ?? userId,
-        operatorDisplayName: operator?.displayName ?? null,
+        operatorId: operator.operatorId,
+        operatorUsername: operator.operatorUsername,
+        operatorDisplayName: operator.operatorDisplayName ?? null,
         method: context.req.method,
         path: context.req.path,
         ip: extractClientIp({
@@ -69,10 +82,17 @@ class AuditService {
   }
 
   async getAuditLogPage(query: AuditLogPaginationRequest): Promise<AuditLogPaginationResponse> {
-    const { page, pageSize, search, modules, sort } = query
+    const { page, pageSize, search, categories, modules, sort } = query
     const skip = (page - 1) * pageSize
 
     const where = {
+      ...(categories && categories.length > 0
+        ? {
+            category: {
+              in: categories.map(category => prismaAuditCategoryMap[category]),
+            },
+          }
+        : {}),
       ...(modules && modules.length > 0
         ? {
             module: {
@@ -97,7 +117,7 @@ class AuditService {
 
     const orderBy = buildOrderBy(
       sort,
-      ['createdAt', 'module', 'action', 'operatorUsername'] as const,
+      ['createdAt', 'category', 'module', 'action', 'operatorUsername'] as const,
       { createdAt: 'desc' },
     )
 
@@ -128,9 +148,10 @@ class AuditService {
 
   private mapAuditLogListItem(auditLog: {
     id: string
+    category: PrismaAuditCategory
     module: string
     action: string
-    operatorId: string
+    operatorId: string | null
     operatorUsername: string
     operatorDisplayName: string | null
     method: string
@@ -142,6 +163,7 @@ class AuditService {
   }): AuditLogListItem {
     return {
       id: auditLog.id,
+      category: apiAuditCategoryMap[auditLog.category],
       module: auditLog.module as AuditModule,
       action: auditLog.action,
       operatorId: auditLog.operatorId,
@@ -158,9 +180,10 @@ class AuditService {
 
   private mapAuditLogDetail(auditLog: {
     id: string
+    category: PrismaAuditCategory
     module: string
     action: string
-    operatorId: string
+    operatorId: string | null
     operatorUsername: string
     operatorDisplayName: string | null
     method: string
@@ -174,6 +197,35 @@ class AuditService {
     return {
       ...this.mapAuditLogListItem(auditLog),
       requestSnapshot: auditLog.requestSnapshot,
+    }
+  }
+
+  private async resolveOperator(
+    client: AuditClient,
+    context: NonNullable<ReturnType<typeof getContext>>,
+    operator: CreateAuditLogInput['operator'],
+  ): Promise<AuditOperator> {
+    if (operator) {
+      return {
+        operatorId: operator.operatorId,
+        operatorUsername: operator.operatorUsername,
+        operatorDisplayName: operator.operatorDisplayName ?? null,
+      }
+    }
+
+    const { userId } = getLoginUser(context)
+    const user = await client.user.findUnique({
+      where: { id: userId },
+      select: {
+        username: true,
+        displayName: true,
+      },
+    })
+
+    return {
+      operatorId: userId,
+      operatorUsername: user?.username ?? userId,
+      operatorDisplayName: user?.displayName ?? null,
     }
   }
 }
