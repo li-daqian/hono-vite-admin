@@ -11,6 +11,7 @@ import type {
 import { Prisma } from '@server/generated/prisma/client'
 import { AuditCategory as PrismaAuditCategory } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
+import { getEnv } from '@server/src/lib/env'
 import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import { getContext } from '@server/src/middleware/context.middleware'
@@ -45,6 +46,10 @@ const apiAuditCategoryMap: Record<PrismaAuditCategory, AuditCategory> = {
 
 class AuditService {
   async record(client: AuditClient, input: CreateAuditLogInput): Promise<void> {
+    if (getEnv().deployment.readOnlyMode) {
+      return
+    }
+
     const context = getContext()
 
     if (!context) {
