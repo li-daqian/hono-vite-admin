@@ -12,7 +12,9 @@ import {
   DialogTitle,
 } from '@admin/components/ui/dialog'
 import { Skeleton } from '@admin/components/ui/skeleton'
-import { computed, ref, watch } from 'vue'
+import { Check, Copy } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import { formatAuditDateTime, formatAuditLabel, formatAuditOperator } from './audit-utils'
 
 const props = defineProps<{
@@ -26,6 +28,10 @@ const emit = defineEmits<{
 
 const detail = ref<AuditLogDetailResponseSchema | null>(null)
 const isLoading = ref(false)
+const isSnapshotCopied = ref(false)
+let resetCopyIndicatorTimer: ReturnType<typeof setTimeout> | null = null
+
+const hasRequestSnapshot = computed(() => detail.value?.requestSnapshot != null)
 
 const snapshotText = computed(() => {
   if (!detail.value || detail.value.requestSnapshot == null) {
@@ -36,8 +42,36 @@ const snapshotText = computed(() => {
   return serialized ?? String(detail.value.requestSnapshot)
 })
 
+function clearCopyIndicatorTimer() {
+  if (resetCopyIndicatorTimer) {
+    clearTimeout(resetCopyIndicatorTimer)
+    resetCopyIndicatorTimer = null
+  }
+}
+
 function handleOpenChange(value: boolean) {
   emit('update:open', value)
+}
+
+async function handleCopySnapshot() {
+  if (!hasRequestSnapshot.value) {
+    toast.error('No request snapshot recorded.')
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(snapshotText.value)
+    isSnapshotCopied.value = true
+    clearCopyIndicatorTimer()
+    resetCopyIndicatorTimer = setTimeout(() => {
+      isSnapshotCopied.value = false
+      resetCopyIndicatorTimer = null
+    }, 2000)
+    toast.success('Request snapshot copied.')
+  }
+  catch {
+    toast.error('Failed to copy request snapshot.')
+  }
 }
 
 async function fetchAuditLog(id: string) {
@@ -59,13 +93,21 @@ watch(
   async ([open, id]) => {
     if (!open || !id) {
       detail.value = null
+      isSnapshotCopied.value = false
+      clearCopyIndicatorTimer()
       return
     }
 
+    isSnapshotCopied.value = false
+    clearCopyIndicatorTimer()
     await fetchAuditLog(id)
   },
   { immediate: true },
 )
+
+onBeforeUnmount(() => {
+  clearCopyIndicatorTimer()
+})
 </script>
 
 <template>
@@ -175,7 +217,22 @@ watch(
               <p class="text-sm text-muted-foreground">
                 Request Snapshot
               </p>
-              <pre class="max-h-80 overflow-auto rounded-md border bg-muted/40 p-4 font-mono text-xs leading-5 whitespace-pre-wrap break-all">{{ snapshotText }}</pre>
+              <div class="relative overflow-hidden rounded-md border bg-muted/40">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  :disabled="!hasRequestSnapshot"
+                  :title="isSnapshotCopied ? 'Copied' : 'Copy request snapshot'"
+                  class="absolute top-3 right-3 z-10 size-8 rounded-md border border-border/60 bg-background/80 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-background hover:text-foreground"
+                  @click="handleCopySnapshot"
+                >
+                  <Check v-if="isSnapshotCopied" class="size-4 text-emerald-500" />
+                  <Copy v-else class="size-4" />
+                  <span class="sr-only">{{ isSnapshotCopied ? 'Copied' : 'Copy request snapshot' }}</span>
+                </Button>
+                <pre class="max-h-80 overflow-auto p-4 pr-14 font-mono text-xs leading-5 whitespace-pre-wrap break-all">{{ snapshotText }}</pre>
+              </div>
             </div>
           </div>
         </template>
