@@ -1,6 +1,8 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { authMiddleware } from '@server/src/middleware/auth.middleware'
 import {
+  AuthChangePasswordRequestSchema,
+  AuthChangePasswordResponseSchema,
   AuthLoginRequestSchema,
   AuthLoginResponseSchema,
   AuthMenuResponseSchema,
@@ -47,6 +49,19 @@ export const authLogoutRoute = createRoute({
   description: 'User logout',
   responses: {
     200: { description: 'User logged out successfully', content: { 'application/json': { schema: z.object({}) } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware],
+  tags: ['Auth'],
+})
+
+export const authChangePasswordRoute = createRoute({
+  path: '/change-password',
+  method: 'post',
+  description: 'Change password for the current user',
+  request: { body: { required: true, content: { 'application/json': { schema: AuthChangePasswordRequestSchema } } } },
+  responses: {
+    200: { description: 'Password changed successfully', content: { 'application/json': { schema: AuthChangePasswordResponseSchema } } },
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware],

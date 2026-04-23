@@ -1,5 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import {
+  handleAuthChangePassword,
   handleAuthLogin,
   handleAuthLogout,
   handleAuthMenus,
@@ -7,6 +8,7 @@ import {
   handleAuthRefresh,
 } from '@server/src/modules/auth/auth.handler'
 import {
+  authChangePasswordRoute,
   authLoginRoute,
   authLogoutRoute,
   authMenusRoute,
@@ -19,4 +21,5 @@ export const authApp = new OpenAPIHono()
   .openapi(authLoginRoute, handleAuthLogin)
   .openapi(authRefreshRoute, handleAuthRefresh)
   .openapi(authLogoutRoute, handleAuthLogout)
+  .openapi(authChangePasswordRoute, handleAuthChangePassword)
   .openapi(authMenusRoute, handleAuthMenus)

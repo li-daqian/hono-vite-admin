@@ -10,10 +10,10 @@ import type {
   UserUpdateRequest,
 } from '@server/src/modules/user/user.schema'
 import { BusinessError } from '@server/src/common/exception'
+import { createPasswordHash } from '@server/src/lib/password'
 import { prisma } from '@server/src/lib/prisma'
 import { auditService } from '@server/src/modules/audit/audit.service'
 import { buildOrderBy, paginate } from '@server/src/utils/pagination'
-import bcrypt from 'bcryptjs'
 
 class UserService {
   private readonly userRoleSelection = {
@@ -43,8 +43,7 @@ class UserService {
     }
 
     // Generate salt and hash password
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(request.password, salt)
+    const { hashedPassword, salt } = await createPasswordHash(request.password)
 
     // Create user in DB
     const user = await prisma.$transaction(async (tx) => {

@@ -2,8 +2,8 @@ import type { Permission, PrismaClient, User } from '@server/generated/prisma/cl
 import type { TransactionClient } from '@server/generated/prisma/internal/prismaNamespace'
 import { PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { getEnv } from '@server/src/lib/env'
+import { createPasswordHash } from '@server/src/lib/password'
 import { prisma } from '@server/src/lib/prisma'
-import bcrypt from 'bcryptjs'
 
 const menus = [
   {
@@ -179,8 +179,7 @@ async function seedMenus(
 
 async function ensureAdminUser(): Promise<User> {
   const adminUsername = getEnv().admin.username
-  const salt = await bcrypt.genSalt(10)
-  const hashedPassword = await bcrypt.hash(getEnv().admin.password, salt)
+  const { hashedPassword, salt } = await createPasswordHash(getEnv().admin.password)
 
   return prisma.user.upsert({
     where: { username: adminUsername },

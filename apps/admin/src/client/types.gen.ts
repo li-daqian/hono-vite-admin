@@ -475,6 +475,37 @@ export type PostAuthLogoutResponses = {
 
 export type PostAuthLogoutResponse = PostAuthLogoutResponses[keyof PostAuthLogoutResponses];
 
+export type PostAuthChangePasswordData = {
+    body: {
+        /**
+         * Current password of the user
+         */
+        currentPassword: string;
+        /**
+         * New password for the user
+         */
+        newPassword: string;
+        /**
+         * Confirmation for the new password
+         */
+        confirmPassword: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/auth/change-password';
+};
+
+export type PostAuthChangePasswordResponses = {
+    /**
+     * Password changed successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type PostAuthChangePasswordResponse = PostAuthChangePasswordResponses[keyof PostAuthChangePasswordResponses];
+
 export type GetAuthMenusData = {
     body?: never;
     path?: never;

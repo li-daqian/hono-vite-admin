@@ -1,15 +1,23 @@
 import type { Action, Menu } from '@server/generated/prisma/client'
-import type { AuthLoginRequest, AuthLoginResponse, AuthMenu, AuthMenuResponse, AuthPrefillResponse, AuthRefreshResponse } from '@server/src/modules/auth/auth.schema'
+import type {
+  AuthChangePasswordRequest,
+  AuthLoginRequest,
+  AuthLoginResponse,
+  AuthMenu,
+  AuthMenuResponse,
+  AuthPrefillResponse,
+  AuthRefreshResponse,
+} from '@server/src/modules/auth/auth.schema'
 import { randomUUID } from 'node:crypto'
 import { PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
 import { jwtService } from '@server/src/lib/jwt'
+import { createPasswordHash, verifyPassword } from '@server/src/lib/password'
 import { prisma } from '@server/src/lib/prisma'
 import { logger } from '@server/src/middleware/trace.middleware'
 import { auditService } from '@server/src/modules/audit/audit.service'
 import { parseTimeDuration } from '@server/src/utils/date'
-import bcrypt from 'bcryptjs'
 
 class AuthService {
   async getPrefilledCredentials(): Promise<AuthPrefillResponse> {
@@ -44,8 +52,8 @@ class AuthService {
       throw BusinessError.BadRequest('User account is disabled', 'UserAccountDisabled')
     }
 
-    const hashedInputPassword = await bcrypt.hash(request.password, user.salt)
-    if (hashedInputPassword !== user.password) {
+    const isPasswordValid = await verifyPassword(request.password, user.password, user.salt)
+    if (!isPasswordValid) {
       await this.recordLoginFailure({
         operatorId: user.id,
         operatorUsername: user.username,
@@ -132,6 +140,42 @@ class AuthService {
       refreshToken: newRefreshToken.token,
       refreshTokenExpiresAt: newRefreshToken.expiresAt.toISOString(),
     }
+  }
+
+  async changePassword(userId: string, request: AuthChangePasswordRequest): Promise<void> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+    if (!user) {
+      throw BusinessError.NotFound('User not found')
+    }
+
+    const isCurrentPasswordValid = await verifyPassword(request.currentPassword, user.password, user.salt)
+    if (!isCurrentPasswordValid) {
+      await this.recordPasswordChangeFailure(userId, 'current-password-incorrect')
+      throw BusinessError.BadRequest('Current password is incorrect', 'CurrentPasswordIncorrect')
+    }
+
+    const { hashedPassword, salt } = await createPasswordHash(request.newPassword)
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          password: hashedPassword,
+          salt,
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'auth',
+        action: 'change-password',
+        requestSnapshot: {
+          userId,
+          result: 'success',
+        },
+      })
+    })
   }
 
   async logout(userId: string, refreshToken?: string): Promise<void> {
@@ -262,6 +306,18 @@ class AuthService {
         username: input.username,
         result: 'failure',
         reason: input.reason,
+      },
+    })
+  }
+
+  private async recordPasswordChangeFailure(userId: string, reason: string) {
+    await auditService.record(prisma, {
+      module: 'auth',
+      action: 'change-password-failed',
+      requestSnapshot: {
+        userId,
+        result: 'failure',
+        reason,
       },
     })
   }

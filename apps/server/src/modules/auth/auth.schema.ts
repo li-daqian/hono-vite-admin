@@ -36,6 +36,40 @@ export const AuthRefreshResponseSchema = z.object({
 export type AuthRefreshRequest = z.infer<typeof AuthRefreshRequestSchema>
 export type AuthRefreshResponse = z.infer<typeof AuthRefreshResponseSchema>
 
+export const AuthChangePasswordRequestSchema = z.object({
+  currentPassword: z.string().min(1).openapi({
+    description: 'Current password of the user',
+    example: 'Admin@123!',
+  }),
+  newPassword: z.string().min(6).max(100).openapi({
+    description: 'New password for the user',
+    example: 'Admin@1234!',
+  }),
+  confirmPassword: z.string().min(1).max(100).openapi({
+    description: 'Confirmation for the new password',
+    example: 'Admin@1234!',
+  }),
+}).superRefine((value, ctx) => {
+  if (value.newPassword !== value.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['confirmPassword'],
+      message: 'Passwords do not match',
+    })
+  }
+
+  if (value.currentPassword === value.newPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['newPassword'],
+      message: 'New password must be different from current password',
+    })
+  }
+})
+export const AuthChangePasswordResponseSchema = z.object({})
+export type AuthChangePasswordRequest = z.infer<typeof AuthChangePasswordRequestSchema>
+export type AuthChangePasswordResponse = z.infer<typeof AuthChangePasswordResponseSchema>
+
 export const AuthActionSchema = z.object({
   id: z.string().openapi({ description: 'Action ID', example: 'edit' }),
   name: z.string().openapi({ description: 'Action name', example: 'Edit' }),

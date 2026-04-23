@@ -275,6 +275,21 @@ export const zPostAuthLogoutData = z.object({
  */
 export const zPostAuthLogoutResponse = z.record(z.unknown()).describe('User logged out successfully');
 
+export const zPostAuthChangePasswordData = z.object({
+    body: z.object({
+        currentPassword: z.string().min(1).describe('Current password of the user'),
+        newPassword: z.string().min(6).max(100).describe('New password for the user'),
+        confirmPassword: z.string().min(1).max(100).describe('Confirmation for the new password')
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Password changed successfully
+ */
+export const zPostAuthChangePasswordResponse = z.record(z.unknown()).describe('Password changed successfully');
+
 export const zGetAuthMenusData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
