@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
 import { usePageActionPermissions } from '@admin/lib/permissions'
-import { Ellipsis, Trash2, UserPen } from 'lucide-vue-next'
+import { Ellipsis, Key, Trash2, UserPen } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useUsers } from './users-provider.vue'
 
@@ -24,6 +24,7 @@ const props = defineProps<{
 const { setOpen, setCurrentRow } = useUsers()
 const permissions = usePageActionPermissions()
 const editPermission = computed(() => permissions.resolve('edit', { subject: 'users' }))
+const passwordPermission = computed(() => permissions.resolve('password', { actionName: 'Change password' }))
 const deletePermission = computed(() => permissions.resolve('delete', { subject: 'users' }))
 
 function handleEdit() {
@@ -34,6 +35,11 @@ function handleEdit() {
 function handleDelete() {
   setCurrentRow(props.row)
   setOpen('delete')
+}
+
+function handlePassword() {
+  setCurrentRow(props.row)
+  setOpen('password')
 }
 </script>
 
@@ -50,12 +56,21 @@ function handleDelete() {
       </Button>
     </DropdownMenuTrigger>
 
-    <DropdownMenuContent align="end" class="w-40">
+    <DropdownMenuContent align="end" class="w-48">
       <PermissionTooltip :message="editPermission.reason" wrapper-class="block w-full">
         <DropdownMenuItem :disabled="!editPermission.allowed" @click="handleEdit">
           Edit
           <DropdownMenuShortcut>
             <UserPen :size="16" />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </PermissionTooltip>
+
+      <PermissionTooltip :message="passwordPermission.reason" wrapper-class="block w-full">
+        <DropdownMenuItem :disabled="!passwordPermission.allowed" @click="handlePassword">
+          Change Password
+          <DropdownMenuShortcut>
+            <Key :size="16" />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
       </PermissionTooltip>

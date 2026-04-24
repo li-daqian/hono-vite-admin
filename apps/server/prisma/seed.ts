@@ -25,6 +25,7 @@ const menus = [
         actions: [
           { code: 'create', name: 'Create', description: 'Create user' },
           { code: 'edit', name: 'Edit', description: 'Edit user' },
+          { code: 'password', name: 'Change Password', description: 'Change user password' },
           { code: 'delete', name: 'Delete', description: 'Delete user' },
         ],
       },

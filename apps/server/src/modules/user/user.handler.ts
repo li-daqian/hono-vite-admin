@@ -1,5 +1,14 @@
 import type { RouteHandler } from '@hono/zod-openapi'
-import type { createUserRoute, deleteUsersBatchRoute, getUserDetailRoute, getUserPageRoute, getUserProfileRoute, updateUserRoute, updateUserStatusBatchRoute } from '@server/src/modules/user/user.openapi'
+import type {
+  createUserRoute,
+  deleteUsersBatchRoute,
+  getUserDetailRoute,
+  getUserPageRoute,
+  getUserProfileRoute,
+  updateUserPasswordRoute,
+  updateUserRoute,
+  updateUserStatusBatchRoute,
+} from '@server/src/modules/user/user.openapi'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import { userService } from '@server/src/modules/user/user.service'
 
@@ -26,6 +35,13 @@ export const handleUpdateUser: RouteHandler<typeof updateUserRoute> = async (c) 
   const body = c.req.valid('json')
   const updatedUser = await userService.updateUser(id, body)
   return c.json(updatedUser, 200)
+}
+
+export const handleUpdateUserPassword: RouteHandler<typeof updateUserPasswordRoute> = async (c) => {
+  const { id } = c.req.valid('param')
+  const body = c.req.valid('json')
+  await userService.updateUserPassword(id, body)
+  return c.json({}, 200)
 }
 
 export const handleDeleteUsersBatch: RouteHandler<typeof deleteUsersBatchRoute> = async (c) => {

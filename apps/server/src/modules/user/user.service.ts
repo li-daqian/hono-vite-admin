@@ -7,6 +7,7 @@ import type {
   UserPaginationRequest,
   UserPaginationResponse,
   UserProfileResponse,
+  UserUpdatePasswordRequest,
   UserUpdateRequest,
 } from '@server/src/modules/user/user.schema'
 import { BusinessError } from '@server/src/common/exception'
@@ -208,6 +209,42 @@ class UserService {
 
     const { password, salt, ...safeUser } = updatedUser
     return this.mapUserRoles(safeUser)
+  }
+
+  async updateUserPassword(userId: string, request: UserUpdatePasswordRequest): Promise<void> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    })
+    if (!user) {
+      throw BusinessError.NotFound('User not found')
+    }
+
+    const { hashedPassword, salt } = await createPasswordHash(request.newPassword)
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          password: hashedPassword,
+          salt,
+        },
+      })
+
+      const revokedRefreshTokens = await tx.refreshToken.deleteMany({
+        where: { userId },
+      })
+
+      await auditService.record(tx, {
+        module: 'user',
+        action: 'update-password',
+        requestSnapshot: {
+          targetUserId: userId,
+          result: 'success',
+          revokedRefreshTokenCount: revokedRefreshTokens.count,
+        },
+      })
+    })
   }
 
   async deleteUsers(userIds: string[]): Promise<UserBatchDeleteResponse> {

@@ -924,6 +924,38 @@ export type PutUserByIdResponses = {
 
 export type PutUserByIdResponse = PutUserByIdResponses[keyof PutUserByIdResponses];
 
+export type PostUserByIdPasswordData = {
+    body: {
+        /**
+         * New password for the user
+         */
+        newPassword: string;
+        /**
+         * Confirmation for the new password
+         */
+        confirmPassword: string;
+    };
+    path: {
+        /**
+         * User ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/user/{id}/password';
+};
+
+export type PostUserByIdPasswordResponses = {
+    /**
+     * User password updated successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type PostUserByIdPasswordResponse = PostUserByIdPasswordResponses[keyof PostUserByIdPasswordResponses];
+
 export type DeleteUserBatchData = {
     body: {
         /**

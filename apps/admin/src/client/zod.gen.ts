@@ -554,6 +554,22 @@ export const zPutUserByIdData = z.object({
  */
 export const zPutUserByIdResponse = zUserProfileResponseSchema;
 
+export const zPostUserByIdPasswordData = z.object({
+    body: z.object({
+        newPassword: z.string().min(6).max(100).describe('New password for the user'),
+        confirmPassword: z.string().min(1).max(100).describe('Confirmation for the new password')
+    }),
+    path: z.object({
+        id: z.string().describe('User ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * User password updated successfully
+ */
+export const zPostUserByIdPasswordResponse = z.record(z.unknown()).describe('User password updated successfully');
+
 export const zDeleteUserBatchData = z.object({
     body: z.object({
         userIds: z.array(z.string()).min(1).describe('IDs of users to delete')

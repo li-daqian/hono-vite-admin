@@ -11,12 +11,15 @@ import {
   UserPaginationRequestSchema,
   UserPaginationResponseSchema,
   UserProfileResponseSchema,
+  UserUpdatePasswordRequestSchema,
+  UserUpdatePasswordResponseSchema,
   UserUpdateRequestSchema,
 } from '@server/src/modules/user/user.schema'
 
 const USER_ACTIONS = {
   CREATE: 'access.users.create',
   EDIT: 'access.users.edit',
+  PASSWORD: 'access.users.password',
   DELETE: 'access.users.delete',
 } as const
 
@@ -92,6 +95,24 @@ export const updateUserRoute = createRoute({
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.EDIT)],
+  tags: ['User'],
+})
+
+export const updateUserPasswordRoute = createRoute({
+  path: '/{id}/password',
+  method: 'post',
+  description: 'Update user password',
+  request: {
+    params: z.object({
+      id: z.string().openapi({ description: 'User ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+    }),
+    body: { required: true, content: { 'application/json': { schema: UserUpdatePasswordRequestSchema } } },
+  },
+  responses: {
+    200: { description: 'User password updated successfully', content: { 'application/json': { schema: UserUpdatePasswordResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.PASSWORD)],
   tags: ['User'],
 })
 

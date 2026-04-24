@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import UsersActionDialog from './users-action-dialog.vue'
 import UsersDeleteDialog from './users-delete-dialog.vue'
+import UsersPasswordDialog from './users-password-dialog.vue'
 import { useUsers } from './users-provider.vue'
 
 const emit = defineEmits<{
@@ -26,6 +27,12 @@ function handleAddOpenChange(value: boolean) {
 
 function handleEditOpenChange(value: boolean) {
   setOpen(value ? 'edit' : null)
+  if (!value)
+    setCurrentRow(null)
+}
+
+function handlePasswordOpenChange(value: boolean) {
+  setOpen(value ? 'password' : null)
   if (!value)
     setCurrentRow(null)
 }
@@ -56,6 +63,14 @@ function handleDeleteOpenChange(value: boolean) {
     mode="edit"
     @success="emit('success')"
     @update:open="handleEditOpenChange"
+  />
+
+  <UsersPasswordDialog
+    v-if="currentRow"
+    :open="open === 'password'"
+    :current-row="currentRow"
+    @success="emit('success')"
+    @update:open="handlePasswordOpenChange"
   />
 
   <UsersDeleteDialog

@@ -49,6 +49,28 @@ export const UserUpdateRequestSchema = z.object({
 })
 export type UserUpdateRequest = z.infer<typeof UserUpdateRequestSchema>
 
+export const UserUpdatePasswordRequestSchema = z.object({
+  newPassword: z.string().min(6).max(100).openapi({
+    description: 'New password for the user',
+    example: 'Admin@1234!',
+  }),
+  confirmPassword: z.string().min(1).max(100).openapi({
+    description: 'Confirmation for the new password',
+    example: 'Admin@1234!',
+  }),
+}).superRefine((value, ctx) => {
+  if (value.newPassword !== value.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['confirmPassword'],
+      message: 'Passwords do not match',
+    })
+  }
+})
+export const UserUpdatePasswordResponseSchema = z.object({})
+export type UserUpdatePasswordRequest = z.infer<typeof UserUpdatePasswordRequestSchema>
+export type UserUpdatePasswordResponse = z.infer<typeof UserUpdatePasswordResponseSchema>
+
 export const UserBatchDeleteRequestSchema = z.object({
   userIds: z.array(z.string()).min(1).openapi({ description: 'IDs of users to delete', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
 })
