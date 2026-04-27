@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next'
 import type { RouteComponent } from 'vue-router'
-import { Building2, LayoutDashboard, Search, ShieldIcon } from 'lucide-vue-next'
+import { LayoutDashboard, Search, ShieldIcon } from 'lucide-vue-next'
 
 export interface RouteMetaConfig {
   component?: RouteComponent
@@ -29,7 +29,6 @@ export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
   },
   'access.departments': {
     component: () => import('@admin/pages/departments/index.vue'),
-    icon: Building2,
   },
   'access.roles': {
     component: () => import('@admin/pages/roles/index.vue'),
