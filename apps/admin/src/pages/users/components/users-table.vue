@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<{
   refreshKey: 0,
 })
 
-const { roleOptions } = useUsers()
+const { roleOptions, departmentOptions } = useUsers()
 
 const filters = computed<DataTableFilterField[]>(() => [
   {
@@ -47,6 +47,11 @@ const filters = computed<DataTableFilterField[]>(() => [
     columnId: 'roles',
     title: 'Roles',
     options: roleOptions.value,
+  },
+  {
+    columnId: 'department',
+    title: 'Departments',
+    options: departmentOptions.value,
   },
 ])
 
@@ -110,6 +115,7 @@ async function fetchUsers() {
   const usernameFilter = columnFilters.value.find(filter => filter.id === 'username')?.value
   const statusFilter = columnFilters.value.find(filter => filter.id === 'status')?.value
   const rolesFilter = columnFilters.value.find(filter => filter.id === 'roles')?.value
+  const departmentFilter = columnFilters.value.find(filter => filter.id === 'department')?.value
 
   const query: FetchRequestParams = {
     page: pagination.value.pageIndex + 1,
@@ -118,6 +124,7 @@ async function fetchUsers() {
     search: typeof usernameFilter === 'string' && usernameFilter.trim().length > 0 ? usernameFilter.trim() : undefined,
     status: Array.isArray(statusFilter) && statusFilter.length > 0 ? statusFilter : undefined,
     roleIds: Array.isArray(rolesFilter) && rolesFilter.length > 0 ? rolesFilter : undefined,
+    departmentIds: Array.isArray(departmentFilter) && departmentFilter.length > 0 ? departmentFilter : undefined,
   }
 
   try {

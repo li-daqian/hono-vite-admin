@@ -1,7 +1,9 @@
 <script lang="ts">
 import type { UserProfileResponseSchema } from '@admin/client'
+import type { DepartmentOption } from '@admin/pages/departments/components/department-utils'
 import type { InjectionKey, Ref } from 'vue'
-import { getRole } from '@admin/client'
+import { getDepartment, getRole } from '@admin/client'
+import { flattenDepartmentOptions } from '@admin/pages/departments/components/department-utils'
 import { defineComponent, inject, onMounted, provide, ref } from 'vue'
 
 type User = UserProfileResponseSchema
@@ -15,6 +17,7 @@ export interface UsersContextType {
   currentRow: Ref<User | null>
   setCurrentRow: (value: User | null) => void
   roleOptions: Ref<{ value: string, label: string }[]>
+  departmentOptions: Ref<DepartmentOption[]>
   getUserRoles: (user: User) => UserRole[]
   setUserRoles: (userId: string, roles: UserRole[]) => void
   ensureRoleOption: (roleId: string, roleName: string) => void
@@ -38,6 +41,7 @@ export default defineComponent({
     const open = ref<UsersDialogType | null>(null)
     const currentRow = ref<User | null>(null)
     const roleOptions = ref<{ value: string, label: string }[]>([])
+    const departmentOptions = ref<DepartmentOption[]>([])
     const userRoleOverrides = ref<Record<string, UserRole[]>>({})
 
     function hasRoleId(source: { value: string }[], id: string) {
@@ -73,16 +77,21 @@ export default defineComponent({
     }
 
     onMounted(async () => {
-      try {
-        const response = await getRole<true>()
-        roleOptions.value = response.data
-          .filter(role => role.id && role.name)
-          .map(role => ({ value: role.id, label: role.name.trim() }))
-          .sort((a, b) => a.label.localeCompare(b.label))
-      }
-      catch {
-        roleOptions.value = []
-      }
+      const [roleResult, departmentResult] = await Promise.allSettled([
+        getRole<true>(),
+        getDepartment<true>(),
+      ])
+
+      roleOptions.value = roleResult.status === 'fulfilled'
+        ? roleResult.value.data
+            .filter(role => role.id && role.name)
+            .map(role => ({ value: role.id, label: role.name.trim() }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+        : []
+
+      departmentOptions.value = departmentResult.status === 'fulfilled'
+        ? flattenDepartmentOptions(departmentResult.value.data)
+        : []
     })
 
     provide(USERS_CONTEXT_KEY, {
@@ -91,6 +100,7 @@ export default defineComponent({
       currentRow,
       setCurrentRow,
       roleOptions,
+      departmentOptions,
       getUserRoles,
       setUserRoles,
       ensureRoleOption,
@@ -102,6 +112,7 @@ export default defineComponent({
       currentRow,
       setCurrentRow,
       roleOptions,
+      departmentOptions,
       getUserRoles,
       setUserRoles,
       ensureRoleOption,

@@ -1,0 +1,290 @@
+import type { Department } from '@server/generated/prisma/client'
+import type {
+  DepartmentCreateRequest,
+  DepartmentDeleteResponse,
+  DepartmentListRequest,
+  DepartmentProfileResponse,
+  DepartmentTreeItem,
+  DepartmentTreeResponse,
+  DepartmentUpdateRequest,
+} from '@server/src/modules/department/department.schema'
+import { BusinessError } from '@server/src/common/exception'
+import { prisma } from '@server/src/lib/prisma'
+import { auditService } from '@server/src/modules/audit/audit.service'
+
+type DepartmentWithUserCount = Department & {
+  _count: {
+    users: number
+  }
+}
+
+class DepartmentService {
+  async createDepartment(request: DepartmentCreateRequest): Promise<DepartmentProfileResponse> {
+    if (!(await this.isDepartmentCodeUnique(request.code))) {
+      throw BusinessError.BadRequest('Department code already exists', 'DepartmentCodeAlreadyExists')
+    }
+
+    await this.assertValidParent(request.parentId ?? null)
+
+    const department = await prisma.$transaction(async (tx) => {
+      const createdDepartment = await tx.department.create({
+        data: {
+          parentId: request.parentId ?? null,
+          name: request.name,
+          code: request.code,
+          leader: request.leader ?? null,
+          phone: request.phone ?? null,
+          email: request.email ?? null,
+          order: request.order,
+          status: request.status,
+        },
+        include: {
+          _count: {
+            select: { users: true },
+          },
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'department',
+        action: 'create',
+        requestSnapshot: request,
+      })
+
+      return createdDepartment
+    })
+
+    return this.mapDepartment(department)
+  }
+
+  async getDepartmentTree(query: DepartmentListRequest): Promise<DepartmentTreeResponse> {
+    const departments = await prisma.department.findMany({
+      where: {
+        ...(query.status && { status: { in: query.status } }),
+        ...(query.search
+          ? {
+              OR: [
+                { name: { contains: query.search, mode: 'insensitive' as const } },
+                { code: { contains: query.search, mode: 'insensitive' as const } },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        _count: {
+          select: { users: true },
+        },
+      },
+      orderBy: [
+        { order: 'asc' },
+        { name: 'asc' },
+      ],
+    })
+
+    return this.buildDepartmentTree(departments)
+  }
+
+  async getDepartmentById(departmentId: string): Promise<DepartmentProfileResponse> {
+    const department = await prisma.department.findUnique({
+      where: { id: departmentId },
+      include: {
+        _count: {
+          select: { users: true },
+        },
+      },
+    })
+
+    if (!department) {
+      throw BusinessError.NotFound('Department not found')
+    }
+
+    return this.mapDepartment(department)
+  }
+
+  async updateDepartment(departmentId: string, request: DepartmentUpdateRequest): Promise<DepartmentProfileResponse> {
+    const department = await prisma.department.findUnique({
+      where: { id: departmentId },
+    })
+
+    if (!department) {
+      throw BusinessError.NotFound('Department not found')
+    }
+
+    if (request.code && request.code !== department.code && !(await this.isDepartmentCodeUnique(request.code))) {
+      throw BusinessError.BadRequest('Department code already exists', 'DepartmentCodeAlreadyExists')
+    }
+
+    if (request.parentId !== undefined) {
+      await this.assertValidParent(request.parentId, departmentId)
+    }
+
+    const updatedDepartment = await prisma.$transaction(async (tx) => {
+      const nextDepartment = await tx.department.update({
+        where: { id: departmentId },
+        data: {
+          parentId: request.parentId,
+          name: request.name,
+          code: request.code,
+          leader: request.leader,
+          phone: request.phone,
+          email: request.email,
+          order: request.order,
+          status: request.status,
+        },
+        include: {
+          _count: {
+            select: { users: true },
+          },
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'department',
+        action: 'update',
+        requestSnapshot: {
+          id: departmentId,
+          ...request,
+        },
+      })
+
+      return nextDepartment
+    })
+
+    return this.mapDepartment(updatedDepartment)
+  }
+
+  async deleteDepartment(departmentId: string): Promise<DepartmentDeleteResponse> {
+    const department = await prisma.department.findUnique({
+      where: { id: departmentId },
+      include: {
+        _count: {
+          select: { users: true },
+        },
+      },
+    })
+
+    if (!department) {
+      throw BusinessError.NotFound('Department not found')
+    }
+
+    const childCount = await prisma.department.count({
+      where: { parentId: departmentId },
+    })
+    if (childCount > 0) {
+      throw BusinessError.BadRequest('Cannot delete a department that has child departments', 'DepartmentHasChildren')
+    }
+
+    if (department._count.users > 0) {
+      throw BusinessError.BadRequest('Cannot delete a department that has assigned users', 'DepartmentHasUsers')
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.department.delete({
+        where: { id: departmentId },
+      })
+
+      await auditService.record(tx, {
+        module: 'department',
+        action: 'delete',
+        requestSnapshot: { id: departmentId },
+      })
+    })
+
+    return { deletedCount: 1 }
+  }
+
+  private buildDepartmentTree(departments: DepartmentWithUserCount[]): DepartmentTreeResponse {
+    const nodes = departments.map(department => ({
+      ...this.mapDepartment(department),
+      children: [],
+    } satisfies DepartmentTreeItem))
+    const ids = new Set(nodes.map(node => node.id))
+    const nodesByParentId = nodes.reduce<Record<string, DepartmentTreeItem[]>>((acc, node) => {
+      const parentKey = node.parentId && ids.has(node.parentId) ? node.parentId : ''
+      ;(acc[parentKey] ??= []).push(node)
+      return acc
+    }, {})
+
+    const buildNode = (parentId: string): DepartmentTreeItem[] => {
+      return (nodesByParentId[parentId] ?? []).map(node => ({
+        ...node,
+        children: buildNode(node.id),
+      }))
+    }
+
+    return buildNode('')
+  }
+
+  private mapDepartment(department: DepartmentWithUserCount): DepartmentProfileResponse {
+    return {
+      id: department.id,
+      parentId: department.parentId,
+      name: department.name,
+      code: department.code,
+      leader: department.leader,
+      phone: department.phone,
+      email: department.email,
+      order: department.order,
+      status: department.status,
+      userCount: department._count.users,
+      createdAt: department.createdAt.toISOString(),
+      updatedAt: department.updatedAt.toISOString(),
+    }
+  }
+
+  private async assertValidParent(parentId: string | null | undefined, currentDepartmentId?: string): Promise<void> {
+    if (!parentId) {
+      return
+    }
+
+    if (parentId === currentDepartmentId) {
+      throw BusinessError.BadRequest('Department cannot be its own parent', 'InvalidDepartmentParent')
+    }
+
+    const parent = await prisma.department.findUnique({
+      where: { id: parentId },
+      select: { id: true },
+    })
+
+    if (!parent) {
+      throw BusinessError.BadRequest('Parent department not found', 'ParentDepartmentNotFound')
+    }
+
+    if (currentDepartmentId && await this.isDescendant(parentId, currentDepartmentId)) {
+      throw BusinessError.BadRequest('Department cannot be moved under its own descendant', 'InvalidDepartmentParent')
+    }
+  }
+
+  private async isDescendant(candidateParentId: string, departmentId: string): Promise<boolean> {
+    let nextParentId: string | null = candidateParentId
+    const visited = new Set<string>()
+
+    while (nextParentId) {
+      if (nextParentId === departmentId) {
+        return true
+      }
+
+      if (visited.has(nextParentId)) {
+        return false
+      }
+
+      visited.add(nextParentId)
+      const parent: { parentId: string | null } | null = await prisma.department.findUnique({
+        where: { id: nextParentId },
+        select: { parentId: true },
+      })
+      nextParentId = parent?.parentId ?? null
+    }
+
+    return false
+  }
+
+  private async isDepartmentCodeUnique(code: string): Promise<boolean> {
+    const existingDepartment = await prisma.department.findUnique({
+      where: { code },
+    })
+    return existingDepartment === null
+  }
+}
+
+export const departmentService = new DepartmentService()

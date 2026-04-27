@@ -5,7 +5,7 @@ function emptyStringToUndefined(value: unknown) {
   return value === '' ? undefined : value
 }
 
-export const AUDIT_MODULE_VALUES = ['auth', 'user', 'role'] as const
+export const AUDIT_MODULE_VALUES = ['auth', 'user', 'role', 'department'] as const
 export const AUDIT_CATEGORY_VALUES = ['login', 'operation'] as const
 
 export const AuditModuleSchema = z.enum(AUDIT_MODULE_VALUES).openapi({

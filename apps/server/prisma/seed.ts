@@ -31,10 +31,21 @@ const menus = [
         ],
       },
       {
+        code: 'departments',
+        name: 'Departments',
+        path: '/access/departments',
+        order: 2,
+        actions: [
+          { code: 'create', name: 'Create', description: 'Create department' },
+          { code: 'edit', name: 'Edit', description: 'Edit department' },
+          { code: 'delete', name: 'Delete', description: 'Delete department' },
+        ],
+      },
+      {
         code: 'roles',
         name: 'Roles',
         path: '/access/roles',
-        order: 2,
+        order: 3,
         actions: [
           { code: 'create', name: 'Create', description: 'Create role' },
           { code: 'edit', name: 'Edit', description: 'Edit role' },

@@ -17,7 +17,8 @@ export const zAuditLogListItemSchema = z.object({
     module: z.enum([
         'auth',
         'user',
-        'role'
+        'role',
+        'department'
     ]).describe('Audited module identifier'),
     action: z.string().describe('Audited action identifier'),
     operatorId: z.union([
@@ -84,6 +85,39 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
     actions: z.array(zAuthActionSchema).describe('Menu actions')
 });
 
+export const zDepartmentProfileResponseSchema = z.object({
+    id: z.string().describe('Department ID'),
+    parentId: z.union([
+        z.string(),
+        z.null()
+    ]),
+    name: z.string().describe('Department name'),
+    code: z.string().describe('Unique department code'),
+    leader: z.union([
+        z.string(),
+        z.null()
+    ]),
+    phone: z.union([
+        z.string(),
+        z.null()
+    ]),
+    email: z.union([
+        z.string().email(),
+        z.null()
+    ]),
+    order: z.number().int().describe('Display order'),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Department status'),
+    userCount: z.number().int().gte(0).describe('Number of users assigned to this department'),
+    createdAt: z.string().datetime().describe('Timestamp when the department was created'),
+    updatedAt: z.string().datetime().describe('Timestamp when the department was last updated')
+});
+
+export const zDepartmentTreeItemSchema: z.ZodTypeAny = zDepartmentProfileResponseSchema.and(z.object({
+    children: z.array(z.lazy(() => zDepartmentTreeItemSchema)).describe('Child departments')
+}));
+
+export const zDepartmentTreeResponseSchema = z.array(zDepartmentTreeItemSchema);
+
 export const zMenuActionSchema = z.object({
     id: z.string().describe('Action ID'),
     name: z.string().describe('Action name'),
@@ -138,6 +172,18 @@ export const zRolePermissionsResponseSchema = z.array(zRolePermissionTreeNodeSch
 
 export const zRolePermissionsUpdateRequestSchema = z.array(zRolePermissionTreeNodeSchema);
 
+/**
+ * Department assigned to the user
+ */
+export const zUserDepartmentResponseSchema = z.union([
+    z.object({
+        id: z.string().describe('Unique identifier for the department'),
+        name: z.string().describe('Department name'),
+        code: z.string().describe('Department code')
+    }),
+    z.null()
+]);
+
 export const zUserProfileResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the user'),
     username: z.string().describe('Unique username for the user'),
@@ -157,6 +203,7 @@ export const zUserProfileResponseSchema = z.object({
         z.string(),
         z.null()
     ]),
+    department: zUserDepartmentResponseSchema,
     status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
     failedLoginAttempts: z.number().int().gte(0).describe('Consecutive failed login attempts'),
     lockedUntil: z.union([
@@ -189,7 +236,8 @@ export const zGetAuditPageData = z.object({
             z.array(z.enum([
                 'auth',
                 'user',
-                'role'
+                'role',
+                'department'
             ]).describe('Audited module identifier')),
             z.null()
         ]).optional().default(null)
@@ -305,6 +353,120 @@ export const zGetAuthMenusData = z.object({
  * List of menus accessible to the user
  */
 export const zGetAuthMenusResponse = z.array(zAuthMenuSchema).describe('List of menus accessible to the user');
+
+export const zGetDepartmentData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        search: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        status: z.union([
+            z.array(z.enum(['ACTIVE', 'DISABLED'])),
+            z.null()
+        ]).optional().default(null)
+    }).optional()
+});
+
+/**
+ * Department tree retrieved successfully
+ */
+export const zGetDepartmentResponse = zDepartmentTreeResponseSchema;
+
+export const zPostDepartmentData = z.object({
+    body: z.object({
+        parentId: z.union([
+            z.string().min(1),
+            z.null()
+        ]).optional(),
+        name: z.string().min(1).max(50).describe('Department name'),
+        code: z.string().min(1).max(50).regex(/^[\w-]+$/).describe('Unique department code'),
+        leader: z.union([
+            z.string().max(50),
+            z.null()
+        ]).optional(),
+        phone: z.union([
+            z.string().max(20),
+            z.null()
+        ]).optional(),
+        email: z.union([
+            z.string().email(),
+            z.null()
+        ]).optional(),
+        order: z.number().int().gte(0).describe('Display order').optional().default(0),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Department status').optional()
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Department created successfully
+ */
+export const zPostDepartmentResponse = zDepartmentProfileResponseSchema;
+
+export const zDeleteDepartmentByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Department ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Department deleted successfully
+ */
+export const zDeleteDepartmentByIdResponse = z.object({
+    deletedCount: z.number().int().gte(0).describe('Number of departments deleted')
+}).describe('Department deleted successfully');
+
+export const zGetDepartmentByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Department ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Department detail retrieved successfully
+ */
+export const zGetDepartmentByIdResponse = zDepartmentProfileResponseSchema;
+
+export const zPutDepartmentByIdData = z.object({
+    body: z.object({
+        parentId: z.union([
+            z.string().min(1),
+            z.null()
+        ]).optional(),
+        name: z.string().min(1).max(50).describe('Department name').optional(),
+        code: z.string().min(1).max(50).regex(/^[\w-]+$/).describe('Unique department code').optional(),
+        leader: z.union([
+            z.string().max(50),
+            z.null()
+        ]).optional(),
+        phone: z.union([
+            z.string().max(20),
+            z.null()
+        ]).optional(),
+        email: z.union([
+            z.string().email(),
+            z.null()
+        ]).optional(),
+        order: z.number().int().gte(0).describe('Display order').optional(),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Department status').optional()
+    }),
+    path: z.object({
+        id: z.string().describe('Department ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Department updated successfully
+ */
+export const zPutDepartmentByIdResponse = zDepartmentProfileResponseSchema;
 
 export const zGetMenuData = z.object({
     body: z.never().optional(),
@@ -457,6 +619,10 @@ export const zGetUserPageData = z.object({
         roleIds: z.union([
             z.array(z.string()),
             z.null()
+        ]).optional().default(null),
+        departmentIds: z.union([
+            z.array(z.string()),
+            z.null()
         ]).optional().default(null)
     })
 });
@@ -485,6 +651,10 @@ export const zPostUserData = z.object({
             z.string().max(50),
             z.null()
         ]),
+        departmentId: z.union([
+            z.string().min(1),
+            z.null()
+        ]).optional(),
         roleIds: z.array(z.string().min(1)).describe('Role IDs to assign to the user').optional()
     }),
     path: z.never().optional(),
@@ -513,6 +683,7 @@ export const zPostUserResponse = z.object({
         z.string(),
         z.null()
     ]),
+    department: zUserDepartmentResponseSchema,
     createdAt: z.string().datetime().describe('Timestamp when the user was created'),
     updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 }).describe('User created successfully');
@@ -543,6 +714,10 @@ export const zPutUserByIdData = z.object({
         ]).optional(),
         displayName: z.union([
             z.string().max(50),
+            z.null()
+        ]).optional(),
+        departmentId: z.union([
+            z.string().min(1),
             z.null()
         ]).optional(),
         status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account').optional(),

@@ -45,6 +45,8 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
+const NO_DEPARTMENT_VALUE = '__none__'
+
 const addValidationSchema = toTypedSchema(z.object({
   username: z.string()
     .trim()
@@ -94,12 +96,17 @@ const editInitialValues = {
 const isPrefilling = ref(props.mode === 'edit')
 const validationSchema = computed(() => (props.mode === 'edit' ? editValidationSchema : addValidationSchema))
 
-const { roleOptions } = useUsers()
+const { roleOptions, departmentOptions } = useUsers()
 const editRoles = ref<string[]>([])
+const editDepartmentId = ref(NO_DEPARTMENT_VALUE)
 
 function toNullable(value: string): string | null {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
+}
+
+function normalizeDepartmentId(value: string): string | null {
+  return value === NO_DEPARTMENT_VALUE ? null : value
 }
 
 function handleOpenChange(value: boolean) {
@@ -129,6 +136,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
         status: response.data.status,
       })
       editRoles.value = (response.data.roles ?? []).map(role => role.id)
+      editDepartmentId.value = response.data.department?.id ?? NO_DEPARTMENT_VALUE
     }
     finally {
       isPrefilling.value = false
@@ -139,6 +147,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
 
   setValues(addInitialValues)
   editRoles.value = []
+  editDepartmentId.value = NO_DEPARTMENT_VALUE
   isPrefilling.value = false
 }
 
@@ -150,6 +159,7 @@ async function handleSubmit(values: Record<string, any>) {
       email: toNullable(values.email),
       phone: toNullable(values.phone),
       displayName: toNullable(values.displayName),
+      departmentId: normalizeDepartmentId(editDepartmentId.value),
       roleIds: editRoles.value.length > 0 ? editRoles.value : undefined,
     }
 
@@ -170,6 +180,7 @@ async function handleSubmit(values: Record<string, any>) {
     email: toNullable(values.email),
     phone: toNullable(values.phone),
     displayName: toNullable(values.displayName),
+    departmentId: normalizeDepartmentId(editDepartmentId.value),
     status: values.status,
     roleIds: editRoles.value,
   }
@@ -253,6 +264,24 @@ async function handleSubmit(values: Record<string, any>) {
             <label class="text-sm leading-none font-medium">Roles</label>
             <Skeleton v-if="isPrefilling" class="h-9" />
             <MultiSelect v-else v-model="editRoles" :options="roleOptions" placeholder="Select roles" search-placeholder="Search role" />
+          </div>
+
+          <div class="grid gap-2">
+            <label class="text-sm leading-none font-medium">Department</label>
+            <Skeleton v-if="isPrefilling" class="h-9" />
+            <Select v-else v-model="editDepartmentId">
+              <SelectTrigger class="h-9 w-full">
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem :value="NO_DEPARTMENT_VALUE">
+                  No department
+                </SelectItem>
+                <SelectItem v-for="option in departmentOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <template v-if="props.mode === 'add'">

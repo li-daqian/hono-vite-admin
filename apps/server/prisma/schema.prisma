@@ -22,16 +22,39 @@ model User {
   email               String?
   phone               String?
   displayName         String?    @map("display_name")
+  departmentId        String?    @map("department_id")
   status              UserStatus @default(ACTIVE)
   failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime?  @map("locked_until")
   createdAt           DateTime   @default(now()) @map("created_at")
   updatedAt           DateTime   @updatedAt @map("updated_at")
 
+  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   roles         UserRole[]
   refreshTokens RefreshToken[]
 
+  @@index([departmentId])
   @@map("user")
+}
+
+model Department {
+  id        String           @id @default(ulid())
+  parentId  String?          @map("parent_id")
+  name      String
+  code      String           @unique
+  leader    String?
+  phone     String?
+  email     String?
+  order     Int              @default(0)
+  status    DepartmentStatus @default(ACTIVE)
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  users User[]
+
+  @@index([parentId])
+  @@index([status])
+  @@map("department")
 }
 
 model Role {
@@ -153,6 +176,13 @@ enum UserStatus {
   DISABLED
 
   @@map("user_status")
+}
+
+enum DepartmentStatus {
+  ACTIVE
+  DISABLED
+
+  @@map("department_status")
 }
 
 enum PermissionType {

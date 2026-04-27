@@ -90,6 +90,21 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     },
   },
   {
+    id: 'department',
+    accessorKey: 'department',
+    header: ({ column }) => renderColumnHeader(column, 'Department'),
+    enableSorting: false,
+    meta: {
+      label: 'Department',
+    },
+    cell: ({ row }) => {
+      const department = row.original.department
+      return h('span', {
+        class: department ? undefined : 'text-muted-foreground',
+      }, department?.name ?? '-')
+    },
+  },
+  {
     id: 'phone',
     accessorKey: 'phone',
     header: ({ column }) => renderColumnHeader(column, 'Phone'),

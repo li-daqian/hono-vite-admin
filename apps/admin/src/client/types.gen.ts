@@ -25,7 +25,7 @@ export type AuditLogListItemSchema = {
     /**
      * Audited module identifier
      */
-    module: 'auth' | 'user' | 'role';
+    module: 'auth' | 'user' | 'role' | 'department';
     /**
      * Audited action identifier
      */
@@ -148,6 +148,66 @@ export type AuthMenuSchema = {
     actions: Array<AuthActionSchema>;
 };
 
+export type DepartmentProfileResponseSchema = {
+    /**
+     * Department ID
+     */
+    id: string;
+    /**
+     * Parent department ID
+     */
+    parentId: string | null;
+    /**
+     * Department name
+     */
+    name: string;
+    /**
+     * Unique department code
+     */
+    code: string;
+    /**
+     * Department leader name
+     */
+    leader: string | null;
+    /**
+     * Department contact phone
+     */
+    phone: string | null;
+    /**
+     * Department contact email
+     */
+    email: string | null;
+    /**
+     * Display order
+     */
+    order: number;
+    /**
+     * Department status
+     */
+    status: 'ACTIVE' | 'DISABLED';
+    /**
+     * Number of users assigned to this department
+     */
+    userCount: number;
+    /**
+     * Timestamp when the department was created
+     */
+    createdAt: Date;
+    /**
+     * Timestamp when the department was last updated
+     */
+    updatedAt: Date;
+};
+
+export type DepartmentTreeItemSchema = DepartmentProfileResponseSchema & {
+    /**
+     * Child departments
+     */
+    children: Array<DepartmentTreeItemSchema>;
+};
+
+export type DepartmentTreeResponseSchema = Array<DepartmentTreeItemSchema>;
+
 export type MenuActionSchema = {
     /**
      * Action ID
@@ -244,6 +304,24 @@ export type RolePermissionsResponseSchema = Array<RolePermissionTreeNodeSchema>;
 
 export type RolePermissionsUpdateRequestSchema = Array<RolePermissionTreeNodeSchema>;
 
+/**
+ * Department assigned to the user
+ */
+export type UserDepartmentResponseSchema = {
+    /**
+     * Unique identifier for the department
+     */
+    id: string;
+    /**
+     * Department name
+     */
+    name: string;
+    /**
+     * Department code
+     */
+    code: string;
+} | null;
+
 export type UserProfileResponseSchema = {
     /**
      * Unique identifier for the user
@@ -278,6 +356,7 @@ export type UserProfileResponseSchema = {
      * Display name of the user
      */
     displayName: string | null;
+    department: UserDepartmentResponseSchema;
     /**
      * Status of the user account
      */
@@ -327,7 +406,7 @@ export type GetAuditPageData = {
         /**
          * Filter audit logs by one or more module identifiers
          */
-        modules?: Array<'auth' | 'user' | 'role'> | null;
+        modules?: Array<'auth' | 'user' | 'role' | 'department'> | null;
     };
     url: '/audit/page';
 };
@@ -529,6 +608,181 @@ export type GetAuthMenusResponses = {
 };
 
 export type GetAuthMenusResponse = GetAuthMenusResponses[keyof GetAuthMenusResponses];
+
+export type GetDepartmentData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Search term for filtering departments by name or code
+         */
+        search?: string | null;
+        /**
+         * Filter departments by one or more statuses
+         */
+        status?: Array<'ACTIVE' | 'DISABLED'> | null;
+    };
+    url: '/department';
+};
+
+export type GetDepartmentResponses = {
+    /**
+     * Department tree retrieved successfully
+     */
+    200: DepartmentTreeResponseSchema;
+};
+
+export type GetDepartmentResponse = GetDepartmentResponses[keyof GetDepartmentResponses];
+
+export type PostDepartmentData = {
+    body: {
+        /**
+         * Parent department ID
+         */
+        parentId?: string | null;
+        /**
+         * Department name
+         */
+        name: string;
+        /**
+         * Unique department code
+         */
+        code: string;
+        /**
+         * Department leader name
+         */
+        leader?: string | null;
+        /**
+         * Department contact phone
+         */
+        phone?: string | null;
+        /**
+         * Department contact email
+         */
+        email?: string | null;
+        /**
+         * Display order
+         */
+        order?: number;
+        /**
+         * Department status
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+    };
+    path?: never;
+    query?: never;
+    url: '/department';
+};
+
+export type PostDepartmentResponses = {
+    /**
+     * Department created successfully
+     */
+    201: DepartmentProfileResponseSchema;
+};
+
+export type PostDepartmentResponse = PostDepartmentResponses[keyof PostDepartmentResponses];
+
+export type DeleteDepartmentByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Department ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/department/{id}';
+};
+
+export type DeleteDepartmentByIdResponses = {
+    /**
+     * Department deleted successfully
+     */
+    200: {
+        /**
+         * Number of departments deleted
+         */
+        deletedCount: number;
+    };
+};
+
+export type DeleteDepartmentByIdResponse = DeleteDepartmentByIdResponses[keyof DeleteDepartmentByIdResponses];
+
+export type GetDepartmentByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Department ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/department/{id}';
+};
+
+export type GetDepartmentByIdResponses = {
+    /**
+     * Department detail retrieved successfully
+     */
+    200: DepartmentProfileResponseSchema;
+};
+
+export type GetDepartmentByIdResponse = GetDepartmentByIdResponses[keyof GetDepartmentByIdResponses];
+
+export type PutDepartmentByIdData = {
+    body: {
+        /**
+         * Parent department ID
+         */
+        parentId?: string | null;
+        /**
+         * Department name
+         */
+        name?: string;
+        /**
+         * Unique department code
+         */
+        code?: string;
+        /**
+         * Department leader name
+         */
+        leader?: string | null;
+        /**
+         * Department contact phone
+         */
+        phone?: string | null;
+        /**
+         * Department contact email
+         */
+        email?: string | null;
+        /**
+         * Display order
+         */
+        order?: number;
+        /**
+         * Department status
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+    };
+    path: {
+        /**
+         * Department ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/department/{id}';
+};
+
+export type PutDepartmentByIdResponses = {
+    /**
+     * Department updated successfully
+     */
+    200: DepartmentProfileResponseSchema;
+};
+
+export type PutDepartmentByIdResponse = PutDepartmentByIdResponses[keyof PutDepartmentByIdResponses];
 
 export type GetMenuData = {
     body?: never;
@@ -763,6 +1017,10 @@ export type GetUserPageData = {
          * Filter users by one or more role IDs
          */
         roleIds?: Array<string> | null;
+        /**
+         * Filter users by one or more department IDs
+         */
+        departmentIds?: Array<string> | null;
     };
     url: '/user/page';
 };
@@ -804,6 +1062,10 @@ export type PostUserData = {
          * Display name of the user
          */
         displayName: string | null;
+        /**
+         * Department ID to assign to the user
+         */
+        departmentId?: string | null;
         /**
          * Role IDs to assign to the user
          */
@@ -852,6 +1114,7 @@ export type PostUserResponses = {
          * Display name of the user
          */
         displayName: string | null;
+        department: UserDepartmentResponseSchema;
         /**
          * Timestamp when the user was created
          */
@@ -904,6 +1167,10 @@ export type PutUserByIdData = {
          * Display name of the user
          */
         displayName?: string | null;
+        /**
+         * Department ID to assign to the user
+         */
+        departmentId?: string | null;
         /**
          * Status of the user account
          */

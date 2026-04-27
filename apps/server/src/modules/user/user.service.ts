@@ -27,8 +27,15 @@ class UserService {
     },
   } as const
 
-  private mapUserRoles<T extends {
+  private readonly userDepartmentSelection = {
+    id: true,
+    name: true,
+    code: true,
+  } as const
+
+  private mapUser<T extends {
     roles: Array<{ role: { id: string, name: string } }>
+    department: { id: string, name: string, code: string } | null
     lockedUntil: Date | null
     createdAt: Date
     updatedAt: Date
@@ -41,6 +48,7 @@ class UserService {
         id: item.role.id,
         name: item.role.name,
       })),
+      department: user.department,
       lockedUntil: user.lockedUntil?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
@@ -51,6 +59,7 @@ class UserService {
     if (!(await this.isUsernameUnique(request.username))) {
       throw BusinessError.UsernameAlreadyExists()
     }
+    await this.ensureDepartmentExists(request.departmentId)
 
     // Generate salt and hash password
     const { hashedPassword, salt } = await createPasswordHash(request.password)
@@ -65,6 +74,7 @@ class UserService {
           email: request.email,
           phone: request.phone,
           displayName: request.displayName,
+          departmentId: request.departmentId ?? null,
           ...(request.roleIds && request.roleIds.length > 0 && {
             roles: {
               create: request.roleIds.map(roleId => ({
@@ -76,6 +86,9 @@ class UserService {
         include: {
           roles: {
             select: this.userRoleSelection,
+          },
+          department: {
+            select: this.userDepartmentSelection,
           },
         },
       })
@@ -91,7 +104,7 @@ class UserService {
 
     // Remove sensitive info before returning
     const { password, salt: userSalt, ...safeUser } = user
-    return this.mapUserRoles(safeUser)
+    return this.mapUser(safeUser)
   }
 
   async getUserProfile(userId: string): Promise<UserProfileResponse> {
@@ -101,6 +114,9 @@ class UserService {
         roles: {
           select: this.userRoleSelection,
         },
+        department: {
+          select: this.userDepartmentSelection,
+        },
       },
     })
     if (!user) {
@@ -108,11 +124,11 @@ class UserService {
     }
 
     const { password, salt, ...safeUser } = user
-    return this.mapUserRoles(safeUser)
+    return this.mapUser(safeUser)
   }
 
   async getUserPage(query: UserPaginationRequest): Promise<UserPaginationResponse> {
-    const { page, pageSize, search, status, roleIds, sort } = query
+    const { page, pageSize, search, status, roleIds, departmentIds, sort } = query
     const skip = (page - 1) * pageSize
 
     const where = {
@@ -120,12 +136,17 @@ class UserService {
       ...(roleIds && roleIds.length > 0 && {
         roles: { some: { roleId: { in: roleIds } } },
       }),
+      ...(departmentIds && departmentIds.length > 0 && {
+        departmentId: { in: departmentIds },
+      }),
       ...(search
         ? {
             OR: [
               { username: { contains: search, mode: 'insensitive' as const } },
               { email: { contains: search, mode: 'insensitive' as const } },
               { displayName: { contains: search, mode: 'insensitive' as const } },
+              { department: { is: { name: { contains: search, mode: 'insensitive' as const } } } },
+              { department: { is: { code: { contains: search, mode: 'insensitive' as const } } } },
             ],
           }
         : {}),
@@ -153,6 +174,9 @@ class UserService {
           email: true,
           phone: true,
           displayName: true,
+          department: {
+            select: this.userDepartmentSelection,
+          },
           status: true,
           failedLoginAttempts: true,
           lockedUntil: true,
@@ -162,7 +186,7 @@ class UserService {
       }),
     ])
 
-    const items = users.map(user => this.mapUserRoles(user))
+    const items = users.map(user => this.mapUser(user))
 
     return paginate(items, total, query)
   }
@@ -178,6 +202,9 @@ class UserService {
     if (request.username && request.username !== user.username && !(await this.isUsernameUnique(request.username))) {
       throw BusinessError.UsernameAlreadyExists()
     }
+    if (request.departmentId !== undefined) {
+      await this.ensureDepartmentExists(request.departmentId)
+    }
 
     const updatedUser = await prisma.$transaction(async (tx) => {
       const nextUser = await tx.user.update({
@@ -187,6 +214,7 @@ class UserService {
           email: request.email,
           phone: request.phone,
           displayName: request.displayName,
+          departmentId: request.departmentId,
           status: request.status,
           ...(request.roleIds !== undefined && {
             roles: {
@@ -202,6 +230,9 @@ class UserService {
         include: {
           roles: {
             select: this.userRoleSelection,
+          },
+          department: {
+            select: this.userDepartmentSelection,
           },
         },
       })
@@ -219,7 +250,7 @@ class UserService {
     })
 
     const { password, salt, ...safeUser } = updatedUser
-    return this.mapUserRoles(safeUser)
+    return this.mapUser(safeUser)
   }
 
   async updateUserPassword(userId: string, request: UserUpdatePasswordRequest): Promise<void> {
@@ -351,6 +382,20 @@ class UserService {
       where: { username },
     })
     return existingUser === null
+  }
+
+  private async ensureDepartmentExists(departmentId: string | null | undefined): Promise<void> {
+    if (!departmentId) {
+      return
+    }
+
+    const department = await prisma.department.findUnique({
+      where: { id: departmentId },
+      select: { id: true },
+    })
+    if (!department) {
+      throw BusinessError.BadRequest('Department not found', 'DepartmentNotFound')
+    }
   }
 }
 
