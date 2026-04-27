@@ -37,6 +37,8 @@ Required environment variables for the API project:
 - `ADMIN_EMAIL`
 - `LOG_LEVEL`
 - `READ_ONLY_MODE` (optional)
+- `LOGIN_MAX_FAILED_ATTEMPTS` (optional, defaults to `5`)
+- `LOGIN_LOCK_DURATION` (optional, defaults to `15m`)
 
 Set `FRONTEND_DOMAIN` to the frontend hostname only, without protocol. Example: `admin.example.com`.
 

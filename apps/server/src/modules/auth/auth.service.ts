@@ -1,4 +1,5 @@
-import type { Action, Menu } from '@server/generated/prisma/client'
+import type { Action, Menu, PrismaClient, User } from '@server/generated/prisma/client'
+import type { TransactionClient } from '@server/generated/prisma/internal/prismaNamespace'
 import type {
   AuthChangePasswordRequest,
   AuthLoginRequest,
@@ -18,6 +19,11 @@ import { prisma } from '@server/src/lib/prisma'
 import { logger } from '@server/src/middleware/trace.middleware'
 import { auditService } from '@server/src/modules/audit/audit.service'
 import { parseTimeDuration } from '@server/src/utils/date'
+
+type AuditClient = PrismaClient | TransactionClient
+type LoginUser = Pick<User, 'id' | 'username' | 'password' | 'salt' | 'displayName' | 'status' | 'failedLoginAttempts' | 'lockedUntil'>
+
+const LOGIN_LOCK_WARNING_THRESHOLD = 2
 
 class AuthService {
   async getPrefilledCredentials(): Promise<AuthPrefillResponse> {
@@ -52,16 +58,30 @@ class AuthService {
       throw BusinessError.BadRequest('User account is disabled', 'UserAccountDisabled')
     }
 
-    const isPasswordValid = await verifyPassword(request.password, user.password, user.salt)
-    if (!isPasswordValid) {
+    const now = new Date()
+    const activeLockedUntil = this.getActiveLockedUntil(user.lockedUntil, now)
+    if (activeLockedUntil) {
       await this.recordLoginFailure({
         operatorId: user.id,
         operatorUsername: user.username,
         operatorDisplayName: user.displayName,
-        reason: 'password-incorrect',
+        reason: 'account-locked',
         username: user.username,
+        failedLoginAttempts: user.failedLoginAttempts,
+        maxFailedLoginAttempts: getEnv().auth.maxFailedLoginAttempts,
+        lockedUntil: activeLockedUntil.toISOString(),
       })
-      throw BusinessError.UserOrPasswordIncorrect()
+      throw BusinessError.UserAccountLocked(activeLockedUntil)
+    }
+
+    const isPasswordValid = await verifyPassword(request.password, user.password, user.salt)
+    if (!isPasswordValid) {
+      const failure = await this.recordPasswordLoginFailure(user, this.getCurrentFailedLoginAttempts(user, now))
+      if (failure.lockedUntil) {
+        throw BusinessError.UserAccountLocked(failure.lockedUntil)
+      }
+
+      throw BusinessError.UserOrPasswordIncorrect(this.getLoginFailureWarningRemainingAttempts(failure.remainingAttempts))
     }
 
     const accessToken = await jwtService.generateAccessToken(user.id)
@@ -74,6 +94,16 @@ class AuthService {
           expiresAt: parseTimeDuration(refreshTokenExpiry),
         },
       })
+
+      if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+          },
+        })
+      }
 
       await auditService.record(tx, {
         category: 'login',
@@ -286,14 +316,71 @@ class AuthService {
     return buildMenuNode(menusByParentId[''] || [])
   }
 
+  private getActiveLockedUntil(lockedUntil: Date | null, now: Date): Date | null {
+    return lockedUntil && lockedUntil > now ? lockedUntil : null
+  }
+
+  private getCurrentFailedLoginAttempts(user: LoginUser, now: Date): number {
+    if (user.lockedUntil && user.lockedUntil <= now) {
+      return 0
+    }
+
+    return user.failedLoginAttempts
+  }
+
+  private getLoginFailureWarningRemainingAttempts(remainingAttempts: number): number | undefined {
+    return remainingAttempts <= LOGIN_LOCK_WARNING_THRESHOLD ? remainingAttempts : undefined
+  }
+
+  private async recordPasswordLoginFailure(user: LoginUser, currentFailedLoginAttempts: number) {
+    const maxFailedLoginAttempts = getEnv().auth.maxFailedLoginAttempts
+    const failedLoginAttempts = currentFailedLoginAttempts + 1
+    const remainingAttempts = Math.max(maxFailedLoginAttempts - failedLoginAttempts, 0)
+    const lockedUntil = failedLoginAttempts >= maxFailedLoginAttempts
+      ? parseTimeDuration(getEnv().auth.loginLockDuration)
+      : null
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts,
+          lockedUntil,
+        },
+      })
+
+      await this.recordLoginFailure({
+        operatorId: user.id,
+        operatorUsername: user.username,
+        operatorDisplayName: user.displayName,
+        reason: lockedUntil ? 'account-locked' : 'password-incorrect',
+        username: user.username,
+        failedLoginAttempts,
+        maxFailedLoginAttempts,
+        remainingAttempts,
+        lockedUntil: lockedUntil?.toISOString(),
+      }, tx)
+    })
+
+    return {
+      failedLoginAttempts,
+      remainingAttempts,
+      lockedUntil,
+    }
+  }
+
   private async recordLoginFailure(input: {
     operatorId: string | null
     operatorUsername: string
     operatorDisplayName: string | null | undefined
     reason: string
     username: string
-  }) {
-    await auditService.record(prisma, {
+    failedLoginAttempts?: number
+    maxFailedLoginAttempts?: number
+    remainingAttempts?: number
+    lockedUntil?: string
+  }, client: AuditClient = prisma) {
+    await auditService.record(client, {
       category: 'login',
       module: 'auth',
       action: 'login-failed',
@@ -306,6 +393,10 @@ class AuthService {
         username: input.username,
         result: 'failure',
         reason: input.reason,
+        ...(input.failedLoginAttempts !== undefined && { failedLoginAttempts: input.failedLoginAttempts }),
+        ...(input.maxFailedLoginAttempts !== undefined && { maxFailedLoginAttempts: input.maxFailedLoginAttempts }),
+        ...(input.remainingAttempts !== undefined && { remainingAttempts: input.remainingAttempts }),
+        ...(input.lockedUntil !== undefined && { lockedUntil: input.lockedUntil }),
       },
     })
   }

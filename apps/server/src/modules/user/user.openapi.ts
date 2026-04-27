@@ -11,6 +11,7 @@ import {
   UserPaginationRequestSchema,
   UserPaginationResponseSchema,
   UserProfileResponseSchema,
+  UserUnlockResponseSchema,
   UserUpdatePasswordRequestSchema,
   UserUpdatePasswordResponseSchema,
   UserUpdateRequestSchema,
@@ -20,6 +21,7 @@ const USER_ACTIONS = {
   CREATE: 'access.users.create',
   EDIT: 'access.users.edit',
   PASSWORD: 'access.users.password',
+  UNLOCK: 'access.users.unlock',
   DELETE: 'access.users.delete',
 } as const
 
@@ -113,6 +115,23 @@ export const updateUserPasswordRoute = createRoute({
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.PASSWORD)],
+  tags: ['User'],
+})
+
+export const unlockUserRoute = createRoute({
+  path: '/{id}/unlock',
+  method: 'post',
+  description: 'Unlock a user account',
+  request: {
+    params: z.object({
+      id: z.string().openapi({ description: 'User ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+    }),
+  },
+  responses: {
+    200: { description: 'User account unlocked successfully', content: { 'application/json': { schema: UserUnlockResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware, requireActionPermission(USER_ACTIONS.UNLOCK)],
   tags: ['User'],
 })
 

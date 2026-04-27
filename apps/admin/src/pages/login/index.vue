@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PostAuthLoginData } from '@admin/client'
+import type { ErrorResponse, PostAuthLoginData } from '@admin/client'
 import { getAuthPrefill, postAuthLogin } from '@admin/client'
 import { Button } from '@admin/components/ui/button'
 import {
@@ -14,6 +14,7 @@ import { Input } from '@admin/components/ui/input'
 import { Skeleton } from '@admin/components/ui/skeleton'
 import { AuthManager } from '@admin/lib/auth'
 import { toTypedSchema } from '@vee-validate/zod'
+import axios from 'axios'
 import { ref } from 'vue'
 import z from 'zod'
 
@@ -28,6 +29,22 @@ const validationSchema = toTypedSchema(z.object({
 }))
 
 const loading = ref(true)
+const loginError = ref<string | null>(null)
+
+function formatLoginErrorMessage(errorResponse: ErrorResponse): string {
+  const lockedUntilPrefix = 'after '
+  const lockedUntilIndex = errorResponse.message.lastIndexOf(lockedUntilPrefix)
+  const lockedUntil = lockedUntilIndex >= 0
+    ? errorResponse.message.slice(lockedUntilIndex + lockedUntilPrefix.length)
+    : null
+  const lockedUntilDate = lockedUntil ? new Date(lockedUntil) : null
+
+  if (lockedUntilDate && !Number.isNaN(lockedUntilDate.getTime())) {
+    return `Account is locked. Try again after ${lockedUntilDate.toLocaleString()}.`
+  }
+
+  return errorResponse.message
+}
 
 async function onVueMounted(setValues: (values: Record<string, any>) => void) {
   try {
@@ -40,14 +57,26 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
 }
 
 async function handleLogin(values: Record<string, any>) {
+  loginError.value = null
   const formData = values as PostAuthLoginData['body']
-  const res = await postAuthLogin<true>({
-    body: {
-      ...formData,
-    },
-  })
 
-  AuthManager.onLoginSuccess(res.data)
+  try {
+    const res = await postAuthLogin<true>({
+      body: {
+        ...formData,
+      },
+    })
+
+    await AuthManager.onLoginSuccess(res.data)
+  }
+  catch (error) {
+    if (axios.isAxiosError<ErrorResponse>(error) && error.response?.data) {
+      loginError.value = formatLoginErrorMessage(error.response.data)
+      return
+    }
+
+    throw error
+  }
 }
 </script>
 
@@ -106,6 +135,14 @@ async function handleLogin(values: Record<string, any>) {
                     <FormMessage />
                   </FormItem>
                 </FormField>
+
+                <p
+                  v-if="loginError"
+                  role="alert"
+                  class="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm"
+                >
+                  {{ loginError }}
+                </p>
 
                 <Button
                   type="submit"

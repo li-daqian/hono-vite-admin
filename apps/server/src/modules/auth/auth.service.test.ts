@@ -6,11 +6,11 @@ import { holdContext } from '@server/src/middleware/context.middleware'
 import { authService } from '@server/src/modules/auth/auth.service'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
-function createContext(userId: string, requestId: string) {
+function createContext(userId: string, requestId: string, path = '/api/v1/auth/change-password') {
   return {
     req: {
       method: 'POST',
-      path: '/api/v1/auth/change-password',
+      path,
       header(name: string) {
         const headers: Record<string, string | undefined> = {
           'cf-connecting-ip': undefined,
@@ -39,14 +39,16 @@ function createContext(userId: string, requestId: string) {
 
 describe('auth service', () => {
   let userId: string
+  let username: string
   let requestId: string
 
   beforeEach(async () => {
     requestId = `req-${randomUUID()}`
     const { hashedPassword, salt } = await createPasswordHash('OldPassword123!')
+    username = `auth-${randomUUID()}`
     const user = await prisma.user.create({
       data: {
-        username: `change-password-${randomUUID()}`,
+        username,
         password: hashedPassword,
         salt,
         displayName: 'Password Test User',
@@ -142,5 +144,109 @@ describe('auth service', () => {
       result: 'failure',
       reason: 'current-password-incorrect',
     })
+  })
+
+  it('locks the account after repeated login failures and clears the lock after a successful login', async () => {
+    const originalLoginMaxFailedAttempts = process.env.LOGIN_MAX_FAILED_ATTEMPTS
+    const originalLoginLockDuration = process.env.LOGIN_LOCK_DURATION
+    process.env.LOGIN_MAX_FAILED_ATTEMPTS = '2'
+    process.env.LOGIN_LOCK_DURATION = '15m'
+
+    try {
+      let firstError: unknown
+      let lockError: unknown
+      let lockedPasswordError: unknown
+
+      await holdContext(createContext(userId, requestId, '/api/v1/auth/login'), async () => {
+        try {
+          await authService.login({
+            username,
+            password: 'WrongPassword123!',
+          })
+        }
+        catch (caughtError) {
+          firstError = caughtError
+        }
+
+        try {
+          await authService.login({
+            username,
+            password: 'WrongPassword123!',
+          })
+        }
+        catch (caughtError) {
+          lockError = caughtError
+        }
+
+        try {
+          await authService.login({
+            username,
+            password: 'OldPassword123!',
+          })
+        }
+        catch (caughtError) {
+          lockedPasswordError = caughtError
+        }
+      })
+
+      const lockedUser = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+      })
+      const refreshTokensWhileLocked = await prisma.refreshToken.count({
+        where: { userId },
+      })
+
+      expect(firstError).toBeInstanceOf(BusinessError)
+      expect((firstError as BusinessError).toString()).toContain('UserOrPasswordIncorrect')
+      expect((firstError as BusinessError).toString()).toContain('1 attempt remains before this account is locked')
+      expect(lockError).toBeInstanceOf(BusinessError)
+      expect((lockError as BusinessError).toString()).toContain('UserAccountLocked')
+      expect(lockedPasswordError).toBeInstanceOf(BusinessError)
+      expect((lockedPasswordError as BusinessError).toString()).toContain('UserAccountLocked')
+      expect(lockedUser.failedLoginAttempts).toBe(2)
+      expect(lockedUser.lockedUntil).toBeInstanceOf(Date)
+      expect(lockedUser.lockedUntil!.getTime()).toBeGreaterThan(Date.now())
+      expect(refreshTokensWhileLocked).toBe(0)
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          lockedUntil: new Date(Date.now() - 1_000),
+        },
+      })
+
+      await holdContext(createContext(userId, requestId, '/api/v1/auth/login'), async () => {
+        await authService.login({
+          username,
+          password: 'OldPassword123!',
+        })
+      })
+
+      const unlockedUser = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+      })
+      const refreshTokensAfterLogin = await prisma.refreshToken.count({
+        where: { userId },
+      })
+
+      expect(unlockedUser.failedLoginAttempts).toBe(0)
+      expect(unlockedUser.lockedUntil).toBeNull()
+      expect(refreshTokensAfterLogin).toBe(1)
+    }
+    finally {
+      if (originalLoginMaxFailedAttempts === undefined) {
+        delete process.env.LOGIN_MAX_FAILED_ATTEMPTS
+      }
+      else {
+        process.env.LOGIN_MAX_FAILED_ATTEMPTS = originalLoginMaxFailedAttempts
+      }
+
+      if (originalLoginLockDuration === undefined) {
+        delete process.env.LOGIN_LOCK_DURATION
+      }
+      else {
+        process.env.LOGIN_LOCK_DURATION = originalLoginLockDuration
+      }
+    }
   })
 })

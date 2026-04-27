@@ -15,12 +15,25 @@ export const statusClassMap: Record<UserPageItem['status'], string> = {
   ACTIVE: 'border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300',
   DISABLED: 'border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300',
 }
+const lockedStatusClass = 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
 
 function renderColumnHeader(column: Column<UserPageItem, unknown>, title: string) {
   return h(DataTableColumnHeader, {
     column: column as unknown as Column<unknown, unknown>,
     title,
   })
+}
+
+function getLockedUntil(user: UserPageItem): Date | null {
+  if (user.status !== 'ACTIVE') {
+    return null
+  }
+
+  if (!user.lockedUntil) {
+    return null
+  }
+
+  return user.lockedUntil.getTime() > Date.now() ? user.lockedUntil : null
 }
 
 export const usersColumns: ColumnDef<UserPageItem>[] = [
@@ -91,10 +104,15 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     header: ({ column }) => renderColumnHeader(column, 'Status'),
     enableSorting: false,
     enableHiding: false,
-    cell: ({ row }) => h(Badge, {
-      variant: 'outline',
-      class: cn('capitalize', statusClassMap[row.original.status]),
-    }, () => row.original.status.toLowerCase()),
+    cell: ({ row }) => {
+      const lockedUntil = getLockedUntil(row.original)
+
+      return h(Badge, {
+        variant: 'outline',
+        class: cn('capitalize', lockedUntil ? lockedStatusClass : statusClassMap[row.original.status]),
+        title: lockedUntil ? `Locked until ${lockedUntil.toLocaleString()}` : undefined,
+      }, () => lockedUntil ? 'locked' : row.original.status.toLowerCase())
+    },
   },
   {
     id: 'roles',

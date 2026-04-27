@@ -71,6 +71,9 @@ export const UserUpdatePasswordResponseSchema = z.object({})
 export type UserUpdatePasswordRequest = z.infer<typeof UserUpdatePasswordRequestSchema>
 export type UserUpdatePasswordResponse = z.infer<typeof UserUpdatePasswordResponseSchema>
 
+export const UserUnlockResponseSchema = z.object({})
+export type UserUnlockResponse = z.infer<typeof UserUnlockResponseSchema>
+
 export const UserBatchDeleteRequestSchema = z.object({
   userIds: z.array(z.string()).min(1).openapi({ description: 'IDs of users to delete', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
 })
@@ -104,6 +107,8 @@ export const UserProfileResponseSchema = z.object({
   phone: z.string().nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
   status: z.enum(Object.values(UserStatus)).openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
+  failedLoginAttempts: z.number().int().nonnegative().openapi({ description: 'Consecutive failed login attempts', example: 0 }),
+  lockedUntil: z.iso.datetime().nullable().openapi({ description: 'Account lock expiry time, null if the account is not locked', example: null }),
   createdAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was created', example: '2024-01-01T12:00:00Z' }),
   updatedAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was last updated', example: '2024-01-02T12:00:00Z' }),
 }).openapi('UserProfileResponseSchema')

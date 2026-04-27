@@ -156,4 +156,38 @@ describe('user service', () => {
     expect((error as BusinessError).toString()).toContain('User not found')
     expect(auditLog).toBeNull()
   })
+
+  it('unlocks a user account', async () => {
+    const lockedUntil = new Date(Date.now() + 60_000)
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        failedLoginAttempts: 5,
+        lockedUntil,
+      },
+    })
+
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      await userService.unlockUser(targetUserId)
+    })
+
+    const unlockedUser = await prisma.user.findUniqueOrThrow({
+      where: { id: targetUserId },
+    })
+    const auditLog = await prisma.auditLog.findFirst({
+      where: {
+        requestId,
+        action: 'unlock',
+      },
+    })
+
+    expect(unlockedUser.failedLoginAttempts).toBe(0)
+    expect(unlockedUser.lockedUntil).toBeNull()
+    expect(auditLog?.requestSnapshot).toEqual({
+      targetUserId,
+      result: 'success',
+      previousFailedLoginAttempts: 5,
+      previousLockedUntil: lockedUntil.toISOString(),
+    })
+  })
 })

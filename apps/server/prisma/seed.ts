@@ -26,6 +26,7 @@ const menus = [
           { code: 'create', name: 'Create', description: 'Create user' },
           { code: 'edit', name: 'Edit', description: 'Edit user' },
           { code: 'password', name: 'Change Password', description: 'Change user password' },
+          { code: 'unlock', name: 'Unlock', description: 'Unlock user account' },
           { code: 'delete', name: 'Delete', description: 'Delete user' },
         ],
       },

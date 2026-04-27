@@ -65,10 +65,10 @@ function setupAxiosInterceptors() {
         return axiosInstance.request(config)
       }
       else {
-        if (axios.isAxiosError<ErrorResponse>(error)) {
+        if (axios.isAxiosError<ErrorResponse>(error) && !isAuthLoginRequest(config)) {
           toast.error(error.response?.data.message ?? 'An unknown error occurred')
         }
-        else {
+        else if (!isAuthLoginRequest(config)) {
           toast.error(error.message ?? 'An unknown error occurred')
         }
       }
@@ -76,6 +76,10 @@ function setupAxiosInterceptors() {
       return Promise.reject(error)
     },
   )
+}
+
+function isAuthLoginRequest(config: AxiosError['config']): boolean {
+  return config?.url?.includes('/auth/login') ?? false
 }
 
 function wrapWithValidationHandler(originalMethod: any) {

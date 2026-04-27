@@ -283,6 +283,14 @@ export type UserProfileResponseSchema = {
      */
     status: 'ACTIVE' | 'DISABLED';
     /**
+     * Consecutive failed login attempts
+     */
+    failedLoginAttempts: number;
+    /**
+     * Account lock expiry time, null if the account is not locked
+     */
+    lockedUntil: Date | null;
+    /**
      * Timestamp when the user was created
      */
     createdAt: Date;
@@ -955,6 +963,29 @@ export type PostUserByIdPasswordResponses = {
 };
 
 export type PostUserByIdPasswordResponse = PostUserByIdPasswordResponses[keyof PostUserByIdPasswordResponses];
+
+export type PostUserByIdUnlockData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/user/{id}/unlock';
+};
+
+export type PostUserByIdUnlockResponses = {
+    /**
+     * User account unlocked successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type PostUserByIdUnlockResponse = PostUserByIdUnlockResponses[keyof PostUserByIdUnlockResponses];
 
 export type DeleteUserBatchData = {
     body: {

@@ -4,6 +4,7 @@ import UsersActionDialog from './users-action-dialog.vue'
 import UsersDeleteDialog from './users-delete-dialog.vue'
 import UsersPasswordDialog from './users-password-dialog.vue'
 import { useUsers } from './users-provider.vue'
+import UsersUnlockDialog from './users-unlock-dialog.vue'
 
 const emit = defineEmits<{
   (e: 'success'): void
@@ -35,6 +36,16 @@ function handlePasswordOpenChange(value: boolean) {
   setOpen(value ? 'password' : null)
   if (!value)
     setCurrentRow(null)
+}
+
+function handleUnlockOpenChange(value: boolean) {
+  if (value) {
+    setOpen('unlock')
+    return
+  }
+
+  setOpen(null)
+  clearCurrentRowWithDelay()
 }
 
 function handleDeleteOpenChange(value: boolean) {
@@ -71,6 +82,14 @@ function handleDeleteOpenChange(value: boolean) {
     :current-row="currentRow"
     @success="emit('success')"
     @update:open="handlePasswordOpenChange"
+  />
+
+  <UsersUnlockDialog
+    v-if="currentRow"
+    :open="open === 'unlock'"
+    :current-row="currentRow"
+    @success="emit('success')"
+    @update:open="handleUnlockOpenChange"
   />
 
   <UsersDeleteDialog

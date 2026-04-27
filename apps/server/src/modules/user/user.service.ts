@@ -7,6 +7,7 @@ import type {
   UserPaginationRequest,
   UserPaginationResponse,
   UserProfileResponse,
+  UserUnlockResponse,
   UserUpdatePasswordRequest,
   UserUpdateRequest,
 } from '@server/src/modules/user/user.schema'
@@ -26,13 +27,21 @@ class UserService {
     },
   } as const
 
-  private mapUserRoles<T extends { roles: Array<{ role: { id: string, name: string } }>, createdAt: Date, updatedAt: Date }>(user: T) {
+  private mapUserRoles<T extends {
+    roles: Array<{ role: { id: string, name: string } }>
+    lockedUntil: Date | null
+    createdAt: Date
+    updatedAt: Date
+  }>(
+    user: T,
+  ) {
     return {
       ...user,
       roles: user.roles.map(item => ({
         id: item.role.id,
         name: item.role.name,
       })),
+      lockedUntil: user.lockedUntil?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }
@@ -145,6 +154,8 @@ class UserService {
           phone: true,
           displayName: true,
           status: true,
+          failedLoginAttempts: true,
+          lockedUntil: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -245,6 +256,43 @@ class UserService {
         },
       })
     })
+  }
+
+  async unlockUser(userId: string): Promise<UserUnlockResponse> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        failedLoginAttempts: true,
+        lockedUntil: true,
+      },
+    })
+    if (!user) {
+      throw BusinessError.NotFound('User not found')
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
+      })
+
+      await auditService.record(tx, {
+        module: 'user',
+        action: 'unlock',
+        requestSnapshot: {
+          targetUserId: userId,
+          result: 'success',
+          previousFailedLoginAttempts: user.failedLoginAttempts,
+          previousLockedUntil: user.lockedUntil?.toISOString() ?? null,
+        },
+      })
+    })
+
+    return {}
   }
 
   async deleteUsers(userIds: string[]): Promise<UserBatchDeleteResponse> {

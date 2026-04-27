@@ -78,6 +78,9 @@ export const putRoleByIdPermissionsResponseTransformer = async (data: any): Prom
 };
 
 const userProfileResponseSchemaSchemaResponseTransformer = (data: any) => {
+    if (data.lockedUntil) {
+        data.lockedUntil = new Date(data.lockedUntil);
+    }
     data.createdAt = new Date(data.createdAt);
     data.updatedAt = new Date(data.updatedAt);
     return data;

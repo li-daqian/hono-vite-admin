@@ -5,6 +5,7 @@ import type {
   getUserDetailRoute,
   getUserPageRoute,
   getUserProfileRoute,
+  unlockUserRoute,
   updateUserPasswordRoute,
   updateUserRoute,
   updateUserStatusBatchRoute,
@@ -41,6 +42,12 @@ export const handleUpdateUserPassword: RouteHandler<typeof updateUserPasswordRou
   const { id } = c.req.valid('param')
   const body = c.req.valid('json')
   await userService.updateUserPassword(id, body)
+  return c.json({}, 200)
+}
+
+export const handleUnlockUser: RouteHandler<typeof unlockUserRoute> = async (c) => {
+  const { id } = c.req.valid('param')
+  await userService.unlockUser(id)
   return c.json({}, 200)
 }
 

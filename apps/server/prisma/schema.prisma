@@ -15,16 +15,18 @@ datasource db {
 }
 
 model User {
-  id          String     @id @default(ulid())
-  username    String     @unique
-  password    String
-  salt        String
-  email       String?
-  phone       String?
-  displayName String?    @map("display_name")
-  status      UserStatus @default(ACTIVE)
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  id                  String     @id @default(ulid())
+  username            String     @unique
+  password            String
+  salt                String
+  email               String?
+  phone               String?
+  displayName         String?    @map("display_name")
+  status              UserStatus @default(ACTIVE)
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
 
   roles         UserRole[]
   refreshTokens RefreshToken[]

@@ -7,7 +7,7 @@ import { defineComponent, inject, onMounted, provide, ref } from 'vue'
 type User = UserProfileResponseSchema
 type UserRole = User['roles'][number]
 
-export type UsersDialogType = 'add' | 'edit' | 'password' | 'delete'
+export type UsersDialogType = 'add' | 'edit' | 'password' | 'unlock' | 'delete'
 
 export interface UsersContextType {
   open: Ref<UsersDialogType | null>

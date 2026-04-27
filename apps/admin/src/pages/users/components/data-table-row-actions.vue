@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
 import { usePageActionPermissions } from '@admin/lib/permissions'
-import { Ellipsis, Key, Trash2, UserPen } from 'lucide-vue-next'
+import { Ellipsis, Key, LockOpen, Trash2, UserPen } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useUsers } from './users-provider.vue'
 
@@ -25,7 +25,9 @@ const { setOpen, setCurrentRow } = useUsers()
 const permissions = usePageActionPermissions()
 const editPermission = computed(() => permissions.resolve('edit', { subject: 'users' }))
 const passwordPermission = computed(() => permissions.resolve('password', { actionName: 'Change password' }))
+const unlockPermission = computed(() => permissions.resolve('unlock', { actionName: 'Unlock', subject: 'users' }))
 const deletePermission = computed(() => permissions.resolve('delete', { subject: 'users' }))
+const isLocked = computed(() => Boolean(props.row.lockedUntil && props.row.lockedUntil.getTime() > Date.now()))
 
 function handleEdit() {
   setCurrentRow(props.row)
@@ -40,6 +42,11 @@ function handleDelete() {
 function handlePassword() {
   setCurrentRow(props.row)
   setOpen('password')
+}
+
+function handleUnlock() {
+  setCurrentRow(props.row)
+  setOpen('unlock')
 }
 </script>
 
@@ -71,6 +78,15 @@ function handlePassword() {
           Change Password
           <DropdownMenuShortcut>
             <Key :size="16" />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </PermissionTooltip>
+
+      <PermissionTooltip v-if="isLocked" :message="unlockPermission.reason" wrapper-class="block w-full">
+        <DropdownMenuItem :disabled="!unlockPermission.allowed" @click="handleUnlock">
+          Unlock
+          <DropdownMenuShortcut>
+            <LockOpen :size="16" />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
       </PermissionTooltip>

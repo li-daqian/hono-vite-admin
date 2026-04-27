@@ -5,6 +5,7 @@ import {
   handleGetUserDetail,
   handleGetUserPage,
   handleGetUserProfile,
+  handleUnlockUser,
   handleUpdateUser,
   handleUpdateUserPassword,
   handleUpdateUserStatusBatch,
@@ -15,6 +16,7 @@ import {
   getUserDetailRoute,
   getUserPageRoute,
   getUserProfileRoute,
+  unlockUserRoute,
   updateUserPasswordRoute,
   updateUserRoute,
   updateUserStatusBatchRoute,
@@ -27,5 +29,6 @@ export const userApp = new OpenAPIHono()
   .openapi(getUserDetailRoute, handleGetUserDetail)
   .openapi(updateUserRoute, handleUpdateUser)
   .openapi(updateUserPasswordRoute, handleUpdateUserPassword)
+  .openapi(unlockUserRoute, handleUnlockUser)
   .openapi(deleteUsersBatchRoute, handleDeleteUsersBatch)
   .openapi(updateUserStatusBatchRoute, handleUpdateUserStatusBatch)

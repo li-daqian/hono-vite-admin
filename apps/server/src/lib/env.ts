@@ -6,6 +6,15 @@ function parseBooleanEnv(value: string | undefined): boolean {
   return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase())
 }
 
+function parsePositiveIntegerEnv(value: string | undefined, fallback: number): number {
+  if (!value) {
+    return fallback
+  }
+
+  const parsedValue = Number.parseInt(value, 10)
+  return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : fallback
+}
+
 export function getEnv() {
   return {
     isProduction: process.env.NODE_ENV === 'production',
@@ -31,6 +40,8 @@ export function getEnv() {
       jwtSecret: process.env.JWT_SECRET!,
       accessTokenExpiry: process.env.TOKEN_EXPIRY!,
       refreshTokenExpiry: process.env.REFRESH_TOKEN_EXPIRY!,
+      maxFailedLoginAttempts: parsePositiveIntegerEnv(process.env.LOGIN_MAX_FAILED_ATTEMPTS, 5),
+      loginLockDuration: process.env.LOGIN_LOCK_DURATION ?? '15m',
     },
   }
 }

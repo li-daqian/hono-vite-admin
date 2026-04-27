@@ -158,6 +158,11 @@ export const zUserProfileResponseSchema = z.object({
         z.null()
     ]),
     status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
+    failedLoginAttempts: z.number().int().gte(0).describe('Consecutive failed login attempts'),
+    lockedUntil: z.union([
+        z.string().datetime(),
+        z.null()
+    ]),
     createdAt: z.string().datetime().describe('Timestamp when the user was created'),
     updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 });
@@ -569,6 +574,19 @@ export const zPostUserByIdPasswordData = z.object({
  * User password updated successfully
  */
 export const zPostUserByIdPasswordResponse = z.record(z.unknown()).describe('User password updated successfully');
+
+export const zPostUserByIdUnlockData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('User ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * User account unlocked successfully
+ */
+export const zPostUserByIdUnlockResponse = z.record(z.unknown()).describe('User account unlocked successfully');
 
 export const zDeleteUserBatchData = z.object({
     body: z.object({

@@ -38,8 +38,18 @@ export class BusinessError extends Error {
     return new BusinessError(undefined, message, 404)
   }
 
-  public static UserOrPasswordIncorrect() {
-    return this.BadRequest('User or password is incorrect', 'UserOrPasswordIncorrect')
+  public static UserOrPasswordIncorrect(remainingAttempts?: number) {
+    const message = remainingAttempts === undefined
+      ? 'User or password is incorrect'
+      : remainingAttempts === 1
+        ? 'User or password is incorrect. 1 attempt remains before this account is locked.'
+        : `User or password is incorrect. ${remainingAttempts} attempts remaining before this account is locked.`
+
+    return this.BadRequest(message, 'UserOrPasswordIncorrect')
+  }
+
+  public static UserAccountLocked(lockedUntil: Date) {
+    return this.BadRequest(`Account is locked. Try again after ${lockedUntil.toISOString()}`, 'UserAccountLocked')
   }
 
   public static UsernameAlreadyExists() {
