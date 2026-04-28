@@ -1,13 +1,3 @@
-- 保护免费数据库额度
-    READ_ONLY_MODE 允许 login/refresh/logout：apps/server/src/middleware/readonly.middleware.ts:6，但登录成功会创建 refresh token，refresh 会更新 token，错误
-    登录还可能更新失败次数：apps/server/src/modules/auth/auth.service.ts:87。
-    可以做：限制登录频率、清理过期 refresh token、缩短 demo session、避免公开真实管理员凭据、确保数据库用连接池/pooled URL。
-- 把 Dashboard 从占位改成 demo 首页
-    现在 Dashboard 只是 Dashboard Page：apps/admin/src/pages/DashboardPage.vue:4。
-    可以做：展示用户数、角色数、部门树概览、最近登录/操作日志、当前 READ_ONLY_MODE 状态、API/Swagger 链接。这对 demo 价值最高。
-- 整理 README 和 TODO
-    README 前半是你的部署说明，但后面还有 Turborepo starter 模板残留：README.md:87。TODO.md 目前为空。
-    可以做：改成项目介绍、线上 demo 地址、登录方式、只读限制、架构图、部署 runbook、免费服务注意事项。
 - 补部署前质量门禁
     GitHub Actions 现在主要是安装、迁移、部署：.github/workflows/deploy-vercel-production.yml:116。
     可以做：部署前跑 check-types、关键测试、admin build、server build:vercel。免费项目不需要复杂 CI，但至少避免坏包直接上生产。
