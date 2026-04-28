@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DepartmentTableRow } from './department-utils'
+import type { DepartmentProfileResponseSchema } from '@admin/client'
 import PermissionTooltip from '@admin/components/PermissionTooltip.vue'
 import { Button } from '@admin/components/ui/button'
 import {
@@ -16,7 +16,7 @@ import { computed } from 'vue'
 import { useDepartments } from './departments-provider.vue'
 
 const props = defineProps<{
-  row: DepartmentTableRow
+  row: DepartmentProfileResponseSchema
 }>()
 
 const { setOpen, setCurrentRow } = useDepartments()

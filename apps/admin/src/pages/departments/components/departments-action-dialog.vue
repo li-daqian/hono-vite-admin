@@ -31,6 +31,8 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import z from 'zod'
+import DepartmentTreeSelect from './department-tree-select.vue'
+import { collectDepartmentAndDescendantIds } from './department-utils'
 import { useDepartments } from './departments-provider.vue'
 
 const props = defineProps<{
@@ -68,8 +70,14 @@ const initialValues = {
 
 const isPrefilling = ref(props.mode === 'edit')
 const parentId = ref(NO_PARENT_VALUE)
-const { getDepartmentOptions } = useDepartments()
-const parentOptions = computed(() => getDepartmentOptions(props.mode === 'edit' ? props.id : undefined))
+const { departmentTree } = useDepartments()
+const excludedDepartmentIds = computed(() => {
+  if (props.mode !== 'edit' || !props.id) {
+    return []
+  }
+
+  return Array.from(collectDepartmentAndDescendantIds(departmentTree.value, props.id))
+})
 
 function toNullable(value: string): string | null {
   const trimmed = value.trim()
@@ -202,19 +210,16 @@ async function handleSubmit(values: Record<string, any>) {
             <div class="grid gap-2">
               <label class="text-sm leading-none font-medium">Parent</label>
               <Skeleton v-if="isPrefilling" class="h-9" />
-              <Select v-else v-model="parentId">
-                <SelectTrigger class="h-9 w-full">
-                  <SelectValue placeholder="Select parent" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="NO_PARENT_VALUE">
-                    No parent
-                  </SelectItem>
-                  <SelectItem v-for="option in parentOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <DepartmentTreeSelect
+                v-else
+                v-model="parentId"
+                :departments="departmentTree"
+                :empty-value="NO_PARENT_VALUE"
+                empty-label="No parent"
+                placeholder="Select parent"
+                search-placeholder="Search department"
+                :exclude-ids="excludedDepartmentIds"
+              />
             </div>
 
             <FormField v-slot="{ componentField }" name="status">

@@ -4,6 +4,7 @@ import type { Component } from 'vue'
 export interface DataTableSearchOption {
   label: string
   value: string
+  depth?: number
   icon?: Component
 }
 

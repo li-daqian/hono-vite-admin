@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@admin/components/ui/select'
 import { Skeleton } from '@admin/components/ui/skeleton'
+import DepartmentTreeSelect from '@admin/pages/departments/components/department-tree-select.vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
@@ -96,7 +97,7 @@ const editInitialValues = {
 const isPrefilling = ref(props.mode === 'edit')
 const validationSchema = computed(() => (props.mode === 'edit' ? editValidationSchema : addValidationSchema))
 
-const { roleOptions, departmentOptions } = useUsers()
+const { roleOptions, departmentTree } = useUsers()
 const editRoles = ref<string[]>([])
 const editDepartmentId = ref(NO_DEPARTMENT_VALUE)
 
@@ -269,19 +270,15 @@ async function handleSubmit(values: Record<string, any>) {
           <div class="grid gap-2">
             <label class="text-sm leading-none font-medium">Department</label>
             <Skeleton v-if="isPrefilling" class="h-9" />
-            <Select v-else v-model="editDepartmentId">
-              <SelectTrigger class="h-9 w-full">
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem :value="NO_DEPARTMENT_VALUE">
-                  No department
-                </SelectItem>
-                <SelectItem v-for="option in departmentOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <DepartmentTreeSelect
+              v-else
+              v-model="editDepartmentId"
+              :departments="departmentTree"
+              :empty-value="NO_DEPARTMENT_VALUE"
+              empty-label="No department"
+              placeholder="Select department"
+              search-placeholder="Search department"
+            />
           </div>
 
           <template v-if="props.mode === 'add'">

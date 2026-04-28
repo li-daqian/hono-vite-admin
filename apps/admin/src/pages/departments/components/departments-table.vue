@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { DepartmentTableRow } from './department-utils'
+import type { DepartmentTreeItemSchema } from '@admin/client'
 import { DataTableLoadingRows } from '@admin/components/data-table'
-import { Badge } from '@admin/components/ui/badge'
 import { Button } from '@admin/components/ui/button'
 import { Input } from '@admin/components/ui/input'
 import {
@@ -22,9 +21,9 @@ import {
 import { cn } from '@admin/lib/utils'
 import { RotateCw, Search, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import DataTableRowActions from './data-table-row-actions.vue'
-import { flattenDepartmentTree } from './department-utils'
+import { countDepartmentTree, filterDepartmentTree } from './department-utils'
 import { useDepartments } from './departments-provider.vue'
+import DepartmentsTreeNode from './departments-tree-node.vue'
 
 const props = withDefaults(defineProps<{
   refreshKey?: number
@@ -34,28 +33,25 @@ const props = withDefaults(defineProps<{
 
 const { departmentTree, refreshDepartments, isLoadingDepartments } = useDepartments()
 const search = ref('')
-const status = ref<'ALL' | DepartmentTableRow['status']>('ALL')
+const status = ref<'ALL' | DepartmentTreeItemSchema['status']>('ALL')
 
-const statusClassMap: Record<DepartmentTableRow['status'], string> = {
-  ACTIVE: 'border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300',
-  DISABLED: 'border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300',
-}
+const hasFilters = computed(() => search.value.trim().length > 0 || status.value !== 'ALL')
 
-const rows = computed(() => flattenDepartmentTree(departmentTree.value))
-const filteredRows = computed(() => {
+const filteredTree = computed(() => {
   const keyword = search.value.trim().toLowerCase()
 
-  return rows.value.filter((row) => {
+  return filterDepartmentTree(departmentTree.value, (department) => {
     const matchesSearch = !keyword
-      || row.name.toLowerCase().includes(keyword)
-      || row.code.toLowerCase().includes(keyword)
-      || (row.leader?.toLowerCase().includes(keyword) ?? false)
-      || (row.email?.toLowerCase().includes(keyword) ?? false)
+      || department.name.toLowerCase().includes(keyword)
+      || department.code.toLowerCase().includes(keyword)
+      || (department.leader?.toLowerCase().includes(keyword) ?? false)
+      || (department.email?.toLowerCase().includes(keyword) ?? false)
 
-    const matchesStatus = status.value === 'ALL' || row.status === status.value
+    const matchesStatus = status.value === 'ALL' || department.status === status.value
     return matchesSearch && matchesStatus
   })
 })
+const visibleNodeCount = computed(() => countDepartmentTree(filteredTree.value))
 
 function clearFilters() {
   search.value = ''
@@ -137,47 +133,14 @@ watch(() => props.refreshKey, () => {
         <TableBody>
           <DataTableLoadingRows v-if="isLoadingDepartments" :column-count="8" />
 
-          <template v-else-if="filteredRows.length">
-            <TableRow v-for="row in filteredRows" :key="row.id" class="group/row">
-              <TableCell class="bg-background group-hover/row:bg-muted">
-                <div class="flex min-w-[220px] items-center gap-2" :style="{ paddingLeft: `${row.depth * 1.25}rem` }">
-                  <span class="text-muted-foreground w-4 shrink-0 text-center">
-                    {{ row.hasChildren ? '>' : '' }}
-                  </span>
-                  <span class="font-medium">{{ row.name }}</span>
-                </div>
-              </TableCell>
-              <TableCell class="bg-background group-hover/row:bg-muted">
-                <code class="text-muted-foreground text-xs">{{ row.code }}</code>
-              </TableCell>
-              <TableCell class="bg-background group-hover/row:bg-muted">
-                {{ row.leader ?? '-' }}
-              </TableCell>
-              <TableCell class="bg-background group-hover/row:bg-muted">
-                <div class="max-w-[240px] space-y-1 text-sm">
-                  <div>{{ row.phone ?? '-' }}</div>
-                  <div class="text-muted-foreground truncate">
-                    {{ row.email ?? '-' }}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell class="bg-background group-hover/row:bg-muted">
-                <Badge variant="outline" :class="cn('capitalize', statusClassMap[row.status])">
-                  {{ row.status.toLowerCase() }}
-                </Badge>
-              </TableCell>
-              <TableCell class="bg-background group-hover/row:bg-muted text-right">
-                {{ row.userCount }}
-              </TableCell>
-              <TableCell class="bg-background group-hover/row:bg-muted text-right">
-                {{ row.order }}
-              </TableCell>
-              <TableCell class="bg-background group-hover/row:bg-muted">
-                <div class="flex items-center justify-end">
-                  <DataTableRowActions :row="row" />
-                </div>
-              </TableCell>
-            </TableRow>
+          <template v-else-if="visibleNodeCount > 0">
+            <DepartmentsTreeNode
+              v-for="department in filteredTree"
+              :key="department.id"
+              :node="department"
+              :depth="0"
+              :force-open="hasFilters"
+            />
           </template>
 
           <TableRow v-else>

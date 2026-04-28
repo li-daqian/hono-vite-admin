@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { UserProfileResponseSchema } from '@admin/client'
+import type { DepartmentTreeItemSchema, UserProfileResponseSchema } from '@admin/client'
 import type { DepartmentOption } from '@admin/pages/departments/components/department-utils'
 import type { InjectionKey, Ref } from 'vue'
 import { getDepartment, getRole } from '@admin/client'
@@ -17,6 +17,7 @@ export interface UsersContextType {
   currentRow: Ref<User | null>
   setCurrentRow: (value: User | null) => void
   roleOptions: Ref<{ value: string, label: string }[]>
+  departmentTree: Ref<DepartmentTreeItemSchema[]>
   departmentOptions: Ref<DepartmentOption[]>
   getUserRoles: (user: User) => UserRole[]
   setUserRoles: (userId: string, roles: UserRole[]) => void
@@ -41,6 +42,7 @@ export default defineComponent({
     const open = ref<UsersDialogType | null>(null)
     const currentRow = ref<User | null>(null)
     const roleOptions = ref<{ value: string, label: string }[]>([])
+    const departmentTree = ref<DepartmentTreeItemSchema[]>([])
     const departmentOptions = ref<DepartmentOption[]>([])
     const userRoleOverrides = ref<Record<string, UserRole[]>>({})
 
@@ -89,9 +91,10 @@ export default defineComponent({
             .sort((a, b) => a.label.localeCompare(b.label))
         : []
 
-      departmentOptions.value = departmentResult.status === 'fulfilled'
-        ? flattenDepartmentOptions(departmentResult.value.data)
+      departmentTree.value = departmentResult.status === 'fulfilled'
+        ? departmentResult.value.data
         : []
+      departmentOptions.value = flattenDepartmentOptions(departmentTree.value)
     })
 
     provide(USERS_CONTEXT_KEY, {
@@ -100,6 +103,7 @@ export default defineComponent({
       currentRow,
       setCurrentRow,
       roleOptions,
+      departmentTree,
       departmentOptions,
       getUserRoles,
       setUserRoles,
@@ -112,6 +116,7 @@ export default defineComponent({
       currentRow,
       setCurrentRow,
       roleOptions,
+      departmentTree,
       departmentOptions,
       getUserRoles,
       setUserRoles,

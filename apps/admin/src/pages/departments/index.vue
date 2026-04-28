@@ -18,7 +18,7 @@ function handleActionSuccess() {
       <div class="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 class="text-2xl font-bold tracking-tight">
-            Department List
+            Department Tree
           </h2>
           <p class="text-muted-foreground">
             Manage organization departments and user assignments here.

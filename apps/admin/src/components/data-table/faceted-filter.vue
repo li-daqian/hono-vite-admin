@@ -27,6 +27,7 @@ const props = defineProps<{
   options: {
     label: string
     value: string
+    depth?: number
     icon?: any
   }[]
 }>()
@@ -109,6 +110,12 @@ function clearFilters() {
               >
                 <Check class="h-4 w-4" />
               </div>
+
+              <span
+                v-if="option.depth"
+                class="shrink-0"
+                :style="{ width: `${option.depth * 12}px` }"
+              />
 
               <component
                 :is="option.icon"
