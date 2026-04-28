@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "test": "pnpm run test:unit",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:integration": "vitest run '**/*.integration.test.ts' --passWithNoTests",
     "preview": "vite preview",
     "openapi-ts": "openapi-ts",
     "lint": "eslint src --ext .ts,.vue",

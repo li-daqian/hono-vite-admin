@@ -90,7 +90,7 @@ jobs:
     needs: detect-changes
     if: ${{ needs['detect-changes'].outputs.deploy_server == 'true' || needs['detect-changes'].outputs.deploy_admin == 'true' }}
     env:
-      DATABASE_URL: postgresql://quality_gate:quality_gate@localhost:5432/quality_gate
+      DATABASE_URL: postgresql://quality_gate:quality_gate@localhost:5432/quality_gate?schema=public
       FRONTEND_DOMAIN: ${{ vars.FRONTEND_DOMAIN || 'http://localhost:5173' }}
       READ_ONLY_MODE: ${{ vars.READ_ONLY_MODE || 'false' }}
       VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'http://localhost:3000' }}
@@ -122,20 +122,10 @@ jobs:
         run: pnpm check-types
 
       - name: Run server unit tests
-        # Keep this list database-free; production migrations run only in deploy-server.
-        run: |
-          pnpm --filter @hono-vite-admin/server exec bun test \
-            src/lib/cookie.test.ts \
-            src/middleware/readonly.middleware.test.ts \
-            src/middleware/permission.middleware.test.ts \
-            src/modules/app/app.service.test.ts \
-            src/modules/role/role-permission-tree.test.ts \
-            src/modules/audit/audit.utils.test.ts \
-            src/utils/date.test.ts \
-            src/utils/pagination.test.ts
+        run: pnpm --filter @hono-vite-admin/server test:unit
 
       - name: Run admin unit tests
-        run: pnpm --filter @hono-vite-admin/admin exec vitest run
+        run: pnpm --filter @hono-vite-admin/admin test:unit
 
       - name: Build admin
         run: pnpm --filter @hono-vite-admin/admin build

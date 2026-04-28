@@ -1,0 +1,64 @@
+name: Integration tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: quality_gate
+          POSTGRES_USER: quality_gate
+          POSTGRES_PASSWORD: quality_gate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U quality_gate -d quality_gate"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://quality_gate:quality_gate@localhost:5432/quality_gate?schema=public
+      FRONTEND_DOMAIN: http://localhost:5173
+      READ_ONLY_MODE: false
+      VITE_API_BASE_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.x
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare test database
+        run: pnpm --filter @hono-vite-admin/server exec prisma migrate deploy
+
+      - name: Run integration tests
+        run: pnpm test:integration

@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "test": "bun test --coverage",
+    "test": "pnpm run test:unit",
+    "test:unit": "find src -name '*.test.ts' ! -name '*.integration.test.ts' -exec bun test --coverage {} +",
+    "test:integration": "find src -name '*.integration.test.ts' -exec bun test --coverage {} +",
     "build": "prisma migrate deploy && prisma db seed && prisma generate && bun build src/index.ts --outdir dist --target node",
     "build:vercel": "node ./scripts/build-vercel-bundle.mjs",
     "start": "bun run dist/index.js",

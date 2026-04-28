@@ -18,9 +18,16 @@
       ]
     },
     "test": {
-      "dependsOn": ["build"],
       "cache": true,
-      "outputs": ["coverage/**"]
+      "outputs": []
+    },
+    "test:unit": {
+      "cache": true,
+      "outputs": []
+    },
+    "test:integration": {
+      "cache": false,
+      "outputs": []
     },
     "lint": {
       "dependsOn": ["^lint"]
