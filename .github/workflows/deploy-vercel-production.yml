@@ -14,9 +14,81 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  detect-changes:
+    name: Detect deployment scope
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_server: ${{ steps.scope.outputs.deploy_server }}
+      deploy_admin: ${{ steps.scope.outputs.deploy_admin }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine deployment scope
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          deploy_server=false
+          deploy_admin=false
+
+          deploy_all() {
+            deploy_server=true
+            deploy_admin=true
+          }
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual deployment requested; deploying both projects."
+            deploy_all
+          else
+            before="${{ github.event.before }}"
+            after="${{ github.sha }}"
+
+            if [[ -z "$before" || "$before" =~ ^0+$ ]]; then
+              echo "No previous commit is available; deploying both projects."
+              deploy_all
+            elif ! git cat-file -e "$before^{commit}" 2>/dev/null; then
+              echo "Previous commit $before is unavailable; deploying both projects."
+              deploy_all
+            else
+              mapfile -t changed_files < <(git diff --name-only "$before" "$after")
+
+              echo "Changed files:"
+              printf '%s\n' "${changed_files[@]}"
+
+              for file in "${changed_files[@]}"; do
+                case "$file" in
+                  apps/server/*)
+                    deploy_server=true
+                    ;;
+                  apps/admin/*)
+                    deploy_admin=true
+                    ;;
+                  *)
+                    deploy_all
+                    ;;
+                esac
+              done
+            fi
+          fi
+
+          {
+            echo "deploy_server=$deploy_server"
+            echo "deploy_admin=$deploy_admin"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "deploy_server=$deploy_server"
+          echo "deploy_admin=$deploy_admin"
+
   deploy-server:
     name: Deploy server
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs['detect-changes'].outputs.deploy_server == 'true' }}
     environment: production
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -66,7 +138,10 @@ jobs:
   deploy-admin:
     name: Deploy admin
     runs-on: ubuntu-latest
-    needs: deploy-server
+    needs:
+      - detect-changes
+      - deploy-server
+    if: ${{ always() && needs['detect-changes'].outputs.deploy_admin == 'true' && (needs['deploy-server'].result == 'success' || needs['deploy-server'].result == 'skipped') }}
     environment: production
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

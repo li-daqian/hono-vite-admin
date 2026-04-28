@@ -65,7 +65,7 @@ Set `VITE_API_BASE_URL` to the API origin without a trailing `/api/v1`. Example:
 
 ### GitHub Actions deployment
 
-[`/.github/workflows/deploy-vercel-production.yml`](/home/lidaqian/Code/hono-vite-admin/.github/workflows/deploy-vercel-production.yml) deploys the production API first and only deploys the admin project after the server deployment succeeds.
+[`/.github/workflows/deploy-vercel-production.yml`](/home/lidaqian/Code/hono-vite-admin/.github/workflows/deploy-vercel-production.yml) detects the changed paths before deploying. Server-only changes deploy only the API project, admin-only changes deploy only the frontend project, and shared workspace/config or unknown path changes deploy both projects. When both projects deploy, the admin deployment waits for the API deployment to succeed.
 
 Required GitHub Actions production environment configuration:
 
