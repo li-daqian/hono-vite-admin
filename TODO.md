@@ -1,12 +1,6 @@
-- 补部署前质量门禁
-    GitHub Actions 现在主要是安装、迁移、部署：.github/workflows/deploy-vercel-production.yml:116。
-    可以做：部署前跑 check-types、关键测试、admin build、server build:vercel。免费项目不需要复杂 CI，但至少避免坏包直接上生产。
 - 补 demo 数据故事
     seed 已经有部门、用户和菜单权限：apps/server/prisma/seed.ts:9。
     可以做：让 demo 用户/部门/角色更贴近真实后台场景，准备一个低权限账号展示 RBAC 差异，而不是所有人都用 admin。
-- 暂时不建议做的事
-    不建议现在上重型功能：文件上传、后台任务、实时推送、大量审计写入、多租户、复杂报表。你的约束是 Vercel 免费 + demo + read-only，优先应该是稳定、可展示、少
-    写库、少冷启动。
 
 - 菜单/权限管理前端化
     现在菜单和 action 是 seed 固定出来的，适合加“菜单管理、按钮权限管理、排序、启停”。这是后台模板核心能力，写入很多也没关系，线上只读会挡住。

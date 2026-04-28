@@ -84,10 +84,71 @@ jobs:
           echo "deploy_server=$deploy_server"
           echo "deploy_admin=$deploy_admin"
 
+  quality-gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs['detect-changes'].outputs.deploy_server == 'true' || needs['detect-changes'].outputs.deploy_admin == 'true' }}
+    env:
+      DATABASE_URL: postgresql://quality_gate:quality_gate@localhost:5432/quality_gate
+      FRONTEND_DOMAIN: ${{ vars.FRONTEND_DOMAIN || 'http://localhost:5173' }}
+      READ_ONLY_MODE: ${{ vars.READ_ONLY_MODE || 'false' }}
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'http://localhost:3000' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.x
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check types
+        run: pnpm check-types
+
+      - name: Run server unit tests
+        # Keep this list database-free; production migrations run only in deploy-server.
+        run: |
+          pnpm --filter @hono-vite-admin/server exec bun test \
+            src/lib/cookie.test.ts \
+            src/middleware/readonly.middleware.test.ts \
+            src/middleware/permission.middleware.test.ts \
+            src/modules/app/app.service.test.ts \
+            src/modules/role/role-permission-tree.test.ts \
+            src/modules/audit/audit.utils.test.ts \
+            src/utils/date.test.ts \
+            src/utils/pagination.test.ts
+
+      - name: Run admin unit tests
+        run: pnpm --filter @hono-vite-admin/admin exec vitest run
+
+      - name: Build admin
+        run: pnpm --filter @hono-vite-admin/admin build
+
+      - name: Build server Vercel bundle
+        run: pnpm --filter @hono-vite-admin/server build:vercel
+
   deploy-server:
     name: Deploy server
     runs-on: ubuntu-latest
-    needs: detect-changes
+    needs:
+      - detect-changes
+      - quality-gate
     if: ${{ needs['detect-changes'].outputs.deploy_server == 'true' }}
     environment: production
     env:
@@ -140,8 +201,9 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - detect-changes
+      - quality-gate
       - deploy-server
-    if: ${{ always() && needs['detect-changes'].outputs.deploy_admin == 'true' && (needs['deploy-server'].result == 'success' || needs['deploy-server'].result == 'skipped') }}
+    if: ${{ always() && needs['detect-changes'].outputs.deploy_admin == 'true' && needs['quality-gate'].result == 'success' && (needs['deploy-server'].result == 'success' || needs['deploy-server'].result == 'skipped') }}
     environment: production
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
