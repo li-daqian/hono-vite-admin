@@ -12,7 +12,7 @@ export const UserCreateRequestSchema = z.object({
   email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().min(10).max(15).nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().max(50).nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
-  departmentId: z.string().min(1).nullable().optional().openapi({ description: 'Department ID to assign to the user', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+  departmentIds: z.array(z.string().min(1)).optional().openapi({ description: 'Department IDs to assign to the user', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
   roleIds: z.array(z.string().min(1)).optional().openapi({ description: 'Role IDs to assign to the user', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
 })
 export const UserRoleResponseSchema = z.object({
@@ -36,7 +36,7 @@ export const UserCreateResponseSchema = z.object({
   email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
-  department: UserDepartmentResponseSchema.nullable().openapi({ description: 'Department assigned to the user', example: { id: '01HZY4QG2R1X0ABCDEF1234567', name: 'Engineering' } }),
+  departments: z.array(UserDepartmentResponseSchema).openapi({ description: 'Departments assigned to the user', example: [{ id: '01HZY4QG2R1X0ABCDEF1234567', name: 'Engineering' }] }),
   createdAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was created', example: '2024-01-01T12:00:00Z' }),
   updatedAt: z.iso.datetime().openapi({ description: 'Timestamp when the user was last updated', example: '2024-01-02T12:00:00Z' }),
 })
@@ -48,7 +48,7 @@ export const UserUpdateRequestSchema = z.object({
   email: z.email().nullable().optional().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().min(10).max(15).nullable().optional().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().max(50).nullable().optional().openapi({ description: 'Display name of the user', example: 'John Doe' }),
-  departmentId: z.string().min(1).nullable().optional().openapi({ description: 'Department ID to assign to the user', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+  departmentIds: z.array(z.string().min(1)).optional().openapi({ description: 'Department IDs to assign to the user', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
   status: z.enum(Object.values(UserStatus)).optional().openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
   roleIds: z.array(z.string().min(1)).optional().openapi({ description: 'Role IDs to assign to the user', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
 }).refine(value => Object.keys(value).length > 0, {
@@ -113,7 +113,7 @@ export const UserProfileResponseSchema = z.object({
   email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
   phone: z.string().nullable().openapi({ description: 'Phone number of the user', example: '+1234567890' }),
   displayName: z.string().nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
-  department: UserDepartmentResponseSchema.nullable().openapi({ description: 'Department assigned to the user', example: { id: '01HZY4QG2R1X0ABCDEF1234567', name: 'Engineering' } }),
+  departments: z.array(UserDepartmentResponseSchema).openapi({ description: 'Departments assigned to the user', example: [{ id: '01HZY4QG2R1X0ABCDEF1234567', name: 'Engineering' }] }),
   status: z.enum(Object.values(UserStatus)).openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
   failedLoginAttempts: z.number().int().nonnegative().openapi({ description: 'Consecutive failed login attempts', example: 0 }),
   lockedUntil: z.iso.datetime().nullable().openapi({ description: 'Account lock expiry time, null if the account is not locked', example: null }),

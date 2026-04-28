@@ -300,9 +300,6 @@ export type RolePermissionsResponseSchema = Array<RolePermissionTreeNodeSchema>;
 
 export type RolePermissionsUpdateRequestSchema = Array<RolePermissionTreeNodeSchema>;
 
-/**
- * Department assigned to the user
- */
 export type UserDepartmentResponseSchema = {
     /**
      * Unique identifier for the department
@@ -312,7 +309,7 @@ export type UserDepartmentResponseSchema = {
      * Department name
      */
     name: string;
-} | null;
+};
 
 export type UserProfileResponseSchema = {
     /**
@@ -348,7 +345,10 @@ export type UserProfileResponseSchema = {
      * Display name of the user
      */
     displayName: string | null;
-    department: UserDepartmentResponseSchema;
+    /**
+     * Departments assigned to the user
+     */
+    departments: Array<UserDepartmentResponseSchema>;
     /**
      * Status of the user account
      */
@@ -1082,9 +1082,9 @@ export type PostUserData = {
          */
         displayName: string | null;
         /**
-         * Department ID to assign to the user
+         * Department IDs to assign to the user
          */
-        departmentId?: string | null;
+        departmentIds?: Array<string>;
         /**
          * Role IDs to assign to the user
          */
@@ -1133,7 +1133,10 @@ export type PostUserResponses = {
          * Display name of the user
          */
         displayName: string | null;
-        department: UserDepartmentResponseSchema;
+        /**
+         * Departments assigned to the user
+         */
+        departments: Array<UserDepartmentResponseSchema>;
         /**
          * Timestamp when the user was created
          */
@@ -1187,9 +1190,9 @@ export type PutUserByIdData = {
          */
         displayName?: string | null;
         /**
-         * Department ID to assign to the user
+         * Department IDs to assign to the user
          */
-        departmentId?: string | null;
+        departmentIds?: Array<string>;
         /**
          * Status of the user account
          */

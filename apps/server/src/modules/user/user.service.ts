@@ -28,13 +28,17 @@ class UserService {
   } as const
 
   private readonly userDepartmentSelection = {
-    id: true,
-    name: true,
+    department: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
   } as const
 
   private mapUser<T extends {
     roles: Array<{ role: { id: string, name: string } }>
-    department: { id: string, name: string } | null
+    departments: Array<{ department: { id: string, name: string } }>
     lockedUntil: Date | null
     createdAt: Date
     updatedAt: Date
@@ -47,7 +51,10 @@ class UserService {
         id: item.role.id,
         name: item.role.name,
       })),
-      department: user.department,
+      departments: user.departments.map(item => ({
+        id: item.department.id,
+        name: item.department.name,
+      })),
       lockedUntil: user.lockedUntil?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
@@ -58,7 +65,8 @@ class UserService {
     if (!(await this.isUsernameUnique(request.username))) {
       throw BusinessError.UsernameAlreadyExists()
     }
-    await this.ensureDepartmentExists(request.departmentId)
+    const departmentIds = this.getUniqueIds(request.departmentIds)
+    await this.ensureDepartmentsExist(departmentIds)
 
     // Generate salt and hash password
     const { hashedPassword, salt } = await createPasswordHash(request.password)
@@ -73,7 +81,13 @@ class UserService {
           email: request.email,
           phone: request.phone,
           displayName: request.displayName,
-          departmentId: request.departmentId ?? null,
+          ...(departmentIds.length > 0 && {
+            departments: {
+              create: departmentIds.map(departmentId => ({
+                department: { connect: { id: departmentId } },
+              })),
+            },
+          }),
           ...(request.roleIds && request.roleIds.length > 0 && {
             roles: {
               create: request.roleIds.map(roleId => ({
@@ -86,7 +100,7 @@ class UserService {
           roles: {
             select: this.userRoleSelection,
           },
-          department: {
+          departments: {
             select: this.userDepartmentSelection,
           },
         },
@@ -113,7 +127,7 @@ class UserService {
         roles: {
           select: this.userRoleSelection,
         },
-        department: {
+        departments: {
           select: this.userDepartmentSelection,
         },
       },
@@ -136,7 +150,7 @@ class UserService {
         roles: { some: { roleId: { in: roleIds } } },
       }),
       ...(departmentIds && departmentIds.length > 0 && {
-        departmentId: { in: departmentIds },
+        departments: { some: { departmentId: { in: departmentIds } } },
       }),
       ...(search
         ? {
@@ -144,7 +158,7 @@ class UserService {
               { username: { contains: search, mode: 'insensitive' as const } },
               { email: { contains: search, mode: 'insensitive' as const } },
               { displayName: { contains: search, mode: 'insensitive' as const } },
-              { department: { is: { name: { contains: search, mode: 'insensitive' as const } } } },
+              { departments: { some: { department: { name: { contains: search, mode: 'insensitive' as const } } } } },
             ],
           }
         : {}),
@@ -172,7 +186,7 @@ class UserService {
           email: true,
           phone: true,
           displayName: true,
-          department: {
+          departments: {
             select: this.userDepartmentSelection,
           },
           status: true,
@@ -200,8 +214,11 @@ class UserService {
     if (request.username && request.username !== user.username && !(await this.isUsernameUnique(request.username))) {
       throw BusinessError.UsernameAlreadyExists()
     }
-    if (request.departmentId !== undefined) {
-      await this.ensureDepartmentExists(request.departmentId)
+    const departmentIds = request.departmentIds === undefined
+      ? undefined
+      : this.getUniqueIds(request.departmentIds)
+    if (departmentIds !== undefined) {
+      await this.ensureDepartmentsExist(departmentIds)
     }
 
     const updatedUser = await prisma.$transaction(async (tx) => {
@@ -212,8 +229,17 @@ class UserService {
           email: request.email,
           phone: request.phone,
           displayName: request.displayName,
-          departmentId: request.departmentId,
           status: request.status,
+          ...(departmentIds !== undefined && {
+            departments: {
+              deleteMany: {},
+              ...(departmentIds.length > 0 && {
+                create: departmentIds.map(departmentId => ({
+                  department: { connect: { id: departmentId } },
+                })),
+              }),
+            },
+          }),
           ...(request.roleIds !== undefined && {
             roles: {
               deleteMany: {},
@@ -229,7 +255,7 @@ class UserService {
           roles: {
             select: this.userRoleSelection,
           },
-          department: {
+          departments: {
             select: this.userDepartmentSelection,
           },
         },
@@ -331,6 +357,10 @@ class UserService {
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      await tx.userDepartment.deleteMany({
+        where: { userId: { in: uniqueUserIds } },
+      })
+
       const deletedUsers = await tx.user.deleteMany({
         where: { id: { in: uniqueUserIds } },
       })
@@ -382,17 +412,21 @@ class UserService {
     return existingUser === null
   }
 
-  private async ensureDepartmentExists(departmentId: string | null | undefined): Promise<void> {
-    if (!departmentId) {
+  private getUniqueIds(ids: string[] | undefined): string[] {
+    return [...new Set(ids ?? [])]
+  }
+
+  private async ensureDepartmentsExist(departmentIds: string[]): Promise<void> {
+    if (departmentIds.length === 0) {
       return
     }
 
-    const department = await prisma.department.findUnique({
-      where: { id: departmentId },
+    const departments = await prisma.department.findMany({
+      where: { id: { in: departmentIds } },
       select: { id: true },
     })
-    if (!department) {
-      throw BusinessError.BadRequest('Department not found', 'DepartmentNotFound')
+    if (departments.length !== departmentIds.length) {
+      throw BusinessError.BadRequest('One or more departments were not found', 'DepartmentNotFound')
     }
   }
 }

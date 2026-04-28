@@ -41,9 +41,12 @@ describe('user service', () => {
   let operatorUserId: string
   let targetUserId: string
   let requestId: string
+  let departmentIds: string[] = []
+  let createdUserIds: string[] = []
 
   beforeEach(async () => {
     requestId = `req-${randomUUID()}`
+    createdUserIds = []
     const { hashedPassword, salt } = await createPasswordHash('OldPassword123!')
 
     const [operatorUser, targetUser] = await Promise.all([
@@ -67,22 +70,131 @@ describe('user service', () => {
 
     operatorUserId = operatorUser.id
     targetUserId = targetUser.id
+
+    const departments = await Promise.all([
+      prisma.department.create({
+        data: {
+          name: `Engineering ${randomUUID()}`,
+          order: 1,
+        },
+      }),
+      prisma.department.create({
+        data: {
+          name: `Product ${randomUUID()}`,
+          order: 2,
+        },
+      }),
+    ])
+    departmentIds = departments.map(department => department.id)
   })
 
   afterEach(async () => {
+    const userIds = [operatorUserId, targetUserId, ...createdUserIds]
     await prisma.auditLog.deleteMany({
       where: { requestId },
     })
     await prisma.refreshToken.deleteMany({
       where: {
-        userId: { in: [operatorUserId, targetUserId] },
+        userId: { in: userIds },
+      },
+    })
+    await prisma.userDepartment.deleteMany({
+      where: {
+        OR: [
+          { userId: { in: userIds } },
+          { departmentId: { in: departmentIds } },
+        ],
       },
     })
     await prisma.user.deleteMany({
       where: {
-        id: { in: [operatorUserId, targetUserId] },
+        id: { in: userIds },
       },
     })
+    await prisma.department.deleteMany({
+      where: {
+        id: { in: departmentIds },
+      },
+    })
+  })
+
+  it('creates a user assigned to multiple departments', async () => {
+    const username = `multi-department-${randomUUID()}`
+    let createdUser: Awaited<ReturnType<typeof userService.createUser>> | undefined
+
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      createdUser = await userService.createUser({
+        username,
+        password: 'Password123!',
+        email: null,
+        phone: null,
+        displayName: 'Multi Department User',
+        departmentIds,
+      })
+    })
+    createdUserIds.push(createdUser!.id)
+
+    const assignments = await prisma.userDepartment.findMany({
+      where: { userId: createdUser!.id },
+      orderBy: { departmentId: 'asc' },
+    })
+
+    expect(createdUser!.departments.map(department => department.id).sort()).toEqual([...departmentIds].sort())
+    expect(assignments.map(assignment => assignment.departmentId)).toEqual([...departmentIds].sort())
+  })
+
+  it('updates and clears user department assignments', async () => {
+    await prisma.userDepartment.create({
+      data: {
+        userId: targetUserId,
+        departmentId: departmentIds[0]!,
+      },
+    })
+
+    let updatedUser: Awaited<ReturnType<typeof userService.updateUser>> | undefined
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      updatedUser = await userService.updateUser(targetUserId, {
+        departmentIds,
+      })
+    })
+
+    expect(updatedUser!.departments.map(department => department.id).sort()).toEqual([...departmentIds].sort())
+
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      updatedUser = await userService.updateUser(targetUserId, {
+        departmentIds: [],
+      })
+    })
+
+    const remainingAssignments = await prisma.userDepartment.count({
+      where: { userId: targetUserId },
+    })
+
+    expect(updatedUser!.departments).toEqual([])
+    expect(remainingAssignments).toBe(0)
+  })
+
+  it('deletes user department assignments when deleting users', async () => {
+    await prisma.userDepartment.create({
+      data: {
+        userId: targetUserId,
+        departmentId: departmentIds[0]!,
+      },
+    })
+
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      await userService.deleteUsers([targetUserId])
+    })
+
+    const remainingAssignments = await prisma.userDepartment.count({
+      where: { userId: targetUserId },
+    })
+    const deletedUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+    })
+
+    expect(remainingAssignments).toBe(0)
+    expect(deletedUser).toBeNull()
   })
 
   it('updates another user password and revokes refresh tokens', async () => {

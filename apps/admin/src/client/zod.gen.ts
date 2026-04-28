@@ -171,16 +171,10 @@ export const zRolePermissionsResponseSchema = z.array(zRolePermissionTreeNodeSch
 
 export const zRolePermissionsUpdateRequestSchema = z.array(zRolePermissionTreeNodeSchema);
 
-/**
- * Department assigned to the user
- */
-export const zUserDepartmentResponseSchema = z.union([
-    z.object({
-        id: z.string().describe('Unique identifier for the department'),
-        name: z.string().describe('Department name')
-    }),
-    z.null()
-]);
+export const zUserDepartmentResponseSchema = z.object({
+    id: z.string().describe('Unique identifier for the department'),
+    name: z.string().describe('Department name')
+});
 
 export const zUserProfileResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the user'),
@@ -201,7 +195,7 @@ export const zUserProfileResponseSchema = z.object({
         z.string(),
         z.null()
     ]),
-    department: zUserDepartmentResponseSchema,
+    departments: z.array(zUserDepartmentResponseSchema).describe('Departments assigned to the user'),
     status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account'),
     failedLoginAttempts: z.number().int().gte(0).describe('Consecutive failed login attempts'),
     lockedUntil: z.union([
@@ -665,10 +659,7 @@ export const zPostUserData = z.object({
             z.string().max(50),
             z.null()
         ]),
-        departmentId: z.union([
-            z.string().min(1),
-            z.null()
-        ]).optional(),
+        departmentIds: z.array(z.string().min(1)).describe('Department IDs to assign to the user').optional(),
         roleIds: z.array(z.string().min(1)).describe('Role IDs to assign to the user').optional()
     }),
     path: z.never().optional(),
@@ -697,7 +688,7 @@ export const zPostUserResponse = z.object({
         z.string(),
         z.null()
     ]),
-    department: zUserDepartmentResponseSchema,
+    departments: z.array(zUserDepartmentResponseSchema).describe('Departments assigned to the user'),
     createdAt: z.string().datetime().describe('Timestamp when the user was created'),
     updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 }).describe('User created successfully');
@@ -730,10 +721,7 @@ export const zPutUserByIdData = z.object({
             z.string().max(50),
             z.null()
         ]).optional(),
-        departmentId: z.union([
-            z.string().min(1),
-            z.null()
-        ]).optional(),
+        departmentIds: z.array(z.string().min(1)).describe('Department IDs to assign to the user').optional(),
         status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account').optional(),
         roleIds: z.array(z.string().min(1)).describe('Role IDs to assign to the user').optional()
     }),

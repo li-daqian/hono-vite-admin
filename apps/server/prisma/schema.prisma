@@ -22,18 +22,16 @@ model User {
   email               String?
   phone               String?
   displayName         String?    @map("display_name")
-  departmentId        String?    @map("department_id")
   status              UserStatus @default(ACTIVE)
   failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime?  @map("locked_until")
   createdAt           DateTime   @default(now()) @map("created_at")
   updatedAt           DateTime   @updatedAt @map("updated_at")
 
-  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  departments   UserDepartment[]
   roles         UserRole[]
   refreshTokens RefreshToken[]
 
-  @@index([departmentId])
   @@map("user")
 }
 
@@ -49,11 +47,23 @@ model Department {
   createdAt DateTime         @default(now()) @map("created_at")
   updatedAt DateTime         @updatedAt @map("updated_at")
 
-  users User[]
+  users UserDepartment[]
 
   @@index([parentId])
   @@index([status])
   @@map("department")
+}
+
+model UserDepartment {
+  userId       String @map("user_id")
+  departmentId String @map("department_id")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, departmentId])
+  @@index([departmentId])
+  @@map("user_department")
 }
 
 model Role {

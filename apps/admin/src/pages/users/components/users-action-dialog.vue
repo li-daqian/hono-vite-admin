@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from '@admin/components/ui/select'
 import { Skeleton } from '@admin/components/ui/skeleton'
-import DepartmentTreeSelect from '@admin/pages/departments/components/department-tree-select.vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
@@ -45,8 +44,6 @@ const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
   (e: 'success'): void
 }>()
-
-const NO_DEPARTMENT_VALUE = '__none__'
 
 const addValidationSchema = toTypedSchema(z.object({
   username: z.string()
@@ -97,17 +94,13 @@ const editInitialValues = {
 const isPrefilling = ref(props.mode === 'edit')
 const validationSchema = computed(() => (props.mode === 'edit' ? editValidationSchema : addValidationSchema))
 
-const { roleOptions, departmentTree } = useUsers()
+const { roleOptions, departmentOptions } = useUsers()
 const editRoles = ref<string[]>([])
-const editDepartmentId = ref(NO_DEPARTMENT_VALUE)
+const editDepartmentIds = ref<string[]>([])
 
 function toNullable(value: string): string | null {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
-}
-
-function normalizeDepartmentId(value: string): string | null {
-  return value === NO_DEPARTMENT_VALUE ? null : value
 }
 
 function handleOpenChange(value: boolean) {
@@ -137,7 +130,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
         status: response.data.status,
       })
       editRoles.value = (response.data.roles ?? []).map(role => role.id)
-      editDepartmentId.value = response.data.department?.id ?? NO_DEPARTMENT_VALUE
+      editDepartmentIds.value = (response.data.departments ?? []).map(department => department.id)
     }
     finally {
       isPrefilling.value = false
@@ -148,7 +141,7 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
 
   setValues(addInitialValues)
   editRoles.value = []
-  editDepartmentId.value = NO_DEPARTMENT_VALUE
+  editDepartmentIds.value = []
   isPrefilling.value = false
 }
 
@@ -160,7 +153,7 @@ async function handleSubmit(values: Record<string, any>) {
       email: toNullable(values.email),
       phone: toNullable(values.phone),
       displayName: toNullable(values.displayName),
-      departmentId: normalizeDepartmentId(editDepartmentId.value),
+      departmentIds: editDepartmentIds.value,
       roleIds: editRoles.value.length > 0 ? editRoles.value : undefined,
     }
 
@@ -181,7 +174,7 @@ async function handleSubmit(values: Record<string, any>) {
     email: toNullable(values.email),
     phone: toNullable(values.phone),
     displayName: toNullable(values.displayName),
-    departmentId: normalizeDepartmentId(editDepartmentId.value),
+    departmentIds: editDepartmentIds.value,
     status: values.status,
     roleIds: editRoles.value,
   }
@@ -268,15 +261,13 @@ async function handleSubmit(values: Record<string, any>) {
           </div>
 
           <div class="grid gap-2">
-            <label class="text-sm leading-none font-medium">Department</label>
+            <label class="text-sm leading-none font-medium">Departments</label>
             <Skeleton v-if="isPrefilling" class="h-9" />
-            <DepartmentTreeSelect
+            <MultiSelect
               v-else
-              v-model="editDepartmentId"
-              :departments="departmentTree"
-              :empty-value="NO_DEPARTMENT_VALUE"
-              empty-label="No department"
-              placeholder="Select department"
+              v-model="editDepartmentIds"
+              :options="departmentOptions"
+              placeholder="Select departments"
               search-placeholder="Search department"
             />
           </div>

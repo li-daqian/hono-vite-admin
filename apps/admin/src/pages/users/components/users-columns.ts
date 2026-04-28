@@ -91,17 +91,25 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
   },
   {
     id: 'department',
-    accessorKey: 'department',
-    header: ({ column }) => renderColumnHeader(column, 'Department'),
+    accessorKey: 'departments',
+    header: ({ column }) => renderColumnHeader(column, 'Departments'),
     enableSorting: false,
     meta: {
-      label: 'Department',
+      label: 'Departments',
     },
     cell: ({ row }) => {
-      const department = row.original.department
-      return h('span', {
-        class: department ? undefined : 'text-muted-foreground',
-      }, department?.name ?? '-')
+      const departments = row.original.departments
+      if (departments.length === 0) {
+        return h('span', { class: 'text-muted-foreground' }, '-')
+      }
+
+      return h('div', { class: 'flex min-h-9 w-full flex-wrap items-center gap-1 px-1 py-1' }, departments.map(department =>
+        h(Badge, {
+          key: department.id,
+          variant: 'outline',
+          class: 'rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-foreground shadow-none',
+        }, () => department.name),
+      ))
     },
   },
   {
