@@ -33,6 +33,19 @@ export const DepartmentUpdateRequestSchema = z.object({
 })
 export type DepartmentUpdateRequest = z.infer<typeof DepartmentUpdateRequestSchema>
 
+export const DepartmentReorderRequestSchema = z.object({
+  items: z.array(z.object({
+    id: z.string().min(1).openapi({ description: 'Department ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+    order: z.number().int().min(0).openapi({ description: 'Display order', example: 1 }),
+  })).min(1).openapi({ description: 'Departments to reorder' }),
+})
+export type DepartmentReorderRequest = z.infer<typeof DepartmentReorderRequestSchema>
+
+export const DepartmentReorderResponseSchema = z.object({
+  updatedCount: z.number().int().nonnegative().openapi({ description: 'Number of departments reordered', example: 3 }),
+})
+export type DepartmentReorderResponse = z.infer<typeof DepartmentReorderResponseSchema>
+
 export const DepartmentListRequestSchema = z.object({
   search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering departments by name', example: 'Engineering' }),
   status: z.preprocess(

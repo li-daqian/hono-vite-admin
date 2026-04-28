@@ -32,7 +32,7 @@ import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import z from 'zod'
 import DepartmentTreeSelect from './department-tree-select.vue'
-import { collectDepartmentAndDescendantIds } from './department-utils'
+import { collectDepartmentAndDescendantIds, getNextDepartmentOrder } from './department-utils'
 import { useDepartments } from './departments-provider.vue'
 
 const props = defineProps<{
@@ -53,7 +53,6 @@ const validationSchema = computed(() => toTypedSchema(z.object({
   leader: z.string().trim().max(50, 'Leader must be at most 50 characters').or(z.literal('')).optional(),
   phone: z.string().trim().max(20, 'Phone must be at most 20 characters').or(z.literal('')).optional(),
   email: z.string().trim().email('Invalid email address').or(z.literal('')),
-  order: z.coerce.number().int('Order must be an integer').min(0, 'Order must be at least 0'),
   status: z.enum(['ACTIVE', 'DISABLED']),
 })))
 
@@ -62,12 +61,12 @@ const initialValues = {
   leader: '',
   phone: '',
   email: '',
-  order: 0,
   status: 'ACTIVE' as const,
 }
 
 const isPrefilling = ref(props.mode === 'edit')
 const parentId = ref(NO_PARENT_VALUE)
+const originalParentId = ref(NO_PARENT_VALUE)
 const { departmentTree } = useDepartments()
 const excludedDepartmentIds = computed(() => {
   if (props.mode !== 'edit' || !props.id) {
@@ -84,6 +83,10 @@ function toNullable(value: string): string | null {
 
 function normalizeParentId(value: string): string | null {
   return value === NO_PARENT_VALUE ? null : value
+}
+
+function getAppendOrder(nextParentId: string | null, excludeDepartmentId?: string) {
+  return getNextDepartmentOrder(departmentTree.value, nextParentId, excludeDepartmentId)
 }
 
 function handleOpenChange(value: boolean) {
@@ -105,10 +108,10 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
         leader: response.data.leader ?? '',
         phone: response.data.phone ?? '',
         email: response.data.email ?? '',
-        order: response.data.order,
         status: response.data.status,
       })
       parentId.value = response.data.parentId ?? NO_PARENT_VALUE
+      originalParentId.value = parentId.value
     }
     finally {
       isPrefilling.value = false
@@ -119,18 +122,21 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
 
   setValues(initialValues)
   parentId.value = NO_PARENT_VALUE
+  originalParentId.value = NO_PARENT_VALUE
   isPrefilling.value = false
 }
 
 async function handleSubmit(values: Record<string, any>) {
+  const nextParentId = normalizeParentId(parentId.value)
+
   if (props.mode === 'add') {
     const payload: PostDepartmentData['body'] = {
-      parentId: normalizeParentId(parentId.value),
+      parentId: nextParentId,
       name: values.name.trim(),
       leader: toNullable(values.leader ?? ''),
       phone: toNullable(values.phone ?? ''),
       email: toNullable(values.email ?? ''),
-      order: Number(values.order),
+      order: getAppendOrder(nextParentId),
       status: values.status,
     }
     await postDepartment<true>({ body: payload })
@@ -146,14 +152,18 @@ async function handleSubmit(values: Record<string, any>) {
   }
 
   const payload: PutDepartmentByIdData['body'] = {
-    parentId: normalizeParentId(parentId.value),
+    parentId: nextParentId,
     name: values.name.trim(),
     leader: toNullable(values.leader ?? ''),
     phone: toNullable(values.phone ?? ''),
     email: toNullable(values.email ?? ''),
-    order: Number(values.order),
     status: values.status,
   }
+
+  if (parentId.value !== originalParentId.value) {
+    payload.order = getAppendOrder(nextParentId, props.id)
+  }
+
   await putDepartmentById<true>({ path: { id: props.id }, body: payload })
   toast.success(`Department "${payload.name}" updated.`)
   emit('success')
@@ -261,17 +271,6 @@ async function handleSubmit(values: Record<string, any>) {
                 <FormControl class="h-9">
                   <Skeleton v-if="isPrefilling" />
                   <Input v-else v-bind="componentField" type="email" placeholder="engineering@example.com" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="order">
-              <FormItem>
-                <FormLabel>Order</FormLabel>
-                <FormControl class="h-9">
-                  <Skeleton v-if="isPrefilling" />
-                  <Input v-else v-bind="componentField" type="number" min="0" step="1" placeholder="0" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

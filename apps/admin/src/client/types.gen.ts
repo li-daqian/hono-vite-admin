@@ -768,6 +768,41 @@ export type PutDepartmentByIdResponses = {
 
 export type PutDepartmentByIdResponse = PutDepartmentByIdResponses[keyof PutDepartmentByIdResponses];
 
+export type PatchDepartmentReorderData = {
+    body: {
+        /**
+         * Departments to reorder
+         */
+        items: Array<{
+            /**
+             * Department ID
+             */
+            id: string;
+            /**
+             * Display order
+             */
+            order: number;
+        }>;
+    };
+    path?: never;
+    query?: never;
+    url: '/department/reorder';
+};
+
+export type PatchDepartmentReorderResponses = {
+    /**
+     * Departments reordered successfully
+     */
+    200: {
+        /**
+         * Number of departments reordered
+         */
+        updatedCount: number;
+    };
+};
+
+export type PatchDepartmentReorderResponse = PatchDepartmentReorderResponses[keyof PatchDepartmentReorderResponses];
+
 export type GetMenuData = {
     body?: never;
     path?: never;

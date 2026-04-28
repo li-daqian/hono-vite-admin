@@ -11,6 +11,13 @@ export interface DepartmentOption {
   depth: number
 }
 
+export interface DepartmentSiblingContext {
+  department: DepartmentTreeItemSchema
+  siblings: DepartmentTreeItemSchema[]
+  index: number
+  parentId: string | null
+}
+
 export function mapDepartmentTreeItem(
   department: DepartmentTreeItemSchema,
 ): DepartmentProfileResponseSchema {
@@ -117,6 +124,59 @@ export function findDepartmentById(
   }
 
   return null
+}
+
+export function findDepartmentSiblingContext(
+  departments: DepartmentTreeItemSchema[],
+  departmentId: string,
+  parentId: string | null = null,
+): DepartmentSiblingContext | null {
+  const index = departments.findIndex(department => department.id === departmentId)
+  if (index >= 0) {
+    return {
+      department: departments[index]!,
+      siblings: departments,
+      index,
+      parentId,
+    }
+  }
+
+  for (const department of departments) {
+    const childContext = findDepartmentSiblingContext(department.children, departmentId, department.id)
+    if (childContext) {
+      return childContext
+    }
+  }
+
+  return null
+}
+
+export function getDepartmentSiblings(
+  departments: DepartmentTreeItemSchema[],
+  parentId: string | null,
+): DepartmentTreeItemSchema[] {
+  if (!parentId) {
+    return departments
+  }
+
+  return findDepartmentById(departments, parentId)?.children ?? []
+}
+
+export function getNextDepartmentOrder(
+  departments: DepartmentTreeItemSchema[],
+  parentId: string | null,
+  excludeDepartmentId?: string,
+): number {
+  const siblings = getDepartmentSiblings(departments, parentId)
+  const maxOrder = siblings.reduce((max, department) => {
+    if (department.id === excludeDepartmentId) {
+      return max
+    }
+
+    return Math.max(max, department.order)
+  }, 0)
+
+  return maxOrder + 1
 }
 
 export function countDepartmentTree(departments: DepartmentTreeItemSchema[]): number {

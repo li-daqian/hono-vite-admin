@@ -6,6 +6,8 @@ import {
   DepartmentDeleteResponseSchema,
   DepartmentListRequestSchema,
   DepartmentProfileResponseSchema,
+  DepartmentReorderRequestSchema,
+  DepartmentReorderResponseSchema,
   DepartmentTreeResponseSchema,
   DepartmentUpdateRequestSchema,
 } from '@server/src/modules/department/department.schema'
@@ -73,6 +75,19 @@ export const updateDepartmentRoute = createRoute({
   },
   responses: {
     200: { description: 'Department updated successfully', content: { 'application/json': { schema: DepartmentProfileResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware, requireActionPermission(DEPARTMENT_ACTIONS.EDIT)],
+  tags: ['Department'],
+})
+
+export const reorderDepartmentsRoute = createRoute({
+  path: '/reorder',
+  method: 'patch',
+  description: 'Reorder departments',
+  request: { body: { required: true, content: { 'application/json': { schema: DepartmentReorderRequestSchema } } } },
+  responses: {
+    200: { description: 'Departments reordered successfully', content: { 'application/json': { schema: DepartmentReorderResponseSchema } } },
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware, requireActionPermission(DEPARTMENT_ACTIONS.EDIT)],

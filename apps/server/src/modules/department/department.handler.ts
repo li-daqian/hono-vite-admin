@@ -4,6 +4,7 @@ import type {
   deleteDepartmentRoute,
   getDepartmentDetailRoute,
   getDepartmentTreeRoute,
+  reorderDepartmentsRoute,
   updateDepartmentRoute,
 } from '@server/src/modules/department/department.openapi'
 import { departmentService } from '@server/src/modules/department/department.service'
@@ -31,6 +32,12 @@ export const handleUpdateDepartment: RouteHandler<typeof updateDepartmentRoute> 
   const body = c.req.valid('json')
   const department = await departmentService.updateDepartment(id, body)
   return c.json(department, 200)
+}
+
+export const handleReorderDepartments: RouteHandler<typeof reorderDepartmentsRoute> = async (c) => {
+  const body = c.req.valid('json')
+  const result = await departmentService.reorderDepartments(body)
+  return c.json(result, 200)
 }
 
 export const handleDeleteDepartment: RouteHandler<typeof deleteDepartmentRoute> = async (c) => {

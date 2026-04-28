@@ -4,6 +4,8 @@ import type {
   DepartmentDeleteResponse,
   DepartmentListRequest,
   DepartmentProfileResponse,
+  DepartmentReorderRequest,
+  DepartmentReorderResponse,
   DepartmentTreeItem,
   DepartmentTreeResponse,
   DepartmentUpdateRequest,
@@ -140,6 +142,39 @@ class DepartmentService {
     })
 
     return this.mapDepartment(updatedDepartment)
+  }
+
+  async reorderDepartments(request: DepartmentReorderRequest): Promise<DepartmentReorderResponse> {
+    const departmentIds = request.items.map(item => item.id)
+    const uniqueDepartmentIds = new Set(departmentIds)
+
+    if (uniqueDepartmentIds.size !== departmentIds.length) {
+      throw BusinessError.BadRequest('Duplicate department IDs are not allowed', 'DuplicateDepartmentIds')
+    }
+
+    const existingDepartments = await prisma.department.findMany({
+      where: { id: { in: departmentIds } },
+      select: { id: true },
+    })
+
+    if (existingDepartments.length !== departmentIds.length) {
+      throw BusinessError.BadRequest('One or more departments were not found', 'DepartmentNotFound')
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await Promise.all(request.items.map(item => tx.department.update({
+        where: { id: item.id },
+        data: { order: item.order },
+      })))
+
+      await auditService.record(tx, {
+        module: 'department',
+        action: 'reorder',
+        requestSnapshot: request,
+      })
+    })
+
+    return { updatedCount: request.items.length }
   }
 
   async deleteDepartment(departmentId: string): Promise<DepartmentDeleteResponse> {

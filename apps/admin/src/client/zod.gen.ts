@@ -464,6 +464,24 @@ export const zPutDepartmentByIdData = z.object({
  */
 export const zPutDepartmentByIdResponse = zDepartmentProfileResponseSchema;
 
+export const zPatchDepartmentReorderData = z.object({
+    body: z.object({
+        items: z.array(z.object({
+            id: z.string().min(1).describe('Department ID'),
+            order: z.number().int().gte(0).describe('Display order')
+        })).min(1).describe('Departments to reorder')
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Departments reordered successfully
+ */
+export const zPatchDepartmentReorderResponse = z.object({
+    updatedCount: z.number().int().gte(0).describe('Number of departments reordered')
+}).describe('Departments reordered successfully');
+
 export const zGetMenuData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
