@@ -74,7 +74,7 @@ describe('permissions helpers', () => {
     })
   })
 
-  it('denies write actions with a read-only message in read-only mode', () => {
+  it('does not let read-only mode override granted UI permissions', () => {
     const appConfigStore = useAppConfigStore()
     appConfigStore.readOnlyMode = true
     appConfigStore.readOnlyMessage = 'Demo read-only'
@@ -89,10 +89,10 @@ describe('permissions helpers', () => {
     )
 
     expect(permission).toEqual({
-      allowed: false,
+      allowed: true,
       actionId: 'access.users.edit',
       actionName: 'Edit',
-      reason: 'Demo read-only',
+      reason: null,
     })
   })
 

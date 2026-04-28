@@ -1,6 +1,4 @@
 import type { AuthActionSchema } from '@admin/client'
-import { isReadOnlyAction, READ_ONLY_MODE_MESSAGE } from '@admin/lib/read-only'
-import { useAppConfigStore } from '@admin/stores/app-config'
 import { useMenuStore } from '@admin/stores/menu'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -73,16 +71,6 @@ export function resolveActionPermission(
   const actionId = source.menuId
     ? buildActionPermissionId(source.menuId, actionKey)
     : (actionKey.includes('.') ? actionKey : null)
-
-  const appConfigStore = useAppConfigStore()
-  if (appConfigStore.readOnlyMode && isReadOnlyAction(actionKey)) {
-    return {
-      allowed: false,
-      actionId,
-      actionName: fallbackActionName,
-      reason: appConfigStore.readOnlyMessage || READ_ONLY_MODE_MESSAGE,
-    }
-  }
 
   const matchedAction = actionId
     ? actions.find(action => action.id === actionId)

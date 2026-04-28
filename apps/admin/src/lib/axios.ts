@@ -2,8 +2,6 @@ import type { ErrorResponse } from '@admin/client'
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { client } from '@admin/client/client.gen'
 import { getEnv } from '@admin/lib/env'
-import { READ_ONLY_MODE_MESSAGE, shouldAllowReadOnlyRequest } from '@admin/lib/read-only'
-import { useAppConfigStore } from '@admin/stores/app-config'
 import { useAuthStore } from '@admin/stores/auth'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
@@ -24,13 +22,6 @@ function setupAxiosInterceptors() {
       const accessToken = authStore.accessToken
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`
-      }
-
-      const appConfigStore = useAppConfigStore()
-      if (appConfigStore.readOnlyMode && !shouldAllowReadOnlyRequest(config.method, config.url)) {
-        const message = appConfigStore.readOnlyMessage || READ_ONLY_MODE_MESSAGE
-        toast.info(message)
-        return Promise.reject(new axios.CanceledError(message))
       }
 
       return config

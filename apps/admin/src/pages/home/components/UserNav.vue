@@ -1,20 +1,16 @@
 <script setup lang="ts">
 import { postAuthLogout } from '@admin/client'
-import PermissionTooltip from '@admin/components/PermissionTooltip.vue'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@admin/components/ui/dropdown-menu'
 import { AuthManager } from '@admin/lib/auth'
 import ChangePasswordDialog from '@admin/pages/home/components/ChangePasswordDialog.vue'
 import UserAvatar from '@admin/pages/home/components/UserAvatar.vue'
 import UserProfile from '@admin/pages/home/components/UserProfile.vue'
-import { useAppConfigStore } from '@admin/stores/app-config'
 import { useAuthStore } from '@admin/stores/auth'
 import { KeyRound, LogOut } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 const authStore = useAuthStore()
-const appConfigStore = useAppConfigStore()
 const changePasswordOpen = ref(false)
-const readOnly = computed(() => appConfigStore.readOnlyMode)
 
 async function handleLogOut() {
   await postAuthLogout<true>()
@@ -22,10 +18,6 @@ async function handleLogOut() {
 }
 
 function handleOpenChangePassword() {
-  if (readOnly.value) {
-    return
-  }
-
   changePasswordOpen.value = true
 }
 </script>
@@ -43,12 +35,10 @@ function handleOpenChangePassword() {
           <UserProfile :user-profile="authStore.user" class="w-48" />
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <PermissionTooltip :message="readOnly ? appConfigStore.readOnlyMessage : null" wrapper-class="block w-full">
-          <DropdownMenuItem :disabled="readOnly" @click="handleOpenChangePassword">
-            <KeyRound :size="16" />
-            Change password
-          </DropdownMenuItem>
-        </PermissionTooltip>
+        <DropdownMenuItem @click="handleOpenChangePassword">
+          <KeyRound :size="16" />
+          Change password
+        </DropdownMenuItem>
         <DropdownMenuItem @click="handleLogOut">
           <LogOut :size="16" />
           Log out

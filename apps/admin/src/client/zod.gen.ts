@@ -13,7 +13,7 @@ export const zErrorResponse = z.object({
 
 export const zAppConfigResponseSchema = z.object({
     readOnlyMode: z.boolean().describe('Whether the deployment disables business write operations'),
-    readOnlyMessage: z.string().describe('Short user-facing message for disabled write actions')
+    readOnlyMessage: z.string().describe('Short user-facing message shown in the read-only banner')
 });
 
 export const zAuditLogListItemSchema = z.object({

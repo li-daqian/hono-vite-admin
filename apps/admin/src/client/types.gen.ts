@@ -19,7 +19,7 @@ export type AppConfigResponseSchema = {
      */
     readOnlyMode: boolean;
     /**
-     * Short user-facing message for disabled write actions
+     * Short user-facing message shown in the read-only banner
      */
     readOnlyMessage: string;
 };
