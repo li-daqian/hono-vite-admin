@@ -9,7 +9,7 @@ export interface RouteMetaConfig {
 
 export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
   'dashboard': {
-    component: () => import('@admin/pages/DashboardPage.vue'),
+    component: () => import('@admin/pages/dashboard/index.vue'),
     icon: LayoutDashboard,
   },
   'audit': {
