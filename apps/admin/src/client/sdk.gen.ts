@@ -3,8 +3,8 @@
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import { getAuditByIdResponseTransformer, getAuditPageResponseTransformer, getAuthMenusResponseTransformer, getDepartmentByIdResponseTransformer, getDepartmentResponseTransformer, getMenuResponseTransformer, getRoleByIdPermissionsResponseTransformer, getUserByIdResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postDepartmentResponseTransformer, postUserResponseTransformer, putDepartmentByIdResponseTransformer, putRoleByIdPermissionsResponseTransformer, putUserByIdResponseTransformer } from './transformers.gen';
-import type { DeleteDepartmentByIdData, DeleteDepartmentByIdResponses, DeleteRoleByIdData, DeleteRoleByIdResponses, DeleteUserBatchData, DeleteUserBatchResponses, GetAuditByIdData, GetAuditByIdResponses, GetAuditPageData, GetAuditPageResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetDepartmentByIdData, GetDepartmentByIdResponses, GetDepartmentData, GetDepartmentResponses, GetMenuData, GetMenuResponses, GetRoleByIdData, GetRoleByIdPermissionsData, GetRoleByIdPermissionsResponses, GetRoleByIdResponses, GetRoleData, GetRoleResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchDepartmentReorderData, PatchDepartmentReorderResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthChangePasswordData, PostAuthChangePasswordResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostDepartmentData, PostDepartmentResponses, PostRoleData, PostRoleResponses, PostUserByIdPasswordData, PostUserByIdPasswordResponses, PostUserByIdUnlockData, PostUserByIdUnlockResponses, PostUserData, PostUserResponses, PutDepartmentByIdData, PutDepartmentByIdResponses, PutRoleByIdData, PutRoleByIdPermissionsData, PutRoleByIdPermissionsResponses, PutRoleByIdResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
-import { zDeleteDepartmentByIdData, zDeleteDepartmentByIdResponse, zDeleteRoleByIdData, zDeleteRoleByIdResponse, zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAuditByIdData, zGetAuditByIdResponse, zGetAuditPageData, zGetAuditPageResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetDepartmentByIdData, zGetDepartmentByIdResponse, zGetDepartmentData, zGetDepartmentResponse, zGetMenuData, zGetMenuResponse, zGetRoleByIdData, zGetRoleByIdPermissionsData, zGetRoleByIdPermissionsResponse, zGetRoleByIdResponse, zGetRoleData, zGetRoleResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchDepartmentReorderData, zPatchDepartmentReorderResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthChangePasswordData, zPostAuthChangePasswordResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostDepartmentData, zPostDepartmentResponse, zPostRoleData, zPostRoleResponse, zPostUserByIdPasswordData, zPostUserByIdPasswordResponse, zPostUserByIdUnlockData, zPostUserByIdUnlockResponse, zPostUserData, zPostUserResponse, zPutDepartmentByIdData, zPutDepartmentByIdResponse, zPutRoleByIdData, zPutRoleByIdPermissionsData, zPutRoleByIdPermissionsResponse, zPutRoleByIdResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
+import type { DeleteDepartmentByIdData, DeleteDepartmentByIdResponses, DeleteRoleByIdData, DeleteRoleByIdResponses, DeleteUserBatchData, DeleteUserBatchResponses, GetAuditByIdData, GetAuditByIdResponses, GetAuditPageData, GetAuditPageResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetDepartmentByIdData, GetDepartmentByIdResponses, GetDepartmentByIdUsersData, GetDepartmentByIdUsersResponses, GetDepartmentData, GetDepartmentResponses, GetMenuData, GetMenuResponses, GetRoleByIdData, GetRoleByIdPermissionsData, GetRoleByIdPermissionsResponses, GetRoleByIdResponses, GetRoleData, GetRoleResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchDepartmentReorderData, PatchDepartmentReorderResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthChangePasswordData, PostAuthChangePasswordResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostDepartmentData, PostDepartmentResponses, PostRoleData, PostRoleResponses, PostUserByIdPasswordData, PostUserByIdPasswordResponses, PostUserByIdUnlockData, PostUserByIdUnlockResponses, PostUserData, PostUserResponses, PutDepartmentByIdData, PutDepartmentByIdResponses, PutDepartmentByIdUsersData, PutDepartmentByIdUsersResponses, PutRoleByIdData, PutRoleByIdPermissionsData, PutRoleByIdPermissionsResponses, PutRoleByIdResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
+import { zDeleteDepartmentByIdData, zDeleteDepartmentByIdResponse, zDeleteRoleByIdData, zDeleteRoleByIdResponse, zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAuditByIdData, zGetAuditByIdResponse, zGetAuditPageData, zGetAuditPageResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetDepartmentByIdData, zGetDepartmentByIdResponse, zGetDepartmentByIdUsersData, zGetDepartmentByIdUsersResponse, zGetDepartmentData, zGetDepartmentResponse, zGetMenuData, zGetMenuResponse, zGetRoleByIdData, zGetRoleByIdPermissionsData, zGetRoleByIdPermissionsResponse, zGetRoleByIdResponse, zGetRoleData, zGetRoleResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchDepartmentReorderData, zPatchDepartmentReorderResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthChangePasswordData, zPostAuthChangePasswordResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostDepartmentData, zPostDepartmentResponse, zPostRoleData, zPostRoleResponse, zPostUserByIdPasswordData, zPostUserByIdPasswordResponse, zPostUserByIdUnlockData, zPostUserByIdUnlockResponse, zPostUserData, zPostUserResponse, zPutDepartmentByIdData, zPutDepartmentByIdResponse, zPutDepartmentByIdUsersData, zPutDepartmentByIdUsersResponse, zPutRoleByIdData, zPutRoleByIdPermissionsData, zPutRoleByIdPermissionsResponse, zPutRoleByIdResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -211,6 +211,34 @@ export const patchDepartmentReorder = <ThrowOnError extends boolean = false>(opt
     responseValidator: async (data) => await zPatchDepartmentReorderResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/department/reorder',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get users assigned to a department
+ */
+export const getDepartmentByIdUsers = <ThrowOnError extends boolean = false>(options: Options<GetDepartmentByIdUsersData, ThrowOnError>) => (options.client ?? client).get<GetDepartmentByIdUsersResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetDepartmentByIdUsersData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetDepartmentByIdUsersResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/department/{id}/users',
+    ...options
+});
+
+/**
+ * Assign users to a department
+ */
+export const putDepartmentByIdUsers = <ThrowOnError extends boolean = false>(options: Options<PutDepartmentByIdUsersData, ThrowOnError>) => (options.client ?? client).put<PutDepartmentByIdUsersResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPutDepartmentByIdUsersData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zPutDepartmentByIdUsersResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/department/{id}/users',
     ...options,
     headers: {
         'Content-Type': 'application/json',

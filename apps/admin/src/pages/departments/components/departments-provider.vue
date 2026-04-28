@@ -10,7 +10,7 @@ import {
 } from './department-utils'
 
 export type DepartmentItem = DepartmentProfileResponseSchema
-export type DepartmentsDialogType = 'add' | 'edit' | 'delete'
+export type DepartmentsDialogType = 'add' | 'edit' | 'users' | 'delete'
 
 export interface DepartmentsContextType {
   open: Ref<DepartmentsDialogType | null>

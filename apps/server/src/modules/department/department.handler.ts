@@ -1,9 +1,11 @@
 import type { RouteHandler } from '@hono/zod-openapi'
 import type {
+  assignDepartmentUsersRoute,
   createDepartmentRoute,
   deleteDepartmentRoute,
   getDepartmentDetailRoute,
   getDepartmentTreeRoute,
+  getDepartmentUsersRoute,
   reorderDepartmentsRoute,
   updateDepartmentRoute,
 } from '@server/src/modules/department/department.openapi'
@@ -37,6 +39,19 @@ export const handleUpdateDepartment: RouteHandler<typeof updateDepartmentRoute> 
 export const handleReorderDepartments: RouteHandler<typeof reorderDepartmentsRoute> = async (c) => {
   const body = c.req.valid('json')
   const result = await departmentService.reorderDepartments(body)
+  return c.json(result, 200)
+}
+
+export const handleGetDepartmentUsers: RouteHandler<typeof getDepartmentUsersRoute> = async (c) => {
+  const { id } = c.req.valid('param')
+  const users = await departmentService.getDepartmentUsers(id)
+  return c.json(users, 200)
+}
+
+export const handleAssignDepartmentUsers: RouteHandler<typeof assignDepartmentUsersRoute> = async (c) => {
+  const { id } = c.req.valid('param')
+  const body = c.req.valid('json')
+  const result = await departmentService.assignDepartmentUsers(id, body)
   return c.json(result, 200)
 }
 

@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
 import { usePageActionPermissions } from '@admin/lib/permissions'
-import { Ellipsis, Pencil, Trash2 } from 'lucide-vue-next'
+import { Ellipsis, Pencil, Trash2, Users } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useDepartments } from './departments-provider.vue'
 
@@ -27,6 +27,11 @@ const deletePermission = computed(() => permissions.resolve('delete', { subject:
 function handleEdit() {
   setCurrentRow(props.row)
   setOpen('edit')
+}
+
+function handleUsers() {
+  setCurrentRow(props.row)
+  setOpen('users')
 }
 
 function handleDelete() {
@@ -48,7 +53,16 @@ function handleDelete() {
       </Button>
     </DropdownMenuTrigger>
 
-    <DropdownMenuContent align="end" class="w-36">
+    <DropdownMenuContent align="end" class="w-44">
+      <PermissionTooltip :message="editPermission.reason" wrapper-class="block w-full">
+        <DropdownMenuItem :disabled="!editPermission.allowed" @click="handleUsers">
+          Assign Users
+          <DropdownMenuShortcut>
+            <Users :size="16" />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </PermissionTooltip>
+
       <PermissionTooltip :message="editPermission.reason" wrapper-class="block w-full">
         <DropdownMenuItem :disabled="!editPermission.allowed" @click="handleEdit">
           Edit

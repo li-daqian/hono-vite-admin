@@ -1,5 +1,5 @@
 import { z } from '@hono/zod-openapi'
-import { DepartmentStatus } from '@server/generated/prisma/enums'
+import { DepartmentStatus, UserStatus } from '@server/generated/prisma/enums'
 
 function emptyStringToUndefined(value: unknown) {
   return value === '' ? undefined : value
@@ -45,6 +45,32 @@ export const DepartmentReorderResponseSchema = z.object({
   updatedCount: z.number().int().nonnegative().openapi({ description: 'Number of departments reordered', example: 3 }),
 })
 export type DepartmentReorderResponse = z.infer<typeof DepartmentReorderResponseSchema>
+
+export const DepartmentAssignUsersRequestSchema = z.object({
+  userIds: z.array(z.string().min(1)).openapi({
+    description: 'User IDs to assign to the department',
+    example: ['01HZY4QG2R1X0ABCDEF1234567'],
+  }),
+})
+export type DepartmentAssignUsersRequest = z.infer<typeof DepartmentAssignUsersRequestSchema>
+
+export const DepartmentUserResponseSchema = z.object({
+  id: z.string().openapi({ description: 'User ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+  username: z.string().openapi({ description: 'Username', example: 'johndoe' }),
+  displayName: z.string().nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
+  email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
+  status: z.enum(Object.values(UserStatus)).openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
+}).openapi('DepartmentUserResponseSchema')
+export type DepartmentUserResponse = z.infer<typeof DepartmentUserResponseSchema>
+
+export const DepartmentUsersResponseSchema = z.array(DepartmentUserResponseSchema).openapi('DepartmentUsersResponseSchema')
+export type DepartmentUsersResponse = z.infer<typeof DepartmentUsersResponseSchema>
+
+export const DepartmentAssignUsersResponseSchema = z.object({
+  updatedCount: z.number().int().nonnegative().openapi({ description: 'Number of users assigned to this department', example: 3 }),
+  users: z.array(DepartmentUserResponseSchema).openapi({ description: 'Users assigned to this department' }),
+})
+export type DepartmentAssignUsersResponse = z.infer<typeof DepartmentAssignUsersResponseSchema>
 
 export const DepartmentListRequestSchema = z.object({
   search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering departments by name', example: 'Engineering' }),

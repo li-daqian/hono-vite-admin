@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import DepartmentsActionDialog from './departments-action-dialog.vue'
 import DepartmentsDeleteDialog from './departments-delete-dialog.vue'
 import { useDepartments } from './departments-provider.vue'
+import DepartmentsUsersDialog from './departments-users-dialog.vue'
 
 const emit = defineEmits<{
   (e: 'success'): void
@@ -32,6 +33,12 @@ function handleEditOpenChange(value: boolean) {
     setCurrentRow(null)
 }
 
+function handleUsersOpenChange(value: boolean) {
+  setOpen(value ? 'users' : null)
+  if (!value)
+    setCurrentRow(null)
+}
+
 function handleDeleteOpenChange(value: boolean) {
   if (value) {
     setOpen('delete')
@@ -57,6 +64,14 @@ function handleDeleteOpenChange(value: boolean) {
     mode="edit"
     @success="handleSuccess"
     @update:open="handleEditOpenChange"
+  />
+
+  <DepartmentsUsersDialog
+    v-if="currentRow"
+    :open="open === 'users'"
+    :current-row="currentRow"
+    @success="handleSuccess"
+    @update:open="handleUsersOpenChange"
   />
 
   <DepartmentsDeleteDialog

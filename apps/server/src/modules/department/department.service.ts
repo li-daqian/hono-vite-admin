@@ -1,5 +1,7 @@
 import type { Department } from '@server/generated/prisma/client'
 import type {
+  DepartmentAssignUsersRequest,
+  DepartmentAssignUsersResponse,
   DepartmentCreateRequest,
   DepartmentDeleteResponse,
   DepartmentListRequest,
@@ -9,6 +11,8 @@ import type {
   DepartmentTreeItem,
   DepartmentTreeResponse,
   DepartmentUpdateRequest,
+  DepartmentUserResponse,
+  DepartmentUsersResponse,
 } from '@server/src/modules/department/department.schema'
 import { BusinessError } from '@server/src/common/exception'
 import { prisma } from '@server/src/lib/prisma'
@@ -177,6 +181,84 @@ class DepartmentService {
     return { updatedCount: request.items.length }
   }
 
+  async getDepartmentUsers(departmentId: string): Promise<DepartmentUsersResponse> {
+    await this.assertDepartmentExists(departmentId)
+
+    const users = await prisma.user.findMany({
+      where: {
+        departments: {
+          some: { departmentId },
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        email: true,
+        status: true,
+      },
+      orderBy: [
+        { username: 'asc' },
+      ],
+    })
+
+    return users.map(user => this.mapDepartmentUser(user))
+  }
+
+  async assignDepartmentUsers(
+    departmentId: string,
+    request: DepartmentAssignUsersRequest,
+  ): Promise<DepartmentAssignUsersResponse> {
+    await this.assertDepartmentExists(departmentId)
+
+    const userIds = this.getUniqueIds(request.userIds)
+    await this.ensureUsersExist(userIds)
+
+    const users = await prisma.$transaction(async (tx) => {
+      await tx.userDepartment.deleteMany({
+        where: { departmentId },
+      })
+
+      if (userIds.length > 0) {
+        await tx.userDepartment.createMany({
+          data: userIds.map(userId => ({
+            departmentId,
+            userId,
+          })),
+          skipDuplicates: true,
+        })
+      }
+
+      await auditService.record(tx, {
+        module: 'department',
+        action: 'assign-users',
+        requestSnapshot: {
+          id: departmentId,
+          userIds,
+        },
+      })
+
+      return tx.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          email: true,
+          status: true,
+        },
+        orderBy: [
+          { username: 'asc' },
+        ],
+      })
+    })
+
+    return {
+      updatedCount: userIds.length,
+      users: users.map(user => this.mapDepartmentUser(user)),
+    }
+  }
+
   async deleteDepartment(departmentId: string): Promise<DepartmentDeleteResponse> {
     const department = await prisma.department.findUnique({
       where: { id: departmentId },
@@ -252,6 +334,46 @@ class DepartmentService {
       userCount: department._count.users,
       createdAt: department.createdAt.toISOString(),
       updatedAt: department.updatedAt.toISOString(),
+    }
+  }
+
+  private mapDepartmentUser(user: DepartmentUserResponse): DepartmentUserResponse {
+    return {
+      id: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      email: user.email,
+      status: user.status,
+    }
+  }
+
+  private getUniqueIds(ids: string[] | undefined): string[] {
+    return [...new Set(ids ?? [])]
+  }
+
+  private async assertDepartmentExists(departmentId: string): Promise<void> {
+    const department = await prisma.department.findUnique({
+      where: { id: departmentId },
+      select: { id: true },
+    })
+
+    if (!department) {
+      throw BusinessError.NotFound('Department not found')
+    }
+  }
+
+  private async ensureUsersExist(userIds: string[]): Promise<void> {
+    if (userIds.length === 0) {
+      return
+    }
+
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true },
+    })
+
+    if (users.length !== userIds.length) {
+      throw BusinessError.BadRequest('One or more users were not found', 'UserNotFound')
     }
   }
 

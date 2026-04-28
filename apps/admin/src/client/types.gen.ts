@@ -204,6 +204,31 @@ export type DepartmentTreeItemSchema = DepartmentProfileResponseSchema & {
 
 export type DepartmentTreeResponseSchema = Array<DepartmentTreeItemSchema>;
 
+export type DepartmentUserResponseSchema = {
+    /**
+     * User ID
+     */
+    id: string;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Display name of the user
+     */
+    displayName: string | null;
+    /**
+     * Email address of the user
+     */
+    email: string | null;
+    /**
+     * Status of the user account
+     */
+    status: 'ACTIVE' | 'DISABLED';
+};
+
+export type DepartmentUsersResponseSchema = Array<DepartmentUserResponseSchema>;
+
 export type MenuActionSchema = {
     /**
      * Action ID
@@ -802,6 +827,62 @@ export type PatchDepartmentReorderResponses = {
 };
 
 export type PatchDepartmentReorderResponse = PatchDepartmentReorderResponses[keyof PatchDepartmentReorderResponses];
+
+export type GetDepartmentByIdUsersData = {
+    body?: never;
+    path: {
+        /**
+         * Department ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/department/{id}/users';
+};
+
+export type GetDepartmentByIdUsersResponses = {
+    /**
+     * Department users retrieved successfully
+     */
+    200: DepartmentUsersResponseSchema;
+};
+
+export type GetDepartmentByIdUsersResponse = GetDepartmentByIdUsersResponses[keyof GetDepartmentByIdUsersResponses];
+
+export type PutDepartmentByIdUsersData = {
+    body: {
+        /**
+         * User IDs to assign to the department
+         */
+        userIds: Array<string>;
+    };
+    path: {
+        /**
+         * Department ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/department/{id}/users';
+};
+
+export type PutDepartmentByIdUsersResponses = {
+    /**
+     * Department users assigned successfully
+     */
+    200: {
+        /**
+         * Number of users assigned to this department
+         */
+        updatedCount: number;
+        /**
+         * Users assigned to this department
+         */
+        users: Array<DepartmentUserResponseSchema>;
+    };
+};
+
+export type PutDepartmentByIdUsersResponse = PutDepartmentByIdUsersResponses[keyof PutDepartmentByIdUsersResponses];
 
 export type GetMenuData = {
     body?: never;

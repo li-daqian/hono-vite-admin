@@ -117,6 +117,22 @@ export const zDepartmentTreeItemSchema: z.ZodTypeAny = zDepartmentProfileRespons
 
 export const zDepartmentTreeResponseSchema = z.array(zDepartmentTreeItemSchema);
 
+export const zDepartmentUserResponseSchema = z.object({
+    id: z.string().describe('User ID'),
+    username: z.string().describe('Username'),
+    displayName: z.union([
+        z.string(),
+        z.null()
+    ]),
+    email: z.union([
+        z.string().email(),
+        z.null()
+    ]),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account')
+});
+
+export const zDepartmentUsersResponseSchema = z.array(zDepartmentUserResponseSchema);
+
 export const zMenuActionSchema = z.object({
     id: z.string().describe('Action ID'),
     name: z.string().describe('Action name'),
@@ -475,6 +491,37 @@ export const zPatchDepartmentReorderData = z.object({
 export const zPatchDepartmentReorderResponse = z.object({
     updatedCount: z.number().int().gte(0).describe('Number of departments reordered')
 }).describe('Departments reordered successfully');
+
+export const zGetDepartmentByIdUsersData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Department ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Department users retrieved successfully
+ */
+export const zGetDepartmentByIdUsersResponse = zDepartmentUsersResponseSchema;
+
+export const zPutDepartmentByIdUsersData = z.object({
+    body: z.object({
+        userIds: z.array(z.string().min(1)).describe('User IDs to assign to the department')
+    }),
+    path: z.object({
+        id: z.string().describe('Department ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Department users assigned successfully
+ */
+export const zPutDepartmentByIdUsersResponse = z.object({
+    updatedCount: z.number().int().gte(0).describe('Number of users assigned to this department'),
+    users: z.array(zDepartmentUserResponseSchema).describe('Users assigned to this department')
+}).describe('Department users assigned successfully');
 
 export const zGetMenuData = z.object({
     body: z.never().optional(),

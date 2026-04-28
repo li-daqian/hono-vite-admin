@@ -2,6 +2,8 @@ import { createRoute, z } from '@hono/zod-openapi'
 import { authMiddleware } from '@server/src/middleware/auth.middleware'
 import { requireActionPermission } from '@server/src/middleware/permission.middleware'
 import {
+  DepartmentAssignUsersRequestSchema,
+  DepartmentAssignUsersResponseSchema,
   DepartmentCreateRequestSchema,
   DepartmentDeleteResponseSchema,
   DepartmentListRequestSchema,
@@ -10,6 +12,7 @@ import {
   DepartmentReorderResponseSchema,
   DepartmentTreeResponseSchema,
   DepartmentUpdateRequestSchema,
+  DepartmentUsersResponseSchema,
 } from '@server/src/modules/department/department.schema'
 
 const DEPARTMENT_ACTIONS = {
@@ -88,6 +91,37 @@ export const reorderDepartmentsRoute = createRoute({
   request: { body: { required: true, content: { 'application/json': { schema: DepartmentReorderRequestSchema } } } },
   responses: {
     200: { description: 'Departments reordered successfully', content: { 'application/json': { schema: DepartmentReorderResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware, requireActionPermission(DEPARTMENT_ACTIONS.EDIT)],
+  tags: ['Department'],
+})
+
+export const getDepartmentUsersRoute = createRoute({
+  path: '/{id}/users',
+  method: 'get',
+  description: 'Get users assigned to a department',
+  request: {
+    params: DepartmentIdParamSchema,
+  },
+  responses: {
+    200: { description: 'Department users retrieved successfully', content: { 'application/json': { schema: DepartmentUsersResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware],
+  tags: ['Department'],
+})
+
+export const assignDepartmentUsersRoute = createRoute({
+  path: '/{id}/users',
+  method: 'put',
+  description: 'Assign users to a department',
+  request: {
+    params: DepartmentIdParamSchema,
+    body: { required: true, content: { 'application/json': { schema: DepartmentAssignUsersRequestSchema } } },
+  },
+  responses: {
+    200: { description: 'Department users assigned successfully', content: { 'application/json': { schema: DepartmentAssignUsersResponseSchema } } },
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware, requireActionPermission(DEPARTMENT_ACTIONS.EDIT)],
