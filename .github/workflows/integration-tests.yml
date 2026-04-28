@@ -31,7 +31,11 @@ jobs:
     env:
       DATABASE_URL: postgresql://quality_gate:quality_gate@localhost:5432/quality_gate?schema=public
       FRONTEND_DOMAIN: http://localhost:5173
+      JWT_SECRET: integration-test-secret
+      LOG_LEVEL: info
       READ_ONLY_MODE: false
+      REFRESH_TOKEN_EXPIRY: 7d
+      TOKEN_EXPIRY: 15m
       VITE_API_BASE_URL: http://localhost:3000
 
     steps:

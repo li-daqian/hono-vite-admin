@@ -8,9 +8,9 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "test": "turbo run test",
-    "test:unit": "turbo run test:unit",
-    "test:integration": "turbo run test:integration",
+    "test": "turbo run test --env-mode=loose",
+    "test:unit": "turbo run test:unit --env-mode=loose",
+    "test:integration": "turbo run test:integration --env-mode=loose",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
