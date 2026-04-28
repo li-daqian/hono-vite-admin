@@ -161,11 +161,6 @@ async function handleLogin(values: Record<string, any>) {
         <p v-if="loading" class="text-center">
           <Skeleton class="mx-auto h-4 w-48" />
         </p>
-
-        <p v-else class="text-muted-foreground text-sm text-center">
-          Don't have an account?
-          <a href="#" class="underline underline-offset-4">Sign up</a>
-        </p>
       </div>
     </div>
   </div>

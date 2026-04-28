@@ -2,20 +2,27 @@ import App from '@admin/App.vue'
 import { setupAxios } from '@admin/lib/axios'
 import router from '@admin/router'
 import { loadDynamicRoutes } from '@admin/router/dynamic-routes'
+import { useAppConfigStore } from '@admin/stores/app-config'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { createApp } from 'vue'
 import './style.css'
 
-setupAxios()
+async function bootstrap() {
+  setupAxios()
 
-const app = createApp(App)
+  const app = createApp(App)
 
-const pinia = createPinia()
-pinia.use(piniaPluginPersistedstate)
-app.use(pinia)
+  const pinia = createPinia()
+  pinia.use(piniaPluginPersistedstate)
+  app.use(pinia)
 
-loadDynamicRoutes(router)
-app.use(router)
+  await useAppConfigStore().fetchConfig()
 
-app.mount('#app')
+  loadDynamicRoutes(router)
+  app.use(router)
+
+  app.mount('#app')
+}
+
+void bootstrap()

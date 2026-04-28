@@ -11,6 +11,11 @@ export const zErrorResponse = z.object({
     requestId: z.string()
 }).describe('Standard error response envelope');
 
+export const zAppConfigResponseSchema = z.object({
+    readOnlyMode: z.boolean().describe('Whether the deployment disables business write operations'),
+    readOnlyMessage: z.string().describe('Short user-facing message for disabled write actions')
+});
+
 export const zAuditLogListItemSchema = z.object({
     id: z.string().describe('Unique identifier of the audit log entry'),
     category: z.enum(['login', 'operation']).describe('Audit log category'),
@@ -272,6 +277,17 @@ export const zGetAuditByIdData = z.object({
  * Audit log detail retrieved successfully
  */
 export const zGetAuditByIdResponse = zAuditLogDetailResponseSchema;
+
+export const zGetAppConfigData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Application config retrieved successfully
+ */
+export const zGetAppConfigResponse = zAppConfigResponseSchema;
 
 export const zGetAuthPrefillData = z.object({
     body: z.never().optional(),

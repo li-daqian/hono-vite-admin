@@ -1,4 +1,5 @@
 import { API_V1_BASE_PATH } from '@server/src/common/constant'
+import { appApp } from '@server/src/modules/app/app.route'
 import { auditApp } from '@server/src/modules/audit/audit.route'
 import { authApp } from '@server/src/modules/auth/auth.route'
 import { departmentApp } from '@server/src/modules/department/department.route'
@@ -13,6 +14,7 @@ const apiV1 = createApi({
   version: '1.0.0',
 })
 
+apiV1.route('/app', appApp)
 apiV1.route('/audit', auditApp)
 apiV1.route('/auth', authApp)
 apiV1.route('/department', departmentApp)

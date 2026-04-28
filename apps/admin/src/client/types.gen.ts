@@ -13,6 +13,17 @@ export type ErrorResponse = {
     requestId: string;
 };
 
+export type AppConfigResponseSchema = {
+    /**
+     * Whether the deployment disables business write operations
+     */
+    readOnlyMode: boolean;
+    /**
+     * Short user-facing message for disabled write actions
+     */
+    readOnlyMessage: string;
+};
+
 export type AuditLogListItemSchema = {
     /**
      * Unique identifier of the audit log entry
@@ -463,6 +474,22 @@ export type GetAuditByIdResponses = {
 };
 
 export type GetAuditByIdResponse = GetAuditByIdResponses[keyof GetAuditByIdResponses];
+
+export type GetAppConfigData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/app/config';
+};
+
+export type GetAppConfigResponses = {
+    /**
+     * Application config retrieved successfully
+     */
+    200: AppConfigResponseSchema;
+};
+
+export type GetAppConfigResponse = GetAppConfigResponses[keyof GetAppConfigResponses];
 
 export type GetAuthPrefillData = {
     body?: never;

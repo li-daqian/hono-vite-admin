@@ -29,6 +29,7 @@ const props = defineProps<{
   draggingId?: string | null
   dropTargetId?: string | null
   dropPosition?: DropPosition | null
+  dragDisabledReason?: string | null
   canDropOn?: (node: DepartmentTreeItemSchema) => boolean
 }>()
 
@@ -50,7 +51,7 @@ const hasChildren = computed(() => props.node.children.length > 0)
 const childrenVisible = computed(() => props.forceOpen || isOpen.value)
 const isDragging = computed(() => props.draggingId === props.node.id)
 const isDropTarget = computed(() => props.dropTargetId === props.node.id)
-const dragHandleTitle = computed(() => props.canDrag ? 'Drag to reorder' : 'Clear filters and check edit permission to reorder')
+const dragHandleTitle = computed(() => props.canDrag ? 'Drag to reorder' : props.dragDisabledReason ?? 'Clear filters and check edit permission to reorder')
 
 function canDropCurrentNode() {
   return Boolean(
@@ -208,6 +209,7 @@ function handleDrop(event: DragEvent) {
       :dragging-id="draggingId"
       :drop-target-id="dropTargetId"
       :drop-position="dropPosition"
+      :drag-disabled-reason="dragDisabledReason"
       :can-drop-on="canDropOn"
       @drag-start="(id, event) => emit('dragStart', id, event)"
       @drag-over="(payload, event) => emit('dragOver', payload, event)"

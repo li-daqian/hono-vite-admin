@@ -296,6 +296,7 @@ watch(() => props.refreshKey, () => {
               :dragging-id="draggedDepartmentId"
               :drop-target-id="dropTarget?.id ?? null"
               :drop-position="dropTarget?.position ?? null"
+              :drag-disabled-reason="editPermission.reason"
               :can-drop-on="canDropOnNode"
               @drag-start="handleDragStart"
               @drag-over="handleDragOver"

@@ -2,6 +2,8 @@ import type { ErrorResponse } from '@admin/client'
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { client } from '@admin/client/client.gen'
 import { getEnv } from '@admin/lib/env'
+import { READ_ONLY_MODE_MESSAGE, shouldAllowReadOnlyRequest } from '@admin/lib/read-only'
+import { useAppConfigStore } from '@admin/stores/app-config'
 import { useAuthStore } from '@admin/stores/auth'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
@@ -22,6 +24,13 @@ function setupAxiosInterceptors() {
       const accessToken = authStore.accessToken
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`
+      }
+
+      const appConfigStore = useAppConfigStore()
+      if (appConfigStore.readOnlyMode && !shouldAllowReadOnlyRequest(config.method, config.url)) {
+        const message = appConfigStore.readOnlyMessage || READ_ONLY_MODE_MESSAGE
+        toast.info(message)
+        return Promise.reject(new axios.CanceledError(message))
       }
 
       return config
@@ -45,6 +54,10 @@ function setupAxiosInterceptors() {
       const { response, config } = error
 
       if (error.request && !response) {
+        if (isAppConfigRequest(config)) {
+          return Promise.reject(error)
+        }
+
         toast.error(error.message ?? 'No response received from server')
         return Promise.reject(error)
       }
@@ -65,10 +78,10 @@ function setupAxiosInterceptors() {
         return axiosInstance.request(config)
       }
       else {
-        if (axios.isAxiosError<ErrorResponse>(error) && !isAuthLoginRequest(config)) {
+        if (axios.isAxiosError<ErrorResponse>(error) && !isAuthLoginRequest(config) && !isAppConfigRequest(config)) {
           toast.error(error.response?.data.message ?? 'An unknown error occurred')
         }
-        else if (!isAuthLoginRequest(config)) {
+        else if (!isAuthLoginRequest(config) && !isAppConfigRequest(config)) {
           toast.error(error.message ?? 'An unknown error occurred')
         }
       }
@@ -80,6 +93,10 @@ function setupAxiosInterceptors() {
 
 function isAuthLoginRequest(config: AxiosError['config']): boolean {
   return config?.url?.includes('/auth/login') ?? false
+}
+
+function isAppConfigRequest(config: AxiosError['config']): boolean {
+  return config?.url?.includes('/app/config') ?? false
 }
 
 function wrapWithValidationHandler(originalMethod: any) {

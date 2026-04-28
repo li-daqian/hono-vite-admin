@@ -82,7 +82,7 @@ Required GitHub Actions production environment configuration:
 
 ## Read-only deployment mode
 
-Set `READ_ONLY_MODE=true` in your Vercel project environment variables to make the deployment read-only. All read requests keep working, login/refresh/logout stay available, and business write APIs return `ReadOnlyModeEnabled` instead of mutating data.
+Set `READ_ONLY_MODE=true` in your Vercel project environment variables to make the API deployment read-only. All read requests keep working, login/refresh/logout stay available, business write APIs return `ReadOnlyModeEnabled`, and the admin UI loads the public bootstrap config from the API to mark write actions as `Demo read-only`.
 
 # Turborepo starter
 

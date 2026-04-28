@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ReadOnlyBanner from '@admin/components/ReadOnlyBanner.vue'
 import { SidebarInset, SidebarProvider } from '@admin/components/ui/sidebar'
 import AppSidebar from '@admin/pages/home/components/AppSidebar.vue'
 import SiteHeader from '@admin/pages/home/components/SiteHeader.vue'
@@ -16,6 +17,7 @@ const routerViewKey = computed(() => `${route.path}:${pageRefreshStore.refreshCo
   <div class="[--header-height:calc(--spacing(14))]">
     <SidebarProvider class="flex flex-col">
       <SiteHeader />
+      <ReadOnlyBanner />
       <div class="flex">
         <AppSidebar />
         <SidebarInset class="p-4">
