@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@admin/components/ui/table'
 import { cn } from '@admin/lib/utils'
-import { Building2, ChevronRight, GripVertical } from 'lucide-vue-next'
+import { ChevronRight, GripVertical } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import DataTableRowActions from './data-table-row-actions.vue'
 import DepartmentsTreeNode from './departments-tree-node.vue'
@@ -164,7 +164,6 @@ function handleDrop(event: DragEvent) {
           <span class="sr-only">Toggle children</span>
         </Button>
 
-        <Building2 class="size-4 shrink-0 text-muted-foreground" />
         <div class="min-w-0">
           <div class="truncate font-medium">
             {{ node.name }}

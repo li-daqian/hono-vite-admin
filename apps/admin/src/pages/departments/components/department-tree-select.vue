@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from '@admin/components/ui/popover'
 import { cn } from '@admin/lib/utils'
-import { Building2, Check, ChevronDown, Search } from 'lucide-vue-next'
+import { Check, ChevronDown, Search } from 'lucide-vue-next'
 import { computed, nextTick, ref, watch } from 'vue'
 import DepartmentTreeSelectNode from './department-tree-select-node.vue'
 import {
@@ -87,7 +87,6 @@ watch(open, async (value) => {
           !selectedLabel && 'text-muted-foreground',
         )"
       >
-        <Building2 class="size-4 shrink-0 text-muted-foreground" />
         <span class="min-w-0 flex-1 truncate">{{ selectedLabel ?? placeholder }}</span>
         <ChevronDown class="size-4 shrink-0 text-muted-foreground" />
       </button>
@@ -118,7 +117,6 @@ watch(open, async (value) => {
           )"
           @click="selectValue(emptyValue)"
         >
-          <span class="size-4 shrink-0" />
           <span class="min-w-0 flex-1 truncate text-muted-foreground">{{ emptyLabel }}</span>
           <Check v-if="isEmptySelected" class="size-4 shrink-0 text-foreground" />
         </button>

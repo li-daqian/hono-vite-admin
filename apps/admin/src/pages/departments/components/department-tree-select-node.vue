@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DepartmentTreeItemSchema } from '@admin/client'
 import { cn } from '@admin/lib/utils'
-import { Building2, Check, ChevronRight } from 'lucide-vue-next'
+import { Check, ChevronRight } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import DepartmentTreeSelectNode from './department-tree-select-node.vue'
 
@@ -45,7 +45,6 @@ const childrenVisible = computed(() => props.forceOpen || isOpen.value)
         )"
         @click="emit('select', node.id)"
       >
-        <Building2 class="size-4 shrink-0 text-muted-foreground" />
         <span class="min-w-0 flex-1 truncate">{{ node.name }}</span>
         <Check v-if="selectedValue === node.id" class="size-4 shrink-0 text-foreground" />
       </button>
