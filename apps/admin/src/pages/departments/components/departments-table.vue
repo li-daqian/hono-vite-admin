@@ -18,8 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@admin/components/ui/table'
-import { cn } from '@admin/lib/utils'
-import { RotateCw, Search, X } from 'lucide-vue-next'
+import { Search, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { countDepartmentTree, filterDepartmentTree } from './department-utils'
 import { useDepartments } from './departments-provider.vue'
@@ -93,11 +92,6 @@ watch(() => props.refreshKey, () => {
           <X class="ms-1 size-4" />
         </Button>
       </div>
-
-      <Button variant="outline" size="sm" class="h-9" :disabled="isLoadingDepartments" @click="refreshDepartments">
-        <RotateCw :class="cn('me-1 size-4', isLoadingDepartments ? 'animate-spin' : undefined)" />
-        Refresh
-      </Button>
     </div>
 
     <div class="overflow-hidden rounded-md border">
