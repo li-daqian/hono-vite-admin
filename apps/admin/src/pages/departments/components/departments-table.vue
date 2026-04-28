@@ -43,7 +43,6 @@ const filteredTree = computed(() => {
   return filterDepartmentTree(departmentTree.value, (department) => {
     const matchesSearch = !keyword
       || department.name.toLowerCase().includes(keyword)
-      || department.code.toLowerCase().includes(keyword)
       || (department.leader?.toLowerCase().includes(keyword) ?? false)
       || (department.email?.toLowerCase().includes(keyword) ?? false)
 
@@ -109,9 +108,6 @@ watch(() => props.refreshKey, () => {
               Name
             </TableHead>
             <TableHead class="bg-background group-hover/row:bg-muted">
-              Code
-            </TableHead>
-            <TableHead class="bg-background group-hover/row:bg-muted">
               Leader
             </TableHead>
             <TableHead class="bg-background group-hover/row:bg-muted">
@@ -131,7 +127,7 @@ watch(() => props.refreshKey, () => {
         </TableHeader>
 
         <TableBody>
-          <DataTableLoadingRows v-if="isLoadingDepartments" :column-count="8" />
+          <DataTableLoadingRows v-if="isLoadingDepartments" :column-count="7" />
 
           <template v-else-if="visibleNodeCount > 0">
             <DepartmentsTreeNode
@@ -144,7 +140,7 @@ watch(() => props.refreshKey, () => {
           </template>
 
           <TableRow v-else>
-            <TableCell :colspan="8" class="h-24 text-center text-muted-foreground">
+            <TableCell :colspan="7" class="h-24 text-center text-muted-foreground">
               No results.
             </TableCell>
           </TableRow>

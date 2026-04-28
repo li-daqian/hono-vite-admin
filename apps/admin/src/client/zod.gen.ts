@@ -92,7 +92,6 @@ export const zDepartmentProfileResponseSchema = z.object({
         z.null()
     ]),
     name: z.string().describe('Department name'),
-    code: z.string().describe('Unique department code'),
     leader: z.union([
         z.string(),
         z.null()
@@ -178,8 +177,7 @@ export const zRolePermissionsUpdateRequestSchema = z.array(zRolePermissionTreeNo
 export const zUserDepartmentResponseSchema = z.union([
     z.object({
         id: z.string().describe('Unique identifier for the department'),
-        name: z.string().describe('Department name'),
-        code: z.string().describe('Department code')
+        name: z.string().describe('Department name')
     }),
     z.null()
 ]);
@@ -381,7 +379,6 @@ export const zPostDepartmentData = z.object({
             z.null()
         ]).optional(),
         name: z.string().min(1).max(50).describe('Department name'),
-        code: z.string().min(1).max(50).regex(/^[\w-]+$/).describe('Unique department code'),
         leader: z.union([
             z.string().max(50),
             z.null()
@@ -441,7 +438,6 @@ export const zPutDepartmentByIdData = z.object({
             z.null()
         ]).optional(),
         name: z.string().min(1).max(50).describe('Department name').optional(),
-        code: z.string().min(1).max(50).regex(/^[\w-]+$/).describe('Unique department code').optional(),
         leader: z.union([
             z.string().max(50),
             z.null()

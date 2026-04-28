@@ -9,16 +9,9 @@ function emptyStringToNull(value: unknown) {
   return value === '' ? null : value
 }
 
-const DepartmentCodeSchema = z.string()
-  .trim()
-  .min(1)
-  .max(50)
-  .regex(/^[\w-]+$/, 'Code may only contain letters, numbers, underscores, and hyphens')
-
 export const DepartmentCreateRequestSchema = z.object({
   parentId: z.preprocess(emptyStringToNull, z.string().min(1).nullable().optional()).openapi({ description: 'Parent department ID', example: null }),
   name: z.string().trim().min(1).max(50).openapi({ description: 'Department name', example: 'Engineering' }),
-  code: DepartmentCodeSchema.openapi({ description: 'Unique department code', example: 'engineering' }),
   leader: z.string().trim().max(50).nullable().optional().openapi({ description: 'Department leader name', example: 'Jane Doe' }),
   phone: z.string().trim().max(20).nullable().optional().openapi({ description: 'Department contact phone', example: '+1234567890' }),
   email: z.email().nullable().optional().openapi({ description: 'Department contact email', example: 'engineering@example.com' }),
@@ -30,7 +23,6 @@ export type DepartmentCreateRequest = z.infer<typeof DepartmentCreateRequestSche
 export const DepartmentUpdateRequestSchema = z.object({
   parentId: z.preprocess(emptyStringToNull, z.string().min(1).nullable().optional()).openapi({ description: 'Parent department ID', example: null }),
   name: z.string().trim().min(1).max(50).optional().openapi({ description: 'Department name', example: 'Product Engineering' }),
-  code: DepartmentCodeSchema.optional().openapi({ description: 'Unique department code', example: 'product-engineering' }),
   leader: z.string().trim().max(50).nullable().optional().openapi({ description: 'Department leader name', example: 'Jane Doe' }),
   phone: z.string().trim().max(20).nullable().optional().openapi({ description: 'Department contact phone', example: '+1234567890' }),
   email: z.email().nullable().optional().openapi({ description: 'Department contact email', example: 'engineering@example.com' }),
@@ -42,7 +34,7 @@ export const DepartmentUpdateRequestSchema = z.object({
 export type DepartmentUpdateRequest = z.infer<typeof DepartmentUpdateRequestSchema>
 
 export const DepartmentListRequestSchema = z.object({
-  search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering departments by name or code', example: 'engineering' }),
+  search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering departments by name', example: 'Engineering' }),
   status: z.preprocess(
     (value) => {
       if (value === '')
@@ -60,7 +52,6 @@ export const DepartmentProfileResponseSchema = z.object({
   id: z.string().openapi({ description: 'Department ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
   parentId: z.string().nullable().openapi({ description: 'Parent department ID', example: null }),
   name: z.string().openapi({ description: 'Department name', example: 'Engineering' }),
-  code: z.string().openapi({ description: 'Unique department code', example: 'engineering' }),
   leader: z.string().nullable().openapi({ description: 'Department leader name', example: 'Jane Doe' }),
   phone: z.string().nullable().openapi({ description: 'Department contact phone', example: '+1234567890' }),
   email: z.email().nullable().openapi({ description: 'Department contact email', example: 'engineering@example.com' }),

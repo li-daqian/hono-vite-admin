@@ -45,7 +45,6 @@ const visibleDepartments = computed(() => {
 
   return filterDepartmentTree(availableDepartments.value, (department) => {
     return department.name.toLowerCase().includes(keyword)
-      || department.code.toLowerCase().includes(keyword)
       || (department.leader?.toLowerCase().includes(keyword) ?? false)
       || (department.email?.toLowerCase().includes(keyword) ?? false)
   })

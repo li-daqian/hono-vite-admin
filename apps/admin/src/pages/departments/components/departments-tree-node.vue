@@ -53,12 +53,8 @@ const childrenVisible = computed(() => props.forceOpen || isOpen.value)
           <div class="truncate font-medium">
             {{ node.name }}
           </div>
-          <code class="text-muted-foreground text-xs sm:hidden">{{ node.code }}</code>
         </div>
       </div>
-    </TableCell>
-    <TableCell class="bg-background group-hover/row:bg-muted">
-      <code class="text-muted-foreground text-xs">{{ node.code }}</code>
     </TableCell>
     <TableCell class="bg-background group-hover/row:bg-muted">
       {{ node.leader ?? '-' }}

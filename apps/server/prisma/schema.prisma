@@ -41,7 +41,6 @@ model Department {
   id        String           @id @default(ulid())
   parentId  String?          @map("parent_id")
   name      String
-  code      String           @unique
   leader    String?
   phone     String?
   email     String?

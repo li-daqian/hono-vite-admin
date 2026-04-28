@@ -50,7 +50,6 @@ const NO_PARENT_VALUE = '__none__'
 
 const validationSchema = computed(() => toTypedSchema(z.object({
   name: z.string().trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters'),
-  code: z.string().trim().min(1, 'Code is required').max(50, 'Code must be at most 50 characters').regex(/^[\w-]+$/, 'Code may only contain letters, numbers, underscores, and hyphens'),
   leader: z.string().trim().max(50, 'Leader must be at most 50 characters').or(z.literal('')).optional(),
   phone: z.string().trim().max(20, 'Phone must be at most 20 characters').or(z.literal('')).optional(),
   email: z.string().trim().email('Invalid email address').or(z.literal('')),
@@ -60,7 +59,6 @@ const validationSchema = computed(() => toTypedSchema(z.object({
 
 const initialValues = {
   name: '',
-  code: '',
   leader: '',
   phone: '',
   email: '',
@@ -104,7 +102,6 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
       const response = await getDepartmentById<true>({ path: { id: props.id } })
       setValues({
         name: response.data.name,
-        code: response.data.code,
         leader: response.data.leader ?? '',
         phone: response.data.phone ?? '',
         email: response.data.email ?? '',
@@ -130,7 +127,6 @@ async function handleSubmit(values: Record<string, any>) {
     const payload: PostDepartmentData['body'] = {
       parentId: normalizeParentId(parentId.value),
       name: values.name.trim(),
-      code: values.code.trim(),
       leader: toNullable(values.leader ?? ''),
       phone: toNullable(values.phone ?? ''),
       email: toNullable(values.email ?? ''),
@@ -152,7 +148,6 @@ async function handleSubmit(values: Record<string, any>) {
   const payload: PutDepartmentByIdData['body'] = {
     parentId: normalizeParentId(parentId.value),
     name: values.name.trim(),
-    code: values.code.trim(),
     leader: toNullable(values.leader ?? ''),
     phone: toNullable(values.phone ?? ''),
     email: toNullable(values.email ?? ''),
@@ -191,17 +186,6 @@ async function handleSubmit(values: Record<string, any>) {
                 <FormControl class="h-9">
                   <Skeleton v-if="isPrefilling" />
                   <Input v-else v-bind="componentField" type="text" placeholder="Engineering" maxlength="50" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="code">
-              <FormItem>
-                <FormLabel>Code</FormLabel>
-                <FormControl class="h-9">
-                  <Skeleton v-if="isPrefilling" />
-                  <Input v-else v-bind="componentField" type="text" placeholder="engineering" maxlength="50" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

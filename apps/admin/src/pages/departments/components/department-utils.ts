@@ -18,7 +18,6 @@ export function mapDepartmentTreeItem(
     id: department.id,
     parentId: department.parentId,
     name: department.name,
-    code: department.code,
     leader: department.leader,
     phone: department.phone,
     email: department.email,

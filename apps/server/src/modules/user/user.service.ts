@@ -30,12 +30,11 @@ class UserService {
   private readonly userDepartmentSelection = {
     id: true,
     name: true,
-    code: true,
   } as const
 
   private mapUser<T extends {
     roles: Array<{ role: { id: string, name: string } }>
-    department: { id: string, name: string, code: string } | null
+    department: { id: string, name: string } | null
     lockedUntil: Date | null
     createdAt: Date
     updatedAt: Date
@@ -146,7 +145,6 @@ class UserService {
               { email: { contains: search, mode: 'insensitive' as const } },
               { displayName: { contains: search, mode: 'insensitive' as const } },
               { department: { is: { name: { contains: search, mode: 'insensitive' as const } } } },
-              { department: { is: { code: { contains: search, mode: 'insensitive' as const } } } },
             ],
           }
         : {}),

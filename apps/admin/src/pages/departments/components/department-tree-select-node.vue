@@ -47,7 +47,6 @@ const childrenVisible = computed(() => props.forceOpen || isOpen.value)
       >
         <Building2 class="size-4 shrink-0 text-muted-foreground" />
         <span class="min-w-0 flex-1 truncate">{{ node.name }}</span>
-        <code class="hidden shrink-0 text-xs text-muted-foreground sm:inline">{{ node.code }}</code>
         <Check v-if="selectedValue === node.id" class="size-4 shrink-0 text-foreground" />
       </button>
     </div>

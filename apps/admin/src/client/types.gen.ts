@@ -162,10 +162,6 @@ export type DepartmentProfileResponseSchema = {
      */
     name: string;
     /**
-     * Unique department code
-     */
-    code: string;
-    /**
      * Department leader name
      */
     leader: string | null;
@@ -316,10 +312,6 @@ export type UserDepartmentResponseSchema = {
      * Department name
      */
     name: string;
-    /**
-     * Department code
-     */
-    code: string;
 } | null;
 
 export type UserProfileResponseSchema = {
@@ -614,7 +606,7 @@ export type GetDepartmentData = {
     path?: never;
     query?: {
         /**
-         * Search term for filtering departments by name or code
+         * Search term for filtering departments by name
          */
         search?: string | null;
         /**
@@ -644,10 +636,6 @@ export type PostDepartmentData = {
          * Department name
          */
         name: string;
-        /**
-         * Unique department code
-         */
-        code: string;
         /**
          * Department leader name
          */
@@ -740,10 +728,6 @@ export type PutDepartmentByIdData = {
          * Department name
          */
         name?: string;
-        /**
-         * Unique department code
-         */
-        code?: string;
         /**
          * Department leader name
          */

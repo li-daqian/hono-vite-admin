@@ -20,10 +20,6 @@ type DepartmentWithUserCount = Department & {
 
 class DepartmentService {
   async createDepartment(request: DepartmentCreateRequest): Promise<DepartmentProfileResponse> {
-    if (!(await this.isDepartmentCodeUnique(request.code))) {
-      throw BusinessError.BadRequest('Department code already exists', 'DepartmentCodeAlreadyExists')
-    }
-
     await this.assertValidParent(request.parentId ?? null)
 
     const department = await prisma.$transaction(async (tx) => {
@@ -31,7 +27,6 @@ class DepartmentService {
         data: {
           parentId: request.parentId ?? null,
           name: request.name,
-          code: request.code,
           leader: request.leader ?? null,
           phone: request.phone ?? null,
           email: request.email ?? null,
@@ -65,7 +60,6 @@ class DepartmentService {
           ? {
               OR: [
                 { name: { contains: query.search, mode: 'insensitive' as const } },
-                { code: { contains: query.search, mode: 'insensitive' as const } },
               ],
             }
           : {}),
@@ -110,10 +104,6 @@ class DepartmentService {
       throw BusinessError.NotFound('Department not found')
     }
 
-    if (request.code && request.code !== department.code && !(await this.isDepartmentCodeUnique(request.code))) {
-      throw BusinessError.BadRequest('Department code already exists', 'DepartmentCodeAlreadyExists')
-    }
-
     if (request.parentId !== undefined) {
       await this.assertValidParent(request.parentId, departmentId)
     }
@@ -124,7 +114,6 @@ class DepartmentService {
         data: {
           parentId: request.parentId,
           name: request.name,
-          code: request.code,
           leader: request.leader,
           phone: request.phone,
           email: request.email,
@@ -220,7 +209,6 @@ class DepartmentService {
       id: department.id,
       parentId: department.parentId,
       name: department.name,
-      code: department.code,
       leader: department.leader,
       phone: department.phone,
       email: department.email,
@@ -277,13 +265,6 @@ class DepartmentService {
     }
 
     return false
-  }
-
-  private async isDepartmentCodeUnique(code: string): Promise<boolean> {
-    const existingDepartment = await prisma.department.findUnique({
-      where: { code },
-    })
-    return existingDepartment === null
   }
 }
 
