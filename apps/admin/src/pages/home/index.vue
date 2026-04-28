@@ -17,11 +17,13 @@ const routerViewKey = computed(() => `${route.path}:${pageRefreshStore.refreshCo
   <div class="[--header-height:calc(--spacing(14))]">
     <SidebarProvider class="flex flex-col">
       <SiteHeader />
-      <ReadOnlyBanner />
-      <div class="flex">
+      <div class="flex flex-1">
         <AppSidebar />
-        <SidebarInset class="p-4">
-          <RouterView :key="routerViewKey" />
+        <SidebarInset>
+          <ReadOnlyBanner />
+          <div class="flex flex-1 flex-col p-4">
+            <RouterView :key="routerViewKey" />
+          </div>
         </SidebarInset>
       </div>
     </SidebarProvider>
