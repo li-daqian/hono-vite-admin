@@ -24,6 +24,21 @@ export type AppConfigResponseSchema = {
     readOnlyMessage: string;
 };
 
+export type AppSecurityPolicyResponseSchema = {
+    /**
+     * Maximum consecutive failed login attempts before locking the account
+     */
+    maxFailedLoginAttempts: number;
+    /**
+     * Account lock duration. Supported units: s, m, h, d, w, M, y.
+     */
+    loginLockDuration: string;
+    /**
+     * Whether this deployment allows editing the security policy
+     */
+    editable: boolean;
+};
+
 export type AuditLogListItemSchema = {
     /**
      * Unique identifier of the audit log entry
@@ -407,6 +422,63 @@ export type UserProfileResponseSchema = {
     updatedAt: Date;
 };
 
+export type GetAppConfigData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/app/config';
+};
+
+export type GetAppConfigResponses = {
+    /**
+     * Application config retrieved successfully
+     */
+    200: AppConfigResponseSchema;
+};
+
+export type GetAppConfigResponse = GetAppConfigResponses[keyof GetAppConfigResponses];
+
+export type GetAppSecurityPolicyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/app/security-policy';
+};
+
+export type GetAppSecurityPolicyResponses = {
+    /**
+     * Security policy retrieved successfully
+     */
+    200: AppSecurityPolicyResponseSchema;
+};
+
+export type GetAppSecurityPolicyResponse = GetAppSecurityPolicyResponses[keyof GetAppSecurityPolicyResponses];
+
+export type PutAppSecurityPolicyData = {
+    body: {
+        /**
+         * Maximum consecutive failed login attempts before locking the account
+         */
+        maxFailedLoginAttempts: number;
+        /**
+         * Account lock duration. Supported units: s, m, h, d, w, M, y.
+         */
+        loginLockDuration: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/app/security-policy';
+};
+
+export type PutAppSecurityPolicyResponses = {
+    /**
+     * Security policy updated successfully
+     */
+    200: AppSecurityPolicyResponseSchema;
+};
+
+export type PutAppSecurityPolicyResponse = PutAppSecurityPolicyResponses[keyof PutAppSecurityPolicyResponses];
+
 export type GetAuditPageData = {
     body?: never;
     path?: never;
@@ -474,22 +546,6 @@ export type GetAuditByIdResponses = {
 };
 
 export type GetAuditByIdResponse = GetAuditByIdResponses[keyof GetAuditByIdResponses];
-
-export type GetAppConfigData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/app/config';
-};
-
-export type GetAppConfigResponses = {
-    /**
-     * Application config retrieved successfully
-     */
-    200: AppConfigResponseSchema;
-};
-
-export type GetAppConfigResponse = GetAppConfigResponses[keyof GetAppConfigResponses];
 
 export type GetAuthPrefillData = {
     body?: never;

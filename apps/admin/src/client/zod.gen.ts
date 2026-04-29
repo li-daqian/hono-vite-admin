@@ -16,6 +16,12 @@ export const zAppConfigResponseSchema = z.object({
     readOnlyMessage: z.string().describe('Short user-facing message shown in the read-only banner')
 });
 
+export const zAppSecurityPolicyResponseSchema = z.object({
+    maxFailedLoginAttempts: z.number().int().gte(1).describe('Maximum consecutive failed login attempts before locking the account'),
+    loginLockDuration: z.string().regex(/^[1-9]\d*[smhdwMy]$/).describe('Account lock duration. Supported units: s, m, h, d, w, M, y.'),
+    editable: z.boolean().describe('Whether this deployment allows editing the security policy')
+});
+
 export const zAuditLogListItemSchema = z.object({
     id: z.string().describe('Unique identifier of the audit log entry'),
     category: z.enum(['login', 'operation']).describe('Audit log category'),
@@ -227,6 +233,42 @@ export const zUserProfileResponseSchema = z.object({
     updatedAt: z.string().datetime().describe('Timestamp when the user was last updated')
 });
 
+export const zGetAppConfigData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Application config retrieved successfully
+ */
+export const zGetAppConfigResponse = zAppConfigResponseSchema;
+
+export const zGetAppSecurityPolicyData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Security policy retrieved successfully
+ */
+export const zGetAppSecurityPolicyResponse = zAppSecurityPolicyResponseSchema;
+
+export const zPutAppSecurityPolicyData = z.object({
+    body: z.object({
+        maxFailedLoginAttempts: z.number().int().gte(1).lte(1000).describe('Maximum consecutive failed login attempts before locking the account'),
+        loginLockDuration: z.string().regex(/^[1-9]\d*[smhdwMy]$/).describe('Account lock duration. Supported units: s, m, h, d, w, M, y.')
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Security policy updated successfully
+ */
+export const zPutAppSecurityPolicyResponse = zAppSecurityPolicyResponseSchema;
+
 export const zGetAuditPageData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -277,17 +319,6 @@ export const zGetAuditByIdData = z.object({
  * Audit log detail retrieved successfully
  */
 export const zGetAuditByIdResponse = zAuditLogDetailResponseSchema;
-
-export const zGetAppConfigData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: z.never().optional()
-});
-
-/**
- * Application config retrieved successfully
- */
-export const zGetAppConfigResponse = zAppConfigResponseSchema;
 
 export const zGetAuthPrefillData = z.object({
     body: z.never().optional(),

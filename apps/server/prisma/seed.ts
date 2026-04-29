@@ -57,9 +57,25 @@ const menus = [
     ],
   },
   {
+    code: 'system',
+    name: 'System',
+    order: 3,
+    children: [
+      {
+        code: 'security-policy',
+        name: 'Security Policy',
+        path: '/system/security-policy',
+        order: 1,
+        actions: [
+          { code: 'edit', name: 'Edit', description: 'Edit user security policy' },
+        ],
+      },
+    ],
+  },
+  {
     code: 'audit',
     name: 'Audit',
-    order: 3,
+    order: 4,
     children: [
       {
         code: 'login',

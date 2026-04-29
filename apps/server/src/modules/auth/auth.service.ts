@@ -17,6 +17,7 @@ import { jwtService } from '@server/src/lib/jwt'
 import { createPasswordHash, verifyPassword } from '@server/src/lib/password'
 import { prisma } from '@server/src/lib/prisma'
 import { logger } from '@server/src/middleware/trace.middleware'
+import { appService } from '@server/src/modules/app/app.service'
 import { auditService } from '@server/src/modules/audit/audit.service'
 import { parseTimeDuration } from '@server/src/utils/date'
 
@@ -58,6 +59,7 @@ class AuthService {
       throw BusinessError.BadRequest('User account is disabled', 'UserAccountDisabled')
     }
 
+    const securityPolicy = await appService.getLoginSecurityPolicy()
     const now = new Date()
     const activeLockedUntil = this.getActiveLockedUntil(user.lockedUntil, now)
     if (activeLockedUntil) {
@@ -68,7 +70,7 @@ class AuthService {
         reason: 'account-locked',
         username: user.username,
         failedLoginAttempts: user.failedLoginAttempts,
-        maxFailedLoginAttempts: getEnv().auth.maxFailedLoginAttempts,
+        maxFailedLoginAttempts: securityPolicy.maxFailedLoginAttempts,
         lockedUntil: activeLockedUntil.toISOString(),
       })
       throw BusinessError.UserAccountLocked(activeLockedUntil)
@@ -76,7 +78,7 @@ class AuthService {
 
     const isPasswordValid = await verifyPassword(request.password, user.password, user.salt)
     if (!isPasswordValid) {
-      const failure = await this.recordPasswordLoginFailure(user, this.getCurrentFailedLoginAttempts(user, now))
+      const failure = await this.recordPasswordLoginFailure(user, this.getCurrentFailedLoginAttempts(user, now), securityPolicy)
       if (failure.lockedUntil) {
         throw BusinessError.UserAccountLocked(failure.lockedUntil)
       }
@@ -332,12 +334,16 @@ class AuthService {
     return remainingAttempts <= LOGIN_LOCK_WARNING_THRESHOLD ? remainingAttempts : undefined
   }
 
-  private async recordPasswordLoginFailure(user: LoginUser, currentFailedLoginAttempts: number) {
-    const maxFailedLoginAttempts = getEnv().auth.maxFailedLoginAttempts
+  private async recordPasswordLoginFailure(
+    user: LoginUser,
+    currentFailedLoginAttempts: number,
+    securityPolicy: Awaited<ReturnType<typeof appService.getLoginSecurityPolicy>>,
+  ) {
+    const maxFailedLoginAttempts = securityPolicy.maxFailedLoginAttempts
     const failedLoginAttempts = currentFailedLoginAttempts + 1
     const remainingAttempts = Math.max(maxFailedLoginAttempts - failedLoginAttempts, 0)
     const lockedUntil = failedLoginAttempts >= maxFailedLoginAttempts
-      ? parseTimeDuration(getEnv().auth.loginLockDuration)
+      ? parseTimeDuration(securityPolicy.loginLockDuration)
       : null
 
     await prisma.$transaction(async (tx) => {

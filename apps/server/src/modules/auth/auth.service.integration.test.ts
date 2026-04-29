@@ -3,8 +3,11 @@ import { BusinessError } from '@server/src/common/exception'
 import { createPasswordHash, verifyPassword } from '@server/src/lib/password'
 import { prisma } from '@server/src/lib/prisma'
 import { holdContext } from '@server/src/middleware/context.middleware'
+import { SECURITY_POLICY_CONFIG_KEYS } from '@server/src/modules/app/app.service'
 import { authService } from '@server/src/modules/auth/auth.service'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+
+const SECURITY_POLICY_KEYS = Object.values(SECURITY_POLICY_CONFIG_KEYS)
 
 function createContext(userId: string, requestId: string, path = '/api/v1/auth/change-password') {
   return {
@@ -44,6 +47,14 @@ describe('auth service', () => {
 
   beforeEach(async () => {
     requestId = `req-${randomUUID()}`
+    await prisma.sysConfig.deleteMany({
+      where: {
+        key: {
+          in: SECURITY_POLICY_KEYS,
+        },
+      },
+    })
+
     const { hashedPassword, salt } = await createPasswordHash('OldPassword123!')
     username = `auth-${randomUUID()}`
     const user = await prisma.user.create({
@@ -67,6 +78,13 @@ describe('auth service', () => {
     })
     await prisma.user.deleteMany({
       where: { id: userId },
+    })
+    await prisma.sysConfig.deleteMany({
+      where: {
+        key: {
+          in: SECURITY_POLICY_KEYS,
+        },
+      },
     })
   })
 
@@ -149,8 +167,20 @@ describe('auth service', () => {
   it('locks the account after repeated login failures and clears the lock after a successful login', async () => {
     const originalLoginMaxFailedAttempts = process.env.LOGIN_MAX_FAILED_ATTEMPTS
     const originalLoginLockDuration = process.env.LOGIN_LOCK_DURATION
-    process.env.LOGIN_MAX_FAILED_ATTEMPTS = '2'
+    process.env.LOGIN_MAX_FAILED_ATTEMPTS = '5'
     process.env.LOGIN_LOCK_DURATION = '15m'
+    await prisma.sysConfig.createMany({
+      data: [
+        {
+          key: SECURITY_POLICY_CONFIG_KEYS.maxFailedLoginAttempts,
+          value: '2',
+        },
+        {
+          key: SECURITY_POLICY_CONFIG_KEYS.loginLockDuration,
+          value: '15m',
+        },
+      ],
+    })
 
     try {
       let firstError: unknown
