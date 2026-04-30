@@ -34,14 +34,8 @@ const maxFailedLoginAttemptsError = ref<string | null>(null)
 const loginLockDurationError = ref<string | null>(null)
 
 const isEditable = computed(() => Boolean(policy.value?.editable))
-const canUpdate = computed(() => isEditable.value && editPermission.value.allowed && !isLoading.value && !isSaving.value)
-const disabledReason = computed(() => {
-  if (!isEditable.value) {
-    return 'Security policy is read-only in this deployment.'
-  }
-
-  return editPermission.value.reason
-})
+const canUpdate = computed(() => Boolean(policy.value) && editPermission.value.allowed && !isLoading.value && !isSaving.value)
+const disabledReason = computed(() => editPermission.value.reason)
 
 function setPolicy(nextPolicy: AppSecurityPolicyResponseSchema) {
   policy.value = nextPolicy

@@ -39,14 +39,8 @@ const configs = ref<SystemConfigItemSchema[]>([])
 const values = reactive<Record<string, string>>({})
 const errors = reactive<Record<string, string | null>>({})
 
-const canUpdate = computed(() => editable.value && editPermission.value.allowed && !isLoading.value && !isSaving.value)
-const disabledReason = computed(() => {
-  if (!editable.value) {
-    return 'System config is read-only in this deployment.'
-  }
-
-  return editPermission.value.reason
-})
+const canUpdate = computed(() => editPermission.value.allowed && !isLoading.value && !isSaving.value && configs.value.length > 0)
+const disabledReason = computed(() => editPermission.value.reason)
 
 function setConfigs(items: SystemConfigItemSchema[], nextEditable: boolean) {
   editable.value = nextEditable

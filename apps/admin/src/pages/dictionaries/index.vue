@@ -51,7 +51,6 @@ import { Textarea } from '@admin/components/ui/textarea'
 import { getDictionaryColorClass } from '@admin/lib/dictionary'
 import { usePageActionPermissions } from '@admin/lib/permissions'
 import { cn } from '@admin/lib/utils'
-import { useAppConfigStore } from '@admin/stores/app-config'
 import { useDictionaryStore } from '@admin/stores/dictionaries'
 import { AlertTriangle, BookOpenText, GripVertical, Pencil, Plus, Trash2 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
@@ -77,19 +76,17 @@ const COLOR_OPTIONS: Array<{ value: NonNullable<DictColor>, label: string }> = [
 ]
 
 const permissions = usePageActionPermissions()
-const appConfig = useAppConfigStore()
 const dictionaryStore = useDictionaryStore()
 const createPermission = computed(() => permissions.resolve('create', { actionName: 'Create', subject: 'dictionary records' }))
 const editPermission = computed(() => permissions.resolve('edit', { actionName: 'Update', subject: 'dictionary records' }))
 const deletePermission = computed(() => permissions.resolve('delete', { actionName: 'Delete', subject: 'dictionary records' }))
 
-const isReadOnly = computed(() => appConfig.readOnlyMode)
-const canCreate = computed(() => !isReadOnly.value && createPermission.value.allowed)
-const canEdit = computed(() => !isReadOnly.value && editPermission.value.allowed)
-const canDelete = computed(() => !isReadOnly.value && deletePermission.value.allowed)
-const createDisabledReason = computed(() => isReadOnly.value ? 'Dictionaries are read-only in this deployment.' : createPermission.value.reason)
-const editDisabledReason = computed(() => isReadOnly.value ? 'Dictionaries are read-only in this deployment.' : editPermission.value.reason)
-const deleteDisabledReason = computed(() => isReadOnly.value ? 'Dictionaries are read-only in this deployment.' : deletePermission.value.reason)
+const canCreate = computed(() => createPermission.value.allowed)
+const canEdit = computed(() => editPermission.value.allowed)
+const canDelete = computed(() => deletePermission.value.allowed)
+const createDisabledReason = computed(() => createPermission.value.reason)
+const editDisabledReason = computed(() => editPermission.value.reason)
+const deleteDisabledReason = computed(() => deletePermission.value.reason)
 
 const typeSearch = ref('')
 const itemSearch = ref('')
