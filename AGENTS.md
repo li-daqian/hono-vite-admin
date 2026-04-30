@@ -53,3 +53,5 @@ PRs should include a summary, linked issue when applicable, test commands run, a
 ## Security & Configuration Tips
 
 Keep secrets out of git. Server deployments require `DATABASE_URL`, `JWT_SECRET`, token expiry settings, and admin bootstrap credentials. Frontend deployments require `VITE_API_BASE_URL`. Use `READ_ONLY_MODE=true` for demos that block writes.
+
+In read-only mode, keep frontend write action buttons available when the user otherwise has permission. The admin UI may show the global read-only banner or read-only status badges, but it should not use read-only state to disable create, edit, delete, save, or reorder controls. Let write requests reach the API so the backend returns the standard read-only error message consistently.
