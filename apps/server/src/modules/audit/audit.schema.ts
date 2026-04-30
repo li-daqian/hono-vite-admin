@@ -8,7 +8,7 @@ function emptyStringToUndefined(value: unknown) {
 export const AUDIT_MODULE_VALUES = ['auth', 'user', 'role', 'department'] as const
 export const AUDIT_CATEGORY_VALUES = ['login', 'operation'] as const
 
-export const AuditModuleSchema = z.enum(AUDIT_MODULE_VALUES).openapi({
+export const AuditModuleSchema = z.string().trim().min(1).max(64).openapi({
   description: 'Audited module identifier',
   example: 'user',
 })

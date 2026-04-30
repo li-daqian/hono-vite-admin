@@ -1,7 +1,7 @@
 import type { Permission, PrismaClient, User } from '@server/generated/prisma/client'
 import type { TransactionClient } from '@server/generated/prisma/internal/prismaNamespace'
 import { randomUUID } from 'node:crypto'
-import { DepartmentStatus, PermissionType, UserStatus } from '@server/generated/prisma/enums'
+import { DepartmentStatus, DictStatus, PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { getEnv } from '@server/src/lib/env'
 import { createPasswordHash } from '@server/src/lib/password'
 import { prisma } from '@server/src/lib/prisma'
@@ -68,6 +68,26 @@ const menus = [
         order: 1,
         actions: [
           { code: 'edit', name: 'Edit', description: 'Edit user security policy' },
+        ],
+      },
+      {
+        code: 'configs',
+        name: 'System Config',
+        path: '/system/configs',
+        order: 2,
+        actions: [
+          { code: 'edit', name: 'Edit', description: 'Edit system configuration' },
+        ],
+      },
+      {
+        code: 'dictionaries',
+        name: 'Dictionaries',
+        path: '/system/dictionaries',
+        order: 3,
+        actions: [
+          { code: 'create', name: 'Create', description: 'Create dictionary types and items' },
+          { code: 'edit', name: 'Edit', description: 'Edit dictionary types and items' },
+          { code: 'delete', name: 'Delete', description: 'Delete dictionary types and items' },
         ],
       },
     ],
@@ -214,10 +234,65 @@ const demoUsers = [
   },
 ]
 
+const demoDictionaries = [
+  {
+    id: 'dict.type.user_status',
+    code: 'user_status',
+    name: 'User Status',
+    order: 1,
+    remark: 'User account status labels',
+    items: [
+      {
+        id: 'dict.item.user_status.active',
+        value: 'ACTIVE',
+        label: 'Active',
+        color: 'green',
+        order: 1,
+        remark: 'Users that can sign in',
+      },
+      {
+        id: 'dict.item.user_status.disabled',
+        value: 'DISABLED',
+        label: 'Disabled',
+        color: 'zinc',
+        order: 2,
+        remark: 'Users blocked from signing in',
+      },
+    ],
+  },
+  {
+    id: 'dict.type.audit_module',
+    code: 'audit_module',
+    name: 'Audit Module',
+    order: 2,
+    remark: 'Audit log module labels',
+    items: [
+      { id: 'dict.item.audit_module.auth', value: 'auth', label: 'Authentication', color: 'blue', order: 1, remark: null },
+      { id: 'dict.item.audit_module.user', value: 'user', label: 'Users', color: 'green', order: 2, remark: null },
+      { id: 'dict.item.audit_module.role', value: 'role', label: 'Roles', color: 'violet', order: 3, remark: null },
+      { id: 'dict.item.audit_module.department', value: 'department', label: 'Departments', color: 'amber', order: 4, remark: null },
+      { id: 'dict.item.audit_module.system_config', value: 'system-config', label: 'System Config', color: 'red', order: 5, remark: null },
+      { id: 'dict.item.audit_module.dictionary', value: 'dictionary', label: 'Dictionaries', color: 'slate', order: 6, remark: null },
+    ],
+  },
+  {
+    id: 'dict.type.audit_category',
+    code: 'audit_category',
+    name: 'Audit Category',
+    order: 3,
+    remark: 'Audit log category labels',
+    items: [
+      { id: 'dict.item.audit_category.login', value: 'login', label: 'Login', color: 'blue', order: 1, remark: null },
+      { id: 'dict.item.audit_category.operation', value: 'operation', label: 'Operation', color: 'slate', order: 2, remark: null },
+    ],
+  },
+]
+
 async function bootstrapSystem() {
   const adminUser = await ensureAdminUser()
   await setupAdminAuthorization(adminUser)
   await seedDemoOrganization(adminUser)
+  await seedSystemDictionaries()
 }
 
 async function setupAdminAuthorization(adminUser: User) {
@@ -403,6 +478,47 @@ async function seedDemoOrganization(adminUser: User) {
       data: assignments,
       skipDuplicates: true,
     })
+  })
+}
+
+async function seedSystemDictionaries() {
+  await prisma.$transaction(async (tx) => {
+    for (const dictionary of demoDictionaries) {
+      const type = await tx.dictType.upsert({
+        where: { code: dictionary.code },
+        update: {},
+        create: {
+          id: dictionary.id,
+          code: dictionary.code,
+          name: dictionary.name,
+          order: dictionary.order,
+          status: DictStatus.ACTIVE,
+          remark: dictionary.remark,
+        },
+      })
+
+      for (const item of dictionary.items) {
+        await tx.dictItem.upsert({
+          where: {
+            typeId_value: {
+              typeId: type.id,
+              value: item.value,
+            },
+          },
+          update: {},
+          create: {
+            id: item.id,
+            typeId: type.id,
+            value: item.value,
+            label: item.label,
+            color: item.color,
+            order: item.order,
+            status: DictStatus.ACTIVE,
+            remark: item.remark,
+          },
+        })
+      }
+    }
   })
 }
 

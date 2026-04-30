@@ -13,6 +13,7 @@ import {
 import { Input } from '@admin/components/ui/input'
 import { Skeleton } from '@admin/components/ui/skeleton'
 import { AuthManager } from '@admin/lib/auth'
+import { useAppConfigStore } from '@admin/stores/app-config'
 import { toTypedSchema } from '@vee-validate/zod'
 import axios from 'axios'
 import { ref } from 'vue'
@@ -30,6 +31,7 @@ const validationSchema = toTypedSchema(z.object({
 
 const loading = ref(true)
 const loginError = ref<string | null>(null)
+const appConfig = useAppConfigStore()
 
 function formatLoginErrorMessage(errorResponse: ErrorResponse): string {
   const lockedUntilPrefix = 'after '
@@ -111,7 +113,7 @@ async function handleLogin(values: Record<string, any>) {
             <template v-else>
               <div class="flex flex-col items-center gap-2 text-center">
                 <h1 class="text-xl font-bold">
-                  Sign in to Admin
+                  {{ appConfig.loginTitle }}
                 </h1>
               </div>
 

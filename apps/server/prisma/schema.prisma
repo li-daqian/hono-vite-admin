@@ -144,6 +144,44 @@ model SysConfig {
   @@map("sys_config")
 }
 
+model DictType {
+  id        String     @id @default(ulid())
+  code      String     @unique
+  name      String
+  order     Int        @default(0)
+  status    DictStatus @default(ACTIVE)
+  remark    String?
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  items DictItem[]
+
+  @@index([status])
+  @@index([order])
+  @@map("dict_type")
+}
+
+model DictItem {
+  id        String     @id @default(ulid())
+  typeId    String     @map("type_id")
+  value     String
+  label     String
+  color     String?
+  order     Int        @default(0)
+  status    DictStatus @default(ACTIVE)
+  remark    String?
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  type DictType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@unique([typeId, value])
+  @@index([typeId, status, order])
+  @@index([typeId, order])
+  @@index([status])
+  @@map("dict_item")
+}
+
 model RefreshToken {
   id        String   @id @default(ulid())
   token     String   @unique
@@ -192,6 +230,13 @@ enum DepartmentStatus {
   DISABLED
 
   @@map("department_status")
+}
+
+enum DictStatus {
+  ACTIVE
+  DISABLED
+
+  @@map("dict_status")
 }
 
 enum PermissionType {

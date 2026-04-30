@@ -13,7 +13,11 @@ export const zErrorResponse = z.object({
 
 export const zAppConfigResponseSchema = z.object({
     readOnlyMode: z.boolean().describe('Whether the deployment disables business write operations'),
-    readOnlyMessage: z.string().describe('Short user-facing message shown in the read-only banner')
+    readOnlyMessage: z.string().describe('Short user-facing message shown in the read-only banner'),
+    siteName: z.string().describe('Application name shown in the admin shell'),
+    loginTitle: z.string().describe('Title shown on the login page'),
+    defaultPageSize: z.number().int().describe('Default rows per page for data tables'),
+    pageSizeOptions: z.array(z.number().int()).describe('Allowed rows-per-page options for data tables')
 });
 
 export const zAppSecurityPolicyResponseSchema = z.object({
@@ -25,12 +29,7 @@ export const zAppSecurityPolicyResponseSchema = z.object({
 export const zAuditLogListItemSchema = z.object({
     id: z.string().describe('Unique identifier of the audit log entry'),
     category: z.enum(['login', 'operation']).describe('Audit log category'),
-    module: z.enum([
-        'auth',
-        'user',
-        'role',
-        'department'
-    ]).describe('Audited module identifier'),
+    module: z.string().min(1).max(64).describe('Audited module identifier'),
     action: z.string().describe('Audited action identifier'),
     operatorId: z.union([
         z.string(),
@@ -198,6 +197,72 @@ export const zRolePermissionsResponseSchema = z.array(zRolePermissionTreeNodeSch
 
 export const zRolePermissionsUpdateRequestSchema = z.array(zRolePermissionTreeNodeSchema);
 
+export const zSystemConfigItemSchema = z.object({
+    key: z.enum([
+        'APP_SITE_NAME',
+        'APP_LOGIN_TITLE',
+        'APP_DEFAULT_PAGE_SIZE'
+    ]).describe('Editable system config key'),
+    label: z.string().describe('Human-readable config name'),
+    value: z.string().describe('Stored config value'),
+    valueType: z.enum(['string', 'number']).describe('Input type used by the admin UI'),
+    description: z.string().describe('Short config description'),
+    options: z.union([
+        z.array(z.string()),
+        z.null()
+    ])
+});
+
+export const zSystemConfigListResponseSchema = z.object({
+    editable: z.boolean().describe('Whether this deployment allows config edits'),
+    items: z.array(zSystemConfigItemSchema)
+});
+
+export const zDictTypeResponseSchema = z.object({
+    id: z.string().describe('Dictionary type ID'),
+    code: z.string().describe('Unique dictionary type code'),
+    name: z.string().describe('Dictionary type name'),
+    order: z.number().int().describe('Display order'),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status'),
+    remark: z.union([
+        z.string(),
+        z.null()
+    ]),
+    itemCount: z.number().int().gte(0).describe('Number of items in this type'),
+    createdAt: z.string().datetime().describe('Creation timestamp'),
+    updatedAt: z.string().datetime().describe('Last update timestamp')
+});
+
+export const zDictDeleteResponseSchema = z.object({
+    deletedCount: z.number().int().gte(0).describe('Number of deleted records')
+});
+
+export const zDictItemResponseSchema = z.object({
+    id: z.string().describe('Dictionary item ID'),
+    typeId: z.string().describe('Dictionary type ID'),
+    typeCode: z.string().describe('Dictionary type code'),
+    typeName: z.string().describe('Dictionary type name'),
+    value: z.string().describe('Machine-readable item value'),
+    label: z.string().describe('User-facing item label'),
+    color: z.enum([
+        'green',
+        'zinc',
+        'amber',
+        'blue',
+        'violet',
+        'red',
+        'slate'
+    ]).describe('Semantic badge color'),
+    order: z.number().int().describe('Display order'),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status'),
+    remark: z.union([
+        z.string(),
+        z.null()
+    ]),
+    createdAt: z.string().datetime().describe('Creation timestamp'),
+    updatedAt: z.string().datetime().describe('Last update timestamp')
+});
+
 export const zUserDepartmentResponseSchema = z.object({
     id: z.string().describe('Unique identifier for the department'),
     name: z.string().describe('Department name')
@@ -288,12 +353,7 @@ export const zGetAuditPageData = z.object({
             z.null()
         ]).optional().default(null),
         modules: z.union([
-            z.array(z.enum([
-                'auth',
-                'user',
-                'role',
-                'department'
-            ]).describe('Audited module identifier')),
+            z.array(z.string().min(1).max(64).describe('Audited module identifier')),
             z.null()
         ]).optional().default(null)
     })
@@ -688,6 +748,259 @@ export const zPutRoleByIdPermissionsData = z.object({
  * Role permissions updated successfully
  */
 export const zPutRoleByIdPermissionsResponse = zRolePermissionsResponseSchema;
+
+export const zGetSystemConfigsData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * System configs retrieved successfully
+ */
+export const zGetSystemConfigsResponse = zSystemConfigListResponseSchema;
+
+export const zPutSystemConfigsData = z.object({
+    body: z.object({
+        configs: z.array(z.object({
+            key: z.enum([
+                'APP_SITE_NAME',
+                'APP_LOGIN_TITLE',
+                'APP_DEFAULT_PAGE_SIZE'
+            ]).describe('Editable system config key'),
+            value: z.string().max(100)
+        })).min(1)
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * System configs updated successfully
+ */
+export const zPutSystemConfigsResponse = zSystemConfigListResponseSchema;
+
+export const zGetSystemDictTypesPageData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        page: z.number().int().gte(1).describe('Page number for pagination'),
+        pageSize: z.number().int().gte(1).lte(100).describe('Number of items per page'),
+        sort: z.union([
+            z.string(),
+            z.null()
+        ]).optional().default(null),
+        search: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        status: z.union([
+            z.array(z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status')),
+            z.null()
+        ]).optional().default(null)
+    })
+});
+
+/**
+ * Standard paginated response envelope
+ */
+export const zGetSystemDictTypesPageResponse = z.object({
+    items: z.array(zDictTypeResponseSchema).describe('List of items for the current page'),
+    meta: zPaginationMetaSchema
+}).describe('Standard paginated response envelope');
+
+export const zPostSystemDictTypesData = z.object({
+    body: z.object({
+        code: z.string().min(2).max(64).regex(/^[a-z][a-z0-9_-]*$/).describe('Unique dictionary type code'),
+        name: z.string().min(1).max(50).describe('Dictionary type name'),
+        order: z.number().int().gte(0).lte(9999).describe('Display order').optional().default(0),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status').optional(),
+        remark: z.union([
+            z.string().max(255),
+            z.null()
+        ]).optional()
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary type created successfully
+ */
+export const zPostSystemDictTypesResponse = zDictTypeResponseSchema;
+
+export const zDeleteSystemDictTypesByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Record ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary type deleted successfully
+ */
+export const zDeleteSystemDictTypesByIdResponse = zDictDeleteResponseSchema;
+
+export const zGetSystemDictTypesByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Record ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary type retrieved successfully
+ */
+export const zGetSystemDictTypesByIdResponse = zDictTypeResponseSchema;
+
+export const zPutSystemDictTypesByIdData = z.object({
+    body: z.object({
+        code: z.string().min(2).max(64).regex(/^[a-z][a-z0-9_-]*$/).describe('Unique dictionary type code').optional(),
+        name: z.string().min(1).max(50).describe('Dictionary type name').optional(),
+        order: z.number().int().gte(0).lte(9999).describe('Display order').optional(),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status').optional(),
+        remark: z.union([
+            z.string().max(255),
+            z.null()
+        ]).optional()
+    }),
+    path: z.object({
+        id: z.string().describe('Record ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary type updated successfully
+ */
+export const zPutSystemDictTypesByIdResponse = zDictTypeResponseSchema;
+
+export const zGetSystemDictItemsPageData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        page: z.number().int().gte(1).describe('Page number for pagination'),
+        pageSize: z.number().int().gte(1).lte(100).describe('Number of items per page'),
+        sort: z.union([
+            z.string(),
+            z.null()
+        ]).optional().default(null),
+        typeId: z.union([
+            z.string(),
+            z.null()
+        ]).optional().default(null),
+        typeCode: z.union([
+            z.string(),
+            z.null()
+        ]).optional().default(null),
+        search: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        status: z.union([
+            z.array(z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status')),
+            z.null()
+        ]).optional().default(null)
+    })
+});
+
+/**
+ * Standard paginated response envelope
+ */
+export const zGetSystemDictItemsPageResponse = z.object({
+    items: z.array(zDictItemResponseSchema).describe('List of items for the current page'),
+    meta: zPaginationMetaSchema
+}).describe('Standard paginated response envelope');
+
+export const zPostSystemDictItemsData = z.object({
+    body: z.object({
+        typeId: z.string().min(1).describe('Dictionary type ID'),
+        value: z.string().min(1).max(64).describe('Machine-readable item value'),
+        label: z.string().min(1).max(50).describe('User-facing item label'),
+        color: z.enum([
+            'green',
+            'zinc',
+            'amber',
+            'blue',
+            'violet',
+            'red',
+            'slate'
+        ]).describe('Semantic badge color').optional(),
+        order: z.number().int().gte(0).lte(9999).describe('Display order').optional().default(0),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status').optional(),
+        remark: z.union([
+            z.string().max(255),
+            z.null()
+        ]).optional()
+    }),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary item created successfully
+ */
+export const zPostSystemDictItemsResponse = zDictItemResponseSchema;
+
+export const zDeleteSystemDictItemsByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Record ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary item deleted successfully
+ */
+export const zDeleteSystemDictItemsByIdResponse = zDictDeleteResponseSchema;
+
+export const zGetSystemDictItemsByIdData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        id: z.string().describe('Record ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary item retrieved successfully
+ */
+export const zGetSystemDictItemsByIdResponse = zDictItemResponseSchema;
+
+export const zPutSystemDictItemsByIdData = z.object({
+    body: z.object({
+        typeId: z.string().min(1).describe('Dictionary type ID').optional(),
+        value: z.string().min(1).max(64).describe('Machine-readable item value').optional(),
+        label: z.string().min(1).max(50).describe('User-facing item label').optional(),
+        color: z.enum([
+            'green',
+            'zinc',
+            'amber',
+            'blue',
+            'violet',
+            'red',
+            'slate'
+        ]).describe('Semantic badge color').optional(),
+        order: z.number().int().gte(0).lte(9999).describe('Display order').optional(),
+        status: z.enum(['ACTIVE', 'DISABLED']).describe('Dictionary record status').optional(),
+        remark: z.union([
+            z.string().max(255),
+            z.null()
+        ]).optional()
+    }),
+    path: z.object({
+        id: z.string().describe('Record ID')
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * Dictionary item updated successfully
+ */
+export const zPutSystemDictItemsByIdResponse = zDictItemResponseSchema;
 
 export const zGetUserProfileData = z.object({
     body: z.never().optional(),

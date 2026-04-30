@@ -8,10 +8,12 @@ import { SidebarTrigger } from '@admin/components/ui/sidebar'
 import { SIDEBAR_WIDTH, useSidebar } from '@admin/components/ui/sidebar/utils'
 import AppBreadcrumb from '@admin/pages/home/components/AppBreadcrumb.vue'
 import UserNav from '@admin/pages/home/components/UserNav.vue'
+import { useAppConfigStore } from '@admin/stores/app-config'
 import { useMenuStore } from '@admin/stores/menu'
 import { usePageRefreshStore } from '@admin/stores/page-refresh'
 import { computed } from 'vue'
 
+const appConfig = useAppConfigStore()
 const menuStore = useMenuStore()
 const sidebar = useSidebar()
 const pageRefreshStore = usePageRefreshStore()
@@ -34,7 +36,7 @@ function handleRouteRefresh() {
     <div :style="{ width: `${logoAreaWidth}` }" class="flex shrink-0 items-center gap-4 pl-4">
       <div class="flex items-center justify-center gap-2">
         <AppLogo class="size-6" />
-        <span class="text-lg font-semibold leading-none hidden md:block">User Admin</span>
+        <span class="text-lg font-semibold leading-none hidden md:block">{{ appConfig.siteName }}</span>
       </div>
     </div>
     <div class="flex items-center gap-2 ml-4">

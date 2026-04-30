@@ -20,8 +20,10 @@ import {
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { cn } from '@admin/lib/utils'
+import { useAppConfigStore } from '@admin/stores/app-config'
+import { useDictionaryStore } from '@admin/stores/dictionaries'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 import DataTableBulkActions from './data-table-bulk-actions.vue'
 import { usersColumns } from './users-columns'
 import { useUsers } from './users-provider.vue'
@@ -33,15 +35,14 @@ const props = withDefaults(defineProps<{
 })
 
 const { roleOptions, departmentOptions } = useUsers()
+const appConfig = useAppConfigStore()
+const dictionaryStore = useDictionaryStore()
 
 const filters = computed<DataTableFilterField[]>(() => [
   {
     columnId: 'status',
     title: 'Status',
-    options: [
-      { label: 'Active', value: 'ACTIVE' },
-      { label: 'Disabled', value: 'DISABLED' },
-    ],
+    options: dictionaryStore.getOptions('user_status'),
   },
   {
     columnId: 'roles',
@@ -56,7 +57,7 @@ const filters = computed<DataTableFilterField[]>(() => [
 ])
 
 const tableData = shallowRef<UserPageItem[]>([])
-const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 10 })
+const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: appConfig.defaultPageSize })
 const totalPages = ref(1)
 const sorting = ref<SortingState>([])
 const rowSelection = ref<RowSelectionState>({})
@@ -169,6 +170,10 @@ watch([pagination, sorting, columnFilters], () => {
 
 watch(() => props.refreshKey, () => {
   void fetchUsers()
+})
+
+onMounted(() => {
+  void dictionaryStore.fetchType('user_status')
 })
 </script>
 

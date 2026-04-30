@@ -19,8 +19,10 @@ import {
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
 import { cn } from '@admin/lib/utils'
+import { useAppConfigStore } from '@admin/stores/app-config'
+import { useDictionaryStore } from '@admin/stores/dictionaries'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 import { getAuditColumns } from './audit-columns'
 import AuditViewDialog from './audit-view-dialog.vue'
 
@@ -28,6 +30,8 @@ const props = defineProps<{
   mode: 'login' | 'operation'
 }>()
 
+const appConfig = useAppConfigStore()
+const dictionaryStore = useDictionaryStore()
 const isLoginMode = computed(() => props.mode === 'login')
 
 const filters = computed<DataTableFilterField[]>(() => {
@@ -39,10 +43,7 @@ const filters = computed<DataTableFilterField[]>(() => {
     {
       columnId: 'module',
       title: 'Module',
-      options: [
-        { label: 'User', value: 'user' },
-        { label: 'Role', value: 'role' },
-      ],
+      options: dictionaryStore.getOptions('audit_module'),
     },
   ]
 })
@@ -50,7 +51,7 @@ const filters = computed<DataTableFilterField[]>(() => {
 const searchPlaceholder = computed(() => isLoginMode.value ? 'Search login logs...' : 'Search operation logs...')
 
 const tableData = shallowRef<AuditLogListItemSchema[]>([])
-const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 10 })
+const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: appConfig.defaultPageSize })
 const totalPages = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const columnFilters = ref<ColumnFiltersState>([])
@@ -132,7 +133,7 @@ async function fetchAuditLogs() {
     search: globalFilter.value.trim() || undefined,
     categories: [props.mode],
     modules: !isLoginMode.value && Array.isArray(modulesFilter) && modulesFilter.length > 0
-      ? modulesFilter as Array<'user' | 'role'>
+      ? modulesFilter as string[]
       : undefined,
   }
 
@@ -170,6 +171,10 @@ watch([pagination, sorting, columnFilters, globalFilter], () => {
     void fetchAuditLogs()
   }, 300)
 }, { deep: true, immediate: true })
+
+onMounted(() => {
+  void dictionaryStore.fetchType('audit_module')
+})
 </script>
 
 <template>

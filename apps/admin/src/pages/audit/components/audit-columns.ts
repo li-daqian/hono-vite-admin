@@ -3,6 +3,8 @@ import type { Column, ColumnDef } from '@tanstack/vue-table'
 import { DataTableColumnHeader } from '@admin/components/data-table'
 import { Badge } from '@admin/components/ui/badge'
 import { Button } from '@admin/components/ui/button'
+import { getDictionaryColorClass } from '@admin/lib/dictionary'
+import { useDictionaryStore } from '@admin/stores/dictionaries'
 import { h } from 'vue'
 import { formatAuditDateTime, formatAuditLabel, formatAuditOperator } from './audit-utils'
 
@@ -37,7 +39,15 @@ export function getAuditColumns(onView: (row: AuditLogItem) => void): ColumnDef<
       meta: {
         label: 'Module',
       },
-      cell: ({ row }) => h(Badge, { variant: 'outline' }, () => formatAuditLabel(row.original.module)),
+      cell: ({ row }) => {
+        const dictionaryStore = useDictionaryStore()
+        const moduleOption = dictionaryStore.getOption('audit_module', row.original.module)
+
+        return h(Badge, {
+          variant: 'outline',
+          class: getDictionaryColorClass(moduleOption.color),
+        }, () => moduleOption.label || formatAuditLabel(row.original.module))
+      },
     },
     {
       id: 'action',

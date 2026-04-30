@@ -22,6 +22,22 @@ export type AppConfigResponseSchema = {
      * Short user-facing message shown in the read-only banner
      */
     readOnlyMessage: string;
+    /**
+     * Application name shown in the admin shell
+     */
+    siteName: string;
+    /**
+     * Title shown on the login page
+     */
+    loginTitle: string;
+    /**
+     * Default rows per page for data tables
+     */
+    defaultPageSize: number;
+    /**
+     * Allowed rows-per-page options for data tables
+     */
+    pageSizeOptions: Array<number>;
 };
 
 export type AppSecurityPolicyResponseSchema = {
@@ -51,7 +67,7 @@ export type AuditLogListItemSchema = {
     /**
      * Audited module identifier
      */
-    module: 'auth' | 'user' | 'role' | 'department';
+    module: string;
     /**
      * Audited action identifier
      */
@@ -351,6 +367,138 @@ export type RolePermissionsResponseSchema = Array<RolePermissionTreeNodeSchema>;
 
 export type RolePermissionsUpdateRequestSchema = Array<RolePermissionTreeNodeSchema>;
 
+export type SystemConfigItemSchema = {
+    /**
+     * Editable system config key
+     */
+    key: 'APP_SITE_NAME' | 'APP_LOGIN_TITLE' | 'APP_DEFAULT_PAGE_SIZE';
+    /**
+     * Human-readable config name
+     */
+    label: string;
+    /**
+     * Stored config value
+     */
+    value: string;
+    /**
+     * Input type used by the admin UI
+     */
+    valueType: 'string' | 'number';
+    /**
+     * Short config description
+     */
+    description: string;
+    /**
+     * Allowed option values when the config is constrained
+     */
+    options: Array<string> | null;
+};
+
+export type SystemConfigListResponseSchema = {
+    /**
+     * Whether this deployment allows config edits
+     */
+    editable: boolean;
+    items: Array<SystemConfigItemSchema>;
+};
+
+export type DictTypeResponseSchema = {
+    /**
+     * Dictionary type ID
+     */
+    id: string;
+    /**
+     * Unique dictionary type code
+     */
+    code: string;
+    /**
+     * Dictionary type name
+     */
+    name: string;
+    /**
+     * Display order
+     */
+    order: number;
+    /**
+     * Dictionary record status
+     */
+    status: 'ACTIVE' | 'DISABLED';
+    /**
+     * Optional remark
+     */
+    remark: string | null;
+    /**
+     * Number of items in this type
+     */
+    itemCount: number;
+    /**
+     * Creation timestamp
+     */
+    createdAt: Date;
+    /**
+     * Last update timestamp
+     */
+    updatedAt: Date;
+};
+
+export type DictDeleteResponseSchema = {
+    /**
+     * Number of deleted records
+     */
+    deletedCount: number;
+};
+
+export type DictItemResponseSchema = {
+    /**
+     * Dictionary item ID
+     */
+    id: string;
+    /**
+     * Dictionary type ID
+     */
+    typeId: string;
+    /**
+     * Dictionary type code
+     */
+    typeCode: string;
+    /**
+     * Dictionary type name
+     */
+    typeName: string;
+    /**
+     * Machine-readable item value
+     */
+    value: string;
+    /**
+     * User-facing item label
+     */
+    label: string;
+    /**
+     * Semantic badge color
+     */
+    color: 'green' | 'zinc' | 'amber' | 'blue' | 'violet' | 'red' | 'slate';
+    /**
+     * Display order
+     */
+    order: number;
+    /**
+     * Dictionary record status
+     */
+    status: 'ACTIVE' | 'DISABLED';
+    /**
+     * Optional remark
+     */
+    remark: string | null;
+    /**
+     * Creation timestamp
+     */
+    createdAt: Date;
+    /**
+     * Last update timestamp
+     */
+    updatedAt: Date;
+};
+
 export type UserDepartmentResponseSchema = {
     /**
      * Unique identifier for the department
@@ -506,7 +654,7 @@ export type GetAuditPageData = {
         /**
          * Filter audit logs by one or more module identifiers
          */
-        modules?: Array<'auth' | 'user' | 'role' | 'department'> | null;
+        modules?: Array<string> | null;
     };
     url: '/audit/page';
 };
@@ -1155,6 +1303,398 @@ export type PutRoleByIdPermissionsResponses = {
 };
 
 export type PutRoleByIdPermissionsResponse = PutRoleByIdPermissionsResponses[keyof PutRoleByIdPermissionsResponses];
+
+export type GetSystemConfigsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/system/configs';
+};
+
+export type GetSystemConfigsResponses = {
+    /**
+     * System configs retrieved successfully
+     */
+    200: SystemConfigListResponseSchema;
+};
+
+export type GetSystemConfigsResponse = GetSystemConfigsResponses[keyof GetSystemConfigsResponses];
+
+export type PutSystemConfigsData = {
+    body: {
+        configs: Array<{
+            /**
+             * Editable system config key
+             */
+            key: 'APP_SITE_NAME' | 'APP_LOGIN_TITLE' | 'APP_DEFAULT_PAGE_SIZE';
+            value: string;
+        }>;
+    };
+    path?: never;
+    query?: never;
+    url: '/system/configs';
+};
+
+export type PutSystemConfigsResponses = {
+    /**
+     * System configs updated successfully
+     */
+    200: SystemConfigListResponseSchema;
+};
+
+export type PutSystemConfigsResponse = PutSystemConfigsResponses[keyof PutSystemConfigsResponses];
+
+export type GetSystemDictTypesPageData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Page number for pagination
+         */
+        page: number;
+        /**
+         * Number of items per page
+         */
+        pageSize: number;
+        /**
+         * Sorting criteria in the format "field direction" or "field direction, field direction", e.g. "createdAt desc, username asc"
+         */
+        sort?: string | null;
+        /**
+         * Search dictionary types by code, name, or remark
+         */
+        search?: string | null;
+        /**
+         * Filter dictionary types by status
+         */
+        status?: Array<'ACTIVE' | 'DISABLED'> | null;
+    };
+    url: '/system/dict/types/page';
+};
+
+export type GetSystemDictTypesPageResponses = {
+    /**
+     * Standard paginated response envelope
+     */
+    200: {
+        /**
+         * List of items for the current page
+         */
+        items: Array<DictTypeResponseSchema>;
+        meta: PaginationMetaSchema;
+    };
+};
+
+export type GetSystemDictTypesPageResponse = GetSystemDictTypesPageResponses[keyof GetSystemDictTypesPageResponses];
+
+export type PostSystemDictTypesData = {
+    body: {
+        /**
+         * Unique dictionary type code
+         */
+        code: string;
+        /**
+         * Dictionary type name
+         */
+        name: string;
+        /**
+         * Display order
+         */
+        order?: number;
+        /**
+         * Dictionary record status
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+        /**
+         * Optional remark
+         */
+        remark?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/system/dict/types';
+};
+
+export type PostSystemDictTypesResponses = {
+    /**
+     * Dictionary type created successfully
+     */
+    201: DictTypeResponseSchema;
+};
+
+export type PostSystemDictTypesResponse = PostSystemDictTypesResponses[keyof PostSystemDictTypesResponses];
+
+export type DeleteSystemDictTypesByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Record ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/system/dict/types/{id}';
+};
+
+export type DeleteSystemDictTypesByIdResponses = {
+    /**
+     * Dictionary type deleted successfully
+     */
+    200: DictDeleteResponseSchema;
+};
+
+export type DeleteSystemDictTypesByIdResponse = DeleteSystemDictTypesByIdResponses[keyof DeleteSystemDictTypesByIdResponses];
+
+export type GetSystemDictTypesByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Record ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/system/dict/types/{id}';
+};
+
+export type GetSystemDictTypesByIdResponses = {
+    /**
+     * Dictionary type retrieved successfully
+     */
+    200: DictTypeResponseSchema;
+};
+
+export type GetSystemDictTypesByIdResponse = GetSystemDictTypesByIdResponses[keyof GetSystemDictTypesByIdResponses];
+
+export type PutSystemDictTypesByIdData = {
+    body: {
+        /**
+         * Unique dictionary type code
+         */
+        code?: string;
+        /**
+         * Dictionary type name
+         */
+        name?: string;
+        /**
+         * Display order
+         */
+        order?: number;
+        /**
+         * Dictionary record status
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+        /**
+         * Optional remark
+         */
+        remark?: string | null;
+    };
+    path: {
+        /**
+         * Record ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/system/dict/types/{id}';
+};
+
+export type PutSystemDictTypesByIdResponses = {
+    /**
+     * Dictionary type updated successfully
+     */
+    200: DictTypeResponseSchema;
+};
+
+export type PutSystemDictTypesByIdResponse = PutSystemDictTypesByIdResponses[keyof PutSystemDictTypesByIdResponses];
+
+export type GetSystemDictItemsPageData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Page number for pagination
+         */
+        page: number;
+        /**
+         * Number of items per page
+         */
+        pageSize: number;
+        /**
+         * Sorting criteria in the format "field direction" or "field direction, field direction", e.g. "createdAt desc, username asc"
+         */
+        sort?: string | null;
+        /**
+         * Filter items by dictionary type ID
+         */
+        typeId?: string | null;
+        /**
+         * Filter items by dictionary type code
+         */
+        typeCode?: string | null;
+        /**
+         * Search dictionary items by value, label, or remark
+         */
+        search?: string | null;
+        /**
+         * Filter dictionary items by status
+         */
+        status?: Array<'ACTIVE' | 'DISABLED'> | null;
+    };
+    url: '/system/dict/items/page';
+};
+
+export type GetSystemDictItemsPageResponses = {
+    /**
+     * Standard paginated response envelope
+     */
+    200: {
+        /**
+         * List of items for the current page
+         */
+        items: Array<DictItemResponseSchema>;
+        meta: PaginationMetaSchema;
+    };
+};
+
+export type GetSystemDictItemsPageResponse = GetSystemDictItemsPageResponses[keyof GetSystemDictItemsPageResponses];
+
+export type PostSystemDictItemsData = {
+    body: {
+        /**
+         * Dictionary type ID
+         */
+        typeId: string;
+        /**
+         * Machine-readable item value
+         */
+        value: string;
+        /**
+         * User-facing item label
+         */
+        label: string;
+        /**
+         * Semantic badge color
+         */
+        color?: 'green' | 'zinc' | 'amber' | 'blue' | 'violet' | 'red' | 'slate';
+        /**
+         * Display order
+         */
+        order?: number;
+        /**
+         * Dictionary record status
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+        /**
+         * Optional remark
+         */
+        remark?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/system/dict/items';
+};
+
+export type PostSystemDictItemsResponses = {
+    /**
+     * Dictionary item created successfully
+     */
+    201: DictItemResponseSchema;
+};
+
+export type PostSystemDictItemsResponse = PostSystemDictItemsResponses[keyof PostSystemDictItemsResponses];
+
+export type DeleteSystemDictItemsByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Record ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/system/dict/items/{id}';
+};
+
+export type DeleteSystemDictItemsByIdResponses = {
+    /**
+     * Dictionary item deleted successfully
+     */
+    200: DictDeleteResponseSchema;
+};
+
+export type DeleteSystemDictItemsByIdResponse = DeleteSystemDictItemsByIdResponses[keyof DeleteSystemDictItemsByIdResponses];
+
+export type GetSystemDictItemsByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Record ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/system/dict/items/{id}';
+};
+
+export type GetSystemDictItemsByIdResponses = {
+    /**
+     * Dictionary item retrieved successfully
+     */
+    200: DictItemResponseSchema;
+};
+
+export type GetSystemDictItemsByIdResponse = GetSystemDictItemsByIdResponses[keyof GetSystemDictItemsByIdResponses];
+
+export type PutSystemDictItemsByIdData = {
+    body: {
+        /**
+         * Dictionary type ID
+         */
+        typeId?: string;
+        /**
+         * Machine-readable item value
+         */
+        value?: string;
+        /**
+         * User-facing item label
+         */
+        label?: string;
+        /**
+         * Semantic badge color
+         */
+        color?: 'green' | 'zinc' | 'amber' | 'blue' | 'violet' | 'red' | 'slate';
+        /**
+         * Display order
+         */
+        order?: number;
+        /**
+         * Dictionary record status
+         */
+        status?: 'ACTIVE' | 'DISABLED';
+        /**
+         * Optional remark
+         */
+        remark?: string | null;
+    };
+    path: {
+        /**
+         * Record ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/system/dict/items/{id}';
+};
+
+export type PutSystemDictItemsByIdResponses = {
+    /**
+     * Dictionary item updated successfully
+     */
+    200: DictItemResponseSchema;
+};
+
+export type PutSystemDictItemsByIdResponse = PutSystemDictItemsByIdResponses[keyof PutSystemDictItemsByIdResponses];
 
 export type GetUserProfileData = {
     body?: never;

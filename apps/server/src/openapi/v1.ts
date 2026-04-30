@@ -5,6 +5,7 @@ import { authApp } from '@server/src/modules/auth/auth.route'
 import { departmentApp } from '@server/src/modules/department/department.route'
 import { menuApp } from '@server/src/modules/menu/menu.route'
 import { roleApp } from '@server/src/modules/role/role.route'
+import { systemApp } from '@server/src/modules/system/system.route'
 import { userApp } from '@server/src/modules/user/user.route'
 import { createApi } from '@server/src/openapi/openapi'
 
@@ -20,6 +21,7 @@ apiV1.route('/auth', authApp)
 apiV1.route('/department', departmentApp)
 apiV1.route('/menu', menuApp)
 apiV1.route('/role', roleApp)
+apiV1.route('/system', systemApp)
 apiV1.route('/user', userApp)
 
 export { apiV1 }

@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@admin/components/ui/select'
 import { cn, getPageNumbers } from '@admin/lib/utils'
+import { useAppConfigStore } from '@admin/stores/app-config'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -23,6 +24,7 @@ const props = defineProps<{
   class?: HTMLAttributes['class']
 }>()
 
+const appConfig = useAppConfigStore()
 const currentPage = computed(() => props.table.getState().pagination.pageIndex + 1)
 const totalPages = computed(() => props.table.getPageCount())
 const pageNumbers = computed(() => getPageNumbers(currentPage.value, totalPages.value))
@@ -58,7 +60,7 @@ function goToPage(pageNumber: number) {
             <SelectValue :placeholder="`${props.table.getState().pagination.pageSize}`" />
           </SelectTrigger>
           <SelectContent side="top">
-            <SelectItem v-for="pageSize in [10, 20, 30, 40, 50]" :key="pageSize" :value="`${pageSize}`">
+            <SelectItem v-for="pageSize in appConfig.pageSizeOptions" :key="pageSize" :value="`${pageSize}`">
               {{ pageSize }}
             </SelectItem>
           </SelectContent>

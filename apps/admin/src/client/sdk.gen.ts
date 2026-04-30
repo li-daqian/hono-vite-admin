@@ -2,9 +2,9 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import { getAuditByIdResponseTransformer, getAuditPageResponseTransformer, getAuthMenusResponseTransformer, getDepartmentByIdResponseTransformer, getDepartmentResponseTransformer, getMenuResponseTransformer, getRoleByIdPermissionsResponseTransformer, getUserByIdResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postDepartmentResponseTransformer, postUserResponseTransformer, putDepartmentByIdResponseTransformer, putRoleByIdPermissionsResponseTransformer, putUserByIdResponseTransformer } from './transformers.gen';
-import type { DeleteDepartmentByIdData, DeleteDepartmentByIdResponses, DeleteRoleByIdData, DeleteRoleByIdResponses, DeleteUserBatchData, DeleteUserBatchResponses, GetAppConfigData, GetAppConfigResponses, GetAppSecurityPolicyData, GetAppSecurityPolicyResponses, GetAuditByIdData, GetAuditByIdResponses, GetAuditPageData, GetAuditPageResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetDepartmentByIdData, GetDepartmentByIdResponses, GetDepartmentByIdUsersData, GetDepartmentByIdUsersResponses, GetDepartmentData, GetDepartmentResponses, GetMenuData, GetMenuResponses, GetRoleByIdData, GetRoleByIdPermissionsData, GetRoleByIdPermissionsResponses, GetRoleByIdResponses, GetRoleData, GetRoleResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchDepartmentReorderData, PatchDepartmentReorderResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthChangePasswordData, PostAuthChangePasswordResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostDepartmentData, PostDepartmentResponses, PostRoleData, PostRoleResponses, PostUserByIdPasswordData, PostUserByIdPasswordResponses, PostUserByIdUnlockData, PostUserByIdUnlockResponses, PostUserData, PostUserResponses, PutAppSecurityPolicyData, PutAppSecurityPolicyResponses, PutDepartmentByIdData, PutDepartmentByIdResponses, PutDepartmentByIdUsersData, PutDepartmentByIdUsersResponses, PutRoleByIdData, PutRoleByIdPermissionsData, PutRoleByIdPermissionsResponses, PutRoleByIdResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
-import { zDeleteDepartmentByIdData, zDeleteDepartmentByIdResponse, zDeleteRoleByIdData, zDeleteRoleByIdResponse, zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAppConfigData, zGetAppConfigResponse, zGetAppSecurityPolicyData, zGetAppSecurityPolicyResponse, zGetAuditByIdData, zGetAuditByIdResponse, zGetAuditPageData, zGetAuditPageResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetDepartmentByIdData, zGetDepartmentByIdResponse, zGetDepartmentByIdUsersData, zGetDepartmentByIdUsersResponse, zGetDepartmentData, zGetDepartmentResponse, zGetMenuData, zGetMenuResponse, zGetRoleByIdData, zGetRoleByIdPermissionsData, zGetRoleByIdPermissionsResponse, zGetRoleByIdResponse, zGetRoleData, zGetRoleResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchDepartmentReorderData, zPatchDepartmentReorderResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthChangePasswordData, zPostAuthChangePasswordResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostDepartmentData, zPostDepartmentResponse, zPostRoleData, zPostRoleResponse, zPostUserByIdPasswordData, zPostUserByIdPasswordResponse, zPostUserByIdUnlockData, zPostUserByIdUnlockResponse, zPostUserData, zPostUserResponse, zPutAppSecurityPolicyData, zPutAppSecurityPolicyResponse, zPutDepartmentByIdData, zPutDepartmentByIdResponse, zPutDepartmentByIdUsersData, zPutDepartmentByIdUsersResponse, zPutRoleByIdData, zPutRoleByIdPermissionsData, zPutRoleByIdPermissionsResponse, zPutRoleByIdResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
+import { getAuditByIdResponseTransformer, getAuditPageResponseTransformer, getAuthMenusResponseTransformer, getDepartmentByIdResponseTransformer, getDepartmentResponseTransformer, getMenuResponseTransformer, getRoleByIdPermissionsResponseTransformer, getSystemDictItemsByIdResponseTransformer, getSystemDictItemsPageResponseTransformer, getSystemDictTypesByIdResponseTransformer, getSystemDictTypesPageResponseTransformer, getUserByIdResponseTransformer, getUserPageResponseTransformer, getUserProfileResponseTransformer, postAuthLoginResponseTransformer, postAuthRefreshResponseTransformer, postDepartmentResponseTransformer, postSystemDictItemsResponseTransformer, postSystemDictTypesResponseTransformer, postUserResponseTransformer, putDepartmentByIdResponseTransformer, putRoleByIdPermissionsResponseTransformer, putSystemDictItemsByIdResponseTransformer, putSystemDictTypesByIdResponseTransformer, putUserByIdResponseTransformer } from './transformers.gen';
+import type { DeleteDepartmentByIdData, DeleteDepartmentByIdResponses, DeleteRoleByIdData, DeleteRoleByIdResponses, DeleteSystemDictItemsByIdData, DeleteSystemDictItemsByIdResponses, DeleteSystemDictTypesByIdData, DeleteSystemDictTypesByIdResponses, DeleteUserBatchData, DeleteUserBatchResponses, GetAppConfigData, GetAppConfigResponses, GetAppSecurityPolicyData, GetAppSecurityPolicyResponses, GetAuditByIdData, GetAuditByIdResponses, GetAuditPageData, GetAuditPageResponses, GetAuthMenusData, GetAuthMenusResponses, GetAuthPrefillData, GetAuthPrefillResponses, GetDepartmentByIdData, GetDepartmentByIdResponses, GetDepartmentByIdUsersData, GetDepartmentByIdUsersResponses, GetDepartmentData, GetDepartmentResponses, GetMenuData, GetMenuResponses, GetRoleByIdData, GetRoleByIdPermissionsData, GetRoleByIdPermissionsResponses, GetRoleByIdResponses, GetRoleData, GetRoleResponses, GetSystemConfigsData, GetSystemConfigsResponses, GetSystemDictItemsByIdData, GetSystemDictItemsByIdResponses, GetSystemDictItemsPageData, GetSystemDictItemsPageResponses, GetSystemDictTypesByIdData, GetSystemDictTypesByIdResponses, GetSystemDictTypesPageData, GetSystemDictTypesPageResponses, GetUserByIdData, GetUserByIdResponses, GetUserPageData, GetUserPageResponses, GetUserProfileData, GetUserProfileResponses, PatchDepartmentReorderData, PatchDepartmentReorderResponses, PatchUserStatusBatchData, PatchUserStatusBatchResponses, PostAuthChangePasswordData, PostAuthChangePasswordResponses, PostAuthLoginData, PostAuthLoginResponses, PostAuthLogoutData, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshResponses, PostDepartmentData, PostDepartmentResponses, PostRoleData, PostRoleResponses, PostSystemDictItemsData, PostSystemDictItemsResponses, PostSystemDictTypesData, PostSystemDictTypesResponses, PostUserByIdPasswordData, PostUserByIdPasswordResponses, PostUserByIdUnlockData, PostUserByIdUnlockResponses, PostUserData, PostUserResponses, PutAppSecurityPolicyData, PutAppSecurityPolicyResponses, PutDepartmentByIdData, PutDepartmentByIdResponses, PutDepartmentByIdUsersData, PutDepartmentByIdUsersResponses, PutRoleByIdData, PutRoleByIdPermissionsData, PutRoleByIdPermissionsResponses, PutRoleByIdResponses, PutSystemConfigsData, PutSystemConfigsResponses, PutSystemDictItemsByIdData, PutSystemDictItemsByIdResponses, PutSystemDictTypesByIdData, PutSystemDictTypesByIdResponses, PutUserByIdData, PutUserByIdResponses } from './types.gen';
+import { zDeleteDepartmentByIdData, zDeleteDepartmentByIdResponse, zDeleteRoleByIdData, zDeleteRoleByIdResponse, zDeleteSystemDictItemsByIdData, zDeleteSystemDictItemsByIdResponse, zDeleteSystemDictTypesByIdData, zDeleteSystemDictTypesByIdResponse, zDeleteUserBatchData, zDeleteUserBatchResponse, zGetAppConfigData, zGetAppConfigResponse, zGetAppSecurityPolicyData, zGetAppSecurityPolicyResponse, zGetAuditByIdData, zGetAuditByIdResponse, zGetAuditPageData, zGetAuditPageResponse, zGetAuthMenusData, zGetAuthMenusResponse, zGetAuthPrefillData, zGetAuthPrefillResponse, zGetDepartmentByIdData, zGetDepartmentByIdResponse, zGetDepartmentByIdUsersData, zGetDepartmentByIdUsersResponse, zGetDepartmentData, zGetDepartmentResponse, zGetMenuData, zGetMenuResponse, zGetRoleByIdData, zGetRoleByIdPermissionsData, zGetRoleByIdPermissionsResponse, zGetRoleByIdResponse, zGetRoleData, zGetRoleResponse, zGetSystemConfigsData, zGetSystemConfigsResponse, zGetSystemDictItemsByIdData, zGetSystemDictItemsByIdResponse, zGetSystemDictItemsPageData, zGetSystemDictItemsPageResponse, zGetSystemDictTypesByIdData, zGetSystemDictTypesByIdResponse, zGetSystemDictTypesPageData, zGetSystemDictTypesPageResponse, zGetUserByIdData, zGetUserByIdResponse, zGetUserPageData, zGetUserPageResponse, zGetUserProfileData, zGetUserProfileResponse, zPatchDepartmentReorderData, zPatchDepartmentReorderResponse, zPatchUserStatusBatchData, zPatchUserStatusBatchResponse, zPostAuthChangePasswordData, zPostAuthChangePasswordResponse, zPostAuthLoginData, zPostAuthLoginResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostDepartmentData, zPostDepartmentResponse, zPostRoleData, zPostRoleResponse, zPostSystemDictItemsData, zPostSystemDictItemsResponse, zPostSystemDictTypesData, zPostSystemDictTypesResponse, zPostUserByIdPasswordData, zPostUserByIdPasswordResponse, zPostUserByIdUnlockData, zPostUserByIdUnlockResponse, zPostUserData, zPostUserResponse, zPutAppSecurityPolicyData, zPutAppSecurityPolicyResponse, zPutDepartmentByIdData, zPutDepartmentByIdResponse, zPutDepartmentByIdUsersData, zPutDepartmentByIdUsersResponse, zPutRoleByIdData, zPutRoleByIdPermissionsData, zPutRoleByIdPermissionsResponse, zPutRoleByIdResponse, zPutSystemConfigsData, zPutSystemConfigsResponse, zPutSystemDictItemsByIdData, zPutSystemDictItemsByIdResponse, zPutSystemDictTypesByIdData, zPutSystemDictTypesByIdResponse, zPutUserByIdData, zPutUserByIdResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -389,6 +389,178 @@ export const putRoleByIdPermissions = <ThrowOnError extends boolean = false>(opt
     responseValidator: async (data) => await zPutRoleByIdPermissionsResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/role/{id}/permissions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get editable system config values
+ */
+export const getSystemConfigs = <ThrowOnError extends boolean = false>(options?: Options<GetSystemConfigsData, ThrowOnError>) => (options?.client ?? client).get<GetSystemConfigsResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetSystemConfigsData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetSystemConfigsResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/configs',
+    ...options
+});
+
+/**
+ * Update editable system config values
+ */
+export const putSystemConfigs = <ThrowOnError extends boolean = false>(options: Options<PutSystemConfigsData, ThrowOnError>) => (options.client ?? client).put<PutSystemConfigsResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPutSystemConfigsData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zPutSystemConfigsResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/configs',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get paginated dictionary types
+ */
+export const getSystemDictTypesPage = <ThrowOnError extends boolean = false>(options: Options<GetSystemDictTypesPageData, ThrowOnError>) => (options.client ?? client).get<GetSystemDictTypesPageResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetSystemDictTypesPageData.parseAsync(data),
+    responseTransformer: getSystemDictTypesPageResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zGetSystemDictTypesPageResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/types/page',
+    ...options
+});
+
+/**
+ * Create a dictionary type
+ */
+export const postSystemDictTypes = <ThrowOnError extends boolean = false>(options: Options<PostSystemDictTypesData, ThrowOnError>) => (options.client ?? client).post<PostSystemDictTypesResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostSystemDictTypesData.parseAsync(data),
+    responseTransformer: postSystemDictTypesResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zPostSystemDictTypesResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/types',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a dictionary type and its items
+ */
+export const deleteSystemDictTypesById = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemDictTypesByIdData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemDictTypesByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDeleteSystemDictTypesByIdData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zDeleteSystemDictTypesByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/types/{id}',
+    ...options
+});
+
+/**
+ * Get dictionary type detail by ID
+ */
+export const getSystemDictTypesById = <ThrowOnError extends boolean = false>(options: Options<GetSystemDictTypesByIdData, ThrowOnError>) => (options.client ?? client).get<GetSystemDictTypesByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetSystemDictTypesByIdData.parseAsync(data),
+    responseTransformer: getSystemDictTypesByIdResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zGetSystemDictTypesByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/types/{id}',
+    ...options
+});
+
+/**
+ * Update a dictionary type
+ */
+export const putSystemDictTypesById = <ThrowOnError extends boolean = false>(options: Options<PutSystemDictTypesByIdData, ThrowOnError>) => (options.client ?? client).put<PutSystemDictTypesByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPutSystemDictTypesByIdData.parseAsync(data),
+    responseTransformer: putSystemDictTypesByIdResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zPutSystemDictTypesByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/types/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get paginated dictionary items
+ */
+export const getSystemDictItemsPage = <ThrowOnError extends boolean = false>(options: Options<GetSystemDictItemsPageData, ThrowOnError>) => (options.client ?? client).get<GetSystemDictItemsPageResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetSystemDictItemsPageData.parseAsync(data),
+    responseTransformer: getSystemDictItemsPageResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zGetSystemDictItemsPageResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/items/page',
+    ...options
+});
+
+/**
+ * Create a dictionary item
+ */
+export const postSystemDictItems = <ThrowOnError extends boolean = false>(options: Options<PostSystemDictItemsData, ThrowOnError>) => (options.client ?? client).post<PostSystemDictItemsResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostSystemDictItemsData.parseAsync(data),
+    responseTransformer: postSystemDictItemsResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zPostSystemDictItemsResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/items',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a dictionary item
+ */
+export const deleteSystemDictItemsById = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemDictItemsByIdData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemDictItemsByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDeleteSystemDictItemsByIdData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zDeleteSystemDictItemsByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/items/{id}',
+    ...options
+});
+
+/**
+ * Get dictionary item detail by ID
+ */
+export const getSystemDictItemsById = <ThrowOnError extends boolean = false>(options: Options<GetSystemDictItemsByIdData, ThrowOnError>) => (options.client ?? client).get<GetSystemDictItemsByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetSystemDictItemsByIdData.parseAsync(data),
+    responseTransformer: getSystemDictItemsByIdResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zGetSystemDictItemsByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/items/{id}',
+    ...options
+});
+
+/**
+ * Update a dictionary item
+ */
+export const putSystemDictItemsById = <ThrowOnError extends boolean = false>(options: Options<PutSystemDictItemsByIdData, ThrowOnError>) => (options.client ?? client).put<PutSystemDictItemsByIdResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPutSystemDictItemsByIdData.parseAsync(data),
+    responseTransformer: putSystemDictItemsByIdResponseTransformer,
+    responseType: 'json',
+    responseValidator: async (data) => await zPutSystemDictItemsByIdResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/system/dict/items/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

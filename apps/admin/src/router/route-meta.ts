@@ -39,6 +39,12 @@ export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
   'system.security-policy': {
     component: () => import('@admin/pages/security-policy/index.vue'),
   },
+  'system.configs': {
+    component: () => import('@admin/pages/system-config/index.vue'),
+  },
+  'system.dictionaries': {
+    component: () => import('@admin/pages/dictionaries/index.vue'),
+  },
 }
 
 export const ROUTE_NAMES = {

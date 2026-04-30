@@ -9,6 +9,22 @@ export const AppConfigResponseSchema = z.object({
     description: 'Short user-facing message shown in the read-only banner',
     example: 'Demo read-only',
   }),
+  siteName: z.string().openapi({
+    description: 'Application name shown in the admin shell',
+    example: 'User Admin',
+  }),
+  loginTitle: z.string().openapi({
+    description: 'Title shown on the login page',
+    example: 'Sign in to Admin',
+  }),
+  defaultPageSize: z.number().int().openapi({
+    description: 'Default rows per page for data tables',
+    example: 10,
+  }),
+  pageSizeOptions: z.array(z.number().int()).openapi({
+    description: 'Allowed rows-per-page options for data tables',
+    example: [10, 20, 30, 40, 50],
+  }),
 }).openapi('AppConfigResponseSchema')
 
 export type AppConfigResponse = z.infer<typeof AppConfigResponseSchema>

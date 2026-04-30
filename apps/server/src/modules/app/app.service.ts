@@ -6,10 +6,14 @@ import type {
 import { BusinessError } from '@server/src/common/exception'
 import { getEnv } from '@server/src/lib/env'
 import { prisma } from '@server/src/lib/prisma'
+import {
+  APP_CONFIG_DEFAULTS,
+  APP_CONFIG_KEYS,
+  APP_PAGE_SIZE_OPTIONS,
+  APP_READ_ONLY_MESSAGE,
+} from '@server/src/modules/app/app.config'
 import { LoginLockDurationValueSchema } from '@server/src/modules/app/app.schema'
 import { auditService } from '@server/src/modules/audit/audit.service'
-
-export const APP_READ_ONLY_MESSAGE = 'Demo read-only'
 
 export const SECURITY_POLICY_CONFIG_KEYS = {
   maxFailedLoginAttempts: 'LOGIN_MAX_FAILED_ATTEMPTS',
@@ -17,6 +21,7 @@ export const SECURITY_POLICY_CONFIG_KEYS = {
 } as const
 
 const SECURITY_POLICY_KEYS = Object.values(SECURITY_POLICY_CONFIG_KEYS)
+const PUBLIC_APP_CONFIG_KEYS = Object.values(APP_CONFIG_KEYS)
 
 type LoginSecurityPolicy = Pick<AppSecurityPolicyResponse, 'maxFailedLoginAttempts' | 'loginLockDuration'>
 
@@ -30,7 +35,23 @@ function parseMaxFailedLoginAttempts(value: string | undefined, fallback: number
 }
 
 function parseLoginLockDuration(value: string | undefined, fallback: string): string {
-  return LoginLockDurationValueSchema.safeParse(value).success ? value! : fallback
+  if (!value) {
+    return fallback
+  }
+
+  return LoginLockDurationValueSchema.safeParse(value).success ? value : fallback
+}
+
+function parseTextConfig(value: string | undefined, fallback: string): string {
+  const trimmedValue = value?.trim()
+  return trimmedValue || fallback
+}
+
+function parseDefaultPageSize(value: string | undefined): number {
+  const parsedValue = Number.parseInt(value ?? '', 10)
+  return APP_PAGE_SIZE_OPTIONS.includes(parsedValue as typeof APP_PAGE_SIZE_OPTIONS[number])
+    ? parsedValue
+    : APP_CONFIG_DEFAULTS.defaultPageSize
 }
 
 function isSecurityPolicyEditable(): boolean {
@@ -38,11 +59,11 @@ function isSecurityPolicyEditable(): boolean {
   return !env.isProduction && !env.deployment.readOnlyMode
 }
 
-async function getStoredSecurityPolicyValues(): Promise<Map<string, string>> {
+async function getStoredConfigValues(keys: readonly string[]): Promise<Map<string, string>> {
   const configs = await prisma.sysConfig.findMany({
     where: {
       key: {
-        in: SECURITY_POLICY_KEYS,
+        in: [...keys],
       },
     },
   })
@@ -51,16 +72,28 @@ async function getStoredSecurityPolicyValues(): Promise<Map<string, string>> {
 }
 
 export const appService = {
-  getConfig(): AppConfigResponse {
+  async getConfig(): Promise<AppConfigResponse> {
+    const storedValues = await getStoredConfigValues(PUBLIC_APP_CONFIG_KEYS)
+
     return {
       readOnlyMode: getEnv().deployment.readOnlyMode,
       readOnlyMessage: APP_READ_ONLY_MESSAGE,
+      siteName: parseTextConfig(
+        storedValues.get(APP_CONFIG_KEYS.siteName),
+        APP_CONFIG_DEFAULTS.siteName,
+      ),
+      loginTitle: parseTextConfig(
+        storedValues.get(APP_CONFIG_KEYS.loginTitle),
+        APP_CONFIG_DEFAULTS.loginTitle,
+      ),
+      defaultPageSize: parseDefaultPageSize(storedValues.get(APP_CONFIG_KEYS.defaultPageSize)),
+      pageSizeOptions: [...APP_PAGE_SIZE_OPTIONS],
     }
   },
 
   async getLoginSecurityPolicy(): Promise<LoginSecurityPolicy> {
     const env = getEnv()
-    const storedValues = await getStoredSecurityPolicyValues()
+    const storedValues = await getStoredConfigValues(SECURITY_POLICY_KEYS)
 
     return {
       maxFailedLoginAttempts: parseMaxFailedLoginAttempts(

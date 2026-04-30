@@ -4,7 +4,9 @@ import type { CheckboxCheckedState } from 'reka-ui'
 import { DataTableColumnHeader } from '@admin/components/data-table'
 import { Badge } from '@admin/components/ui/badge'
 import { Checkbox } from '@admin/components/ui/checkbox'
+import { getDictionaryColorClass } from '@admin/lib/dictionary'
 import { cn } from '@admin/lib/utils'
+import { useDictionaryStore } from '@admin/stores/dictionaries'
 import { h } from 'vue'
 import DataTableRowActions from './data-table-row-actions.vue'
 import UsersRoleCell from './users-role-cell.vue'
@@ -129,12 +131,14 @@ export const usersColumns: ColumnDef<UserPageItem>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const lockedUntil = getLockedUntil(row.original)
+      const dictionaryStore = useDictionaryStore()
+      const statusOption = dictionaryStore.getOption('user_status', row.original.status)
 
       return h(Badge, {
         variant: 'outline',
-        class: cn('capitalize', lockedUntil ? lockedStatusClass : statusClassMap[row.original.status]),
+        class: cn('capitalize', lockedUntil ? lockedStatusClass : getDictionaryColorClass(statusOption.color, row.original.status === 'ACTIVE' ? 'green' : 'zinc')),
         title: lockedUntil ? `Locked until ${lockedUntil.toLocaleString()}` : undefined,
-      }, () => lockedUntil ? 'locked' : row.original.status.toLowerCase())
+      }, () => lockedUntil ? 'Locked' : statusOption.label)
     },
   },
   {
