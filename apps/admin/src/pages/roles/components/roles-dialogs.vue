@@ -29,6 +29,12 @@ function handleEditOpenChange(value: boolean) {
     setCurrentRow(null)
 }
 
+function handleCopyOpenChange(value: boolean) {
+  setOpen(value ? 'copy' : null)
+  if (!value)
+    setCurrentRow(null)
+}
+
 function handlePermissionsOpenChange(value: boolean) {
   setOpen(value ? 'permissions' : null)
   if (!value)
@@ -60,6 +66,17 @@ function handleDeleteOpenChange(value: boolean) {
     mode="edit"
     @success="emit('success')"
     @update:open="handleEditOpenChange"
+  />
+
+  <RolesActionDialog
+    v-if="currentRow"
+    :id="editRoleId"
+    :open="open === 'copy'"
+    mode="copy"
+    :source-description="currentRow.description"
+    :source-name="currentRow.name"
+    @success="emit('success')"
+    @update:open="handleCopyOpenChange"
   />
 
   <RolesPermissionsDialog

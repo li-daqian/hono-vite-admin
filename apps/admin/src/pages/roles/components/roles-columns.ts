@@ -1,6 +1,8 @@
 import type { RoleProfileResponseSchema } from '@admin/client'
 import type { Column, ColumnDef } from '@tanstack/vue-table'
+import type { CheckboxCheckedState } from 'reka-ui'
 import { DataTableColumnHeader } from '@admin/components/data-table'
+import { Checkbox } from '@admin/components/ui/checkbox'
 import { h } from 'vue'
 import DataTableRowActions from './data-table-row-actions.vue'
 
@@ -14,6 +16,29 @@ function renderColumnHeader(column: Column<RoleItem, unknown>, title: string) {
 }
 
 export const rolesColumns: ColumnDef<RoleItem>[] = [
+  {
+    id: 'select',
+    size: 40,
+    enableSorting: false,
+    enableHiding: false,
+    header: ({ table }) => h(Checkbox, {
+      'modelValue': table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
+      'onUpdate:modelValue': (value: CheckboxCheckedState) => {
+        table.toggleAllPageRowsSelected(!!value)
+      },
+      'aria-label': 'Select all roles',
+      'class': 'translate-y-[2px]',
+    }),
+    cell: ({ row }) => h(Checkbox, {
+      'modelValue': row.getIsSelected(),
+      'onUpdate:modelValue': (value: CheckboxCheckedState) => {
+        row.toggleSelected(!!value)
+      },
+      'disabled': !row.getCanSelect(),
+      'aria-label': `Select role ${row.original.name}`,
+      'class': 'translate-y-[2px]',
+    }),
+  },
   {
     id: 'name',
     accessorKey: 'name',

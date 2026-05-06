@@ -1,6 +1,6 @@
 import type { PermissionTreeNode } from './model'
 import { describe, expect, it } from 'vitest'
-import { getNodeCheckState, togglePermissionNode } from './model'
+import { applyPermissionTemplate, diffPermissionTrees, getNodeCheckState, mergeEnabledPermissions, togglePermissionNode } from './model'
 
 function createTree(): PermissionTreeNode[] {
   return [
@@ -74,5 +74,42 @@ describe('permission tree model', () => {
     expect(getNodeCheckState(settingsNode)).toBe(true)
     expect(settingsNode.children.every(child => child.enable)).toBe(true)
     expect(usersNode.children[0]!.enable).toBe(true)
+  })
+
+  it('applies built-in permission templates', () => {
+    const navigationTree = applyPermissionTemplate(createTree(), 'navigation')
+    const fullTree = applyPermissionTemplate(createTree(), 'full')
+    const emptyTree = applyPermissionTemplate(fullTree, 'empty')
+
+    expect(navigationTree[0]!.enable).toBe(true)
+    expect(navigationTree[0]!.children[0]!.enable).toBe(false)
+    expect(navigationTree[0]!.children[1]!.enable).toBe(true)
+    expect(fullTree[0]!.children[1]!.children[0]!.enable).toBe(true)
+    expect(emptyTree[0]!.enable).toBe(false)
+  })
+
+  it('diffs added and removed permission entries', () => {
+    const before = togglePermissionNode(createTree(), 'settings', true)
+    const after = togglePermissionNode(before, 'settings:view', false)
+    const diff = diffPermissionTrees(before, after)
+
+    expect(diff.added).toEqual([])
+    expect(diff.removed).toEqual([
+      expect.objectContaining({
+        key: 'ACTION:settings:view',
+        path: ['Settings', 'View'],
+      }),
+    ])
+  })
+
+  it('merges enabled grant permissions without revoking existing permissions', () => {
+    const base = togglePermissionNode(createTree(), 'settings:view', true)
+    const grants = togglePermissionNode(createTree(), 'users:edit', true)
+    const nextTree = mergeEnabledPermissions(base, grants)
+
+    expect(nextTree[0]!.enable).toBe(true)
+    expect(nextTree[0]!.children[0]!.enable).toBe(true)
+    expect(nextTree[0]!.children[1]!.enable).toBe(true)
+    expect(nextTree[0]!.children[1]!.children[0]!.enable).toBe(true)
   })
 })

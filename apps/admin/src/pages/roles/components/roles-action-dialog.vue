@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { PostRoleData, PutRoleByIdData } from '@admin/client'
-import { getRoleById, postRole, putRoleById } from '@admin/client'
+import type { PostRoleData, PutRoleByIdData, RolePermissionsResponseSchema } from '@admin/client'
+import { getRoleById, getRoleByIdPermissions, postRole, putRoleById, putRoleByIdPermissions } from '@admin/client'
 import { Button } from '@admin/components/ui/button'
 import {
   Dialog,
@@ -28,8 +28,10 @@ import z from 'zod'
 
 const props = defineProps<{
   open: boolean
-  mode: 'add' | 'edit'
+  mode: 'add' | 'edit' | 'copy'
   id?: string
+  sourceName?: string
+  sourceDescription?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -43,7 +45,24 @@ const validationSchema = computed(() => toTypedSchema(z.object({
 })))
 
 const initialValues = { name: '', description: '' }
-const isPrefilling = ref(props.mode === 'edit')
+const isPrefilling = ref(props.mode === 'edit' || props.mode === 'copy')
+const sourcePermissions = ref<RolePermissionsResponseSchema>([])
+
+const dialogTitle = computed(() => {
+  if (props.mode === 'edit')
+    return 'Edit Role'
+  if (props.mode === 'copy')
+    return 'Duplicate Role'
+  return 'Add New Role'
+})
+
+const dialogDescription = computed(() => {
+  if (props.mode === 'edit')
+    return 'Update this role.'
+  if (props.mode === 'copy')
+    return 'Create a new role from this role and its permissions.'
+  return 'Create a new role.'
+})
 
 function handleOpenChange(value: boolean) {
   emit('update:open', value)
@@ -71,6 +90,28 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
     return
   }
 
+  if (props.mode === 'copy') {
+    if (!props.id) {
+      isPrefilling.value = false
+      toast.error('Cannot duplicate role: missing id.')
+      return
+    }
+
+    try {
+      const permissionsRes = await getRoleByIdPermissions<true>({ path: { id: props.id } })
+      setValues({
+        name: `${props.sourceName ?? 'role'} copy`,
+        description: props.sourceDescription ?? '',
+      })
+      sourcePermissions.value = permissionsRes.data
+    }
+    finally {
+      isPrefilling.value = false
+    }
+
+    return
+  }
+
   setValues(initialValues)
   isPrefilling.value = false
 }
@@ -78,13 +119,21 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
 async function handleSubmit(values: Record<string, any>) {
   const description = values.description?.trim() || null
 
-  if (props.mode === 'add') {
+  if (props.mode === 'add' || props.mode === 'copy') {
     const payload: PostRoleData['body'] = {
       name: values.name.trim(),
       description,
     }
-    await postRole<true>({ body: payload })
-    toast.success(`Role "${payload.name}" created.`)
+    const roleRes = await postRole<true>({ body: payload })
+
+    if (props.mode === 'copy' && sourcePermissions.value.length > 0) {
+      await putRoleByIdPermissions<true>({
+        path: { id: roleRes.data.id },
+        body: sourcePermissions.value,
+      })
+    }
+
+    toast.success(`Role "${payload.name}" ${props.mode === 'copy' ? 'duplicated' : 'created'}.`)
     emit('success')
     handleOpenChange(false)
     return
@@ -110,9 +159,9 @@ async function handleSubmit(values: Record<string, any>) {
   <Dialog :open="props.open" @update:open="handleOpenChange">
     <DialogContent class="sm:max-w-lg max-h-[90vh] flex flex-col">
       <DialogHeader class="text-start shrink-0">
-        <DialogTitle>{{ props.mode === 'edit' ? 'Edit Role' : 'Add New Role' }}</DialogTitle>
+        <DialogTitle>{{ dialogTitle }}</DialogTitle>
         <DialogDescription>
-          {{ props.mode === 'edit' ? 'Update this role.' : 'Create a new role.' }}
+          {{ dialogDescription }}
           Click save when you&apos;re done.
         </DialogDescription>
       </DialogHeader>
@@ -165,8 +214,8 @@ async function handleSubmit(values: Record<string, any>) {
               :disabled="isSubmitting || isPrefilling"
               :class="isSubmitting ? 'animate-pulse' : undefined"
             >
-              <span v-if="isSubmitting">{{ props.mode === 'edit' ? 'Saving...' : 'Creating...' }}</span>
-              <span v-else>{{ props.mode === 'edit' ? 'Save changes' : 'Create role' }}</span>
+              <span v-if="isSubmitting">{{ props.mode === 'edit' ? 'Saving...' : props.mode === 'copy' ? 'Duplicating...' : 'Creating...' }}</span>
+              <span v-else>{{ props.mode === 'edit' ? 'Save changes' : props.mode === 'copy' ? 'Duplicate role' : 'Create role' }}</span>
             </Button>
           </DialogFooter>
         </form>

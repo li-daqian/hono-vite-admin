@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@admin/components/ui/dropdown-menu'
 import { usePageActionPermissions } from '@admin/lib/permissions'
-import { Ellipsis, KeyRound, Pencil, Trash2 } from 'lucide-vue-next'
+import { Copy, Ellipsis, KeyRound, Pencil, Trash2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useRoles } from './roles-provider.vue'
 
@@ -21,11 +21,16 @@ const props = defineProps<{
 
 const { setOpen, setCurrentRow } = useRoles()
 const permissions = usePageActionPermissions()
+const createPermission = computed(() => permissions.resolve('create', { subject: 'roles' }))
 const editPermission = computed(() => permissions.resolve('edit', { subject: 'roles' }))
 const managePermissionsPermission = computed(() => permissions.resolve('permissions', {
   actionName: 'manage role permissions',
 }))
 const deletePermission = computed(() => permissions.resolve('delete', { subject: 'roles' }))
+const copyPermission = computed(() => ({
+  allowed: createPermission.value.allowed && managePermissionsPermission.value.allowed,
+  reason: createPermission.value.reason ?? managePermissionsPermission.value.reason,
+}))
 
 function handleEdit() {
   setCurrentRow(props.row)
@@ -35,6 +40,11 @@ function handleEdit() {
 function handleDelete() {
   setCurrentRow(props.row)
   setOpen('delete')
+}
+
+function handleCopy() {
+  setCurrentRow(props.row)
+  setOpen('copy')
 }
 
 function handlePermissions() {
@@ -62,6 +72,15 @@ function handlePermissions() {
           Edit
           <DropdownMenuShortcut>
             <Pencil :size="16" />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </PermissionTooltip>
+
+      <PermissionTooltip :message="copyPermission.reason" wrapper-class="block w-full">
+        <DropdownMenuItem :disabled="!copyPermission.allowed" @click="handleCopy">
+          Duplicate
+          <DropdownMenuShortcut>
+            <Copy :size="16" />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
       </PermissionTooltip>
