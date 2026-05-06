@@ -3,6 +3,58 @@ import type { BreadcrumbItemType } from '@admin/pages/home/components/AppBreadcr
 import { getAuthMenus } from '@admin/client'
 import { defineStore } from 'pinia'
 
+function cloneMenu(menu: AuthMenuSchema): AuthMenuSchema {
+  return {
+    ...menu,
+    actions: [...menu.actions],
+    children: menu.children.map(cloneMenu),
+  }
+}
+
+function mergeActions(left: AuthMenuSchema['actions'], right: AuthMenuSchema['actions']) {
+  const actionsById = new Map(left.map(action => [action.id, action]))
+  for (const action of right) {
+    actionsById.set(action.id, action)
+  }
+  return [...actionsById.values()]
+}
+
+export function normalizeAuthMenus(menus: AuthMenuSchema[]): AuthMenuSchema[] {
+  const normalizedMenus = menus.map(cloneMenu)
+  const systemMenu = normalizedMenus.find(menu => menu.id === 'system')
+  if (!systemMenu) {
+    return normalizedMenus
+  }
+
+  const configMenu = systemMenu.children.find(menu => menu.id === 'system.configs')
+  const securityPolicyMenu = systemMenu.children.find(menu => menu.id === 'system.security-policy')
+  if (!securityPolicyMenu) {
+    return normalizedMenus
+  }
+
+  if (!configMenu) {
+    systemMenu.children = systemMenu.children.map((menu) => {
+      if (menu.id !== 'system.security-policy') {
+        return menu
+      }
+
+      return {
+        ...menu,
+        id: 'system.configs',
+        name: 'System Config',
+        path: '/system/configs',
+      }
+    })
+    return normalizedMenus
+  }
+
+  configMenu.actions = mergeActions(configMenu.actions, securityPolicyMenu.actions)
+  configMenu.children = [...configMenu.children, ...securityPolicyMenu.children]
+  systemMenu.children = systemMenu.children.filter(menu => menu.id !== 'system.security-policy')
+
+  return normalizedMenus
+}
+
 function findMenuTrailByPath(
   menus: AuthMenuSchema[],
   targetPath: string,
@@ -76,7 +128,7 @@ export const useMenuStore = defineStore('menu', {
   actions: {
     async fetchMenus() {
       const menusResponse = await getAuthMenus<true>()
-      this.menus = menusResponse.data
+      this.menus = normalizeAuthMenus(menusResponse.data)
     },
 
     reset() {

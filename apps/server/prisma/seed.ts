@@ -1,6 +1,7 @@
 import type { Permission, PrismaClient, User } from '@server/generated/prisma/client'
 import type { TransactionClient } from '@server/generated/prisma/internal/prismaNamespace'
 import { randomUUID } from 'node:crypto'
+import process from 'node:process'
 import { DepartmentStatus, DictStatus, PermissionType, UserStatus } from '@server/generated/prisma/enums'
 import { getEnv } from '@server/src/lib/env'
 import { createPasswordHash } from '@server/src/lib/password'
@@ -62,28 +63,20 @@ const menus = [
     order: 3,
     children: [
       {
-        code: 'security-policy',
-        name: 'Security Policy',
-        path: '/system/security-policy',
-        order: 1,
-        actions: [
-          { code: 'edit', name: 'Edit', description: 'Edit user security policy' },
-        ],
-      },
-      {
         code: 'configs',
         name: 'System Config',
         path: '/system/configs',
-        order: 2,
+        order: 1,
         actions: [
-          { code: 'edit', name: 'Edit', description: 'Edit system configuration' },
+          { code: 'edit', name: 'Edit System Config', description: 'Edit system configuration' },
+          { id: 'system.security-policy.edit', code: 'edit-security-policy', name: 'Edit Security Policy', description: 'Edit user security policy' },
         ],
       },
       {
         code: 'dictionaries',
         name: 'Dictionaries',
         path: '/system/dictionaries',
-        order: 3,
+        order: 2,
         actions: [
           { code: 'create', name: 'Create', description: 'Create dictionary types and items' },
           { code: 'edit', name: 'Edit', description: 'Edit dictionary types and items' },
@@ -390,7 +383,7 @@ async function seedMenus(
     if (menu.actions?.length) {
       await client.action.createMany({
         data: menu.actions.map((action: any) => ({
-          id: `${menuId}.${action.code}`,
+          id: action.id ?? `${menuId}.${action.code}`,
           menuId,
           name: action.name,
           description: action.description,

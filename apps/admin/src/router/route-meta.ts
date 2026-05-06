@@ -36,9 +36,6 @@ export const routeMetaConfigMap: Record<string, RouteMetaConfig> = {
   'system': {
     icon: Settings,
   },
-  'system.security-policy': {
-    component: () => import('@admin/pages/security-policy/index.vue'),
-  },
   'system.configs': {
     component: () => import('@admin/pages/system-config/index.vue'),
   },

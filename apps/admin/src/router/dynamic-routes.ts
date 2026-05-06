@@ -1,7 +1,7 @@
 import type { AuthMenuSchema } from '@admin/client/types.gen'
 import type { Router, RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
 import { ROUTE_NAMES, routeMetaConfigMap } from '@admin/router/route-meta'
-import { useMenuStore } from '@admin/stores/menu'
+import { normalizeAuthMenus, useMenuStore } from '@admin/stores/menu'
 
 function buildRoutesFromMenus(menus: AuthMenuSchema[]): RouteRecordRaw[] {
   return menus
@@ -35,6 +35,7 @@ function buildRoutesFromMenus(menus: AuthMenuSchema[]): RouteRecordRaw[] {
 export function loadDynamicRoutes(router: Router) {
   const useMenu = useMenuStore()
 
+  useMenu.menus = normalizeAuthMenus(useMenu.menus)
   const newRoutes = buildRoutesFromMenus(useMenu.menus)
   newRoutes.forEach((route) => {
     router.addRoute(ROUTE_NAMES.HOME, route)

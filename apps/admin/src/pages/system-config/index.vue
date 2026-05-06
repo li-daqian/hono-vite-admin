@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import type { PutSystemConfigsData, SystemConfigItemSchema } from '@admin/client'
-import { getSystemConfigs, putSystemConfigs } from '@admin/client'
+import type {
+  AppSecurityPolicyResponseSchema,
+  PutAppSecurityPolicyData,
+  PutSystemConfigsData,
+  SystemConfigItemSchema,
+} from '@admin/client'
+import {
+  getAppSecurityPolicy,
+  getSystemConfigs,
+  putAppSecurityPolicy,
+  putSystemConfigs,
+} from '@admin/client'
 import PermissionTooltip from '@admin/components/PermissionTooltip.vue'
 import { Badge } from '@admin/components/ui/badge'
 import { Button } from '@admin/components/ui/button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -24,26 +35,51 @@ import {
 import { Skeleton } from '@admin/components/ui/skeleton'
 import { usePageActionPermissions } from '@admin/lib/permissions'
 import { useAppConfigStore } from '@admin/stores/app-config'
-import { LockKeyhole, Save, Settings2, SlidersHorizontal } from 'lucide-vue-next'
+import { Hash, LockKeyhole, Save, Settings2, ShieldCheck, SlidersHorizontal } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { toast } from 'vue-sonner'
 
+const durationPattern = /^[1-9]\d*[smhdwMy]$/
+
 const permissions = usePageActionPermissions()
 const appConfig = useAppConfigStore()
-const editPermission = computed(() => permissions.resolve('edit', { actionName: 'Update', subject: 'system config' }))
+const configEditPermission = computed(() => permissions.resolve('edit', { actionName: 'Update', subject: 'system config' }))
+const securityPolicyEditPermission = computed(() => permissions.resolve('system.security-policy.edit', { actionName: 'Update', subject: 'security policy' }))
 
-const isLoading = ref(true)
-const isSaving = ref(false)
-const editable = ref(false)
+const isConfigLoading = ref(true)
+const isConfigSaving = ref(false)
+const configEditable = ref(false)
 const configs = ref<SystemConfigItemSchema[]>([])
 const values = reactive<Record<string, string>>({})
 const errors = reactive<Record<string, string | null>>({})
 
-const canUpdate = computed(() => editPermission.value.allowed && !isLoading.value && !isSaving.value && configs.value.length > 0)
-const disabledReason = computed(() => editPermission.value.reason)
+const canUpdateConfig = computed(() =>
+  configEditPermission.value.allowed
+  && !isConfigLoading.value
+  && !isConfigSaving.value
+  && configs.value.length > 0,
+)
+const configDisabledReason = computed(() => configEditPermission.value.reason)
+
+const isPolicyLoading = ref(true)
+const isPolicySaving = ref(false)
+const policy = ref<AppSecurityPolicyResponseSchema | null>(null)
+const maxFailedLoginAttempts = ref<number | string>('')
+const loginLockDuration = ref('')
+const maxFailedLoginAttemptsError = ref<string | null>(null)
+const loginLockDurationError = ref<string | null>(null)
+
+const policyEditable = computed(() => Boolean(policy.value?.editable))
+const canUpdatePolicy = computed(() =>
+  Boolean(policy.value)
+  && securityPolicyEditPermission.value.allowed
+  && !isPolicyLoading.value
+  && !isPolicySaving.value,
+)
+const policyDisabledReason = computed(() => securityPolicyEditPermission.value.reason)
 
 function setConfigs(items: SystemConfigItemSchema[], nextEditable: boolean) {
-  editable.value = nextEditable
+  configEditable.value = nextEditable
   configs.value = items
   for (const item of items) {
     values[item.key] = item.value
@@ -68,30 +104,60 @@ function validateConfig(item: SystemConfigItemSchema): boolean {
   return true
 }
 
-function validateForm(): boolean {
+function validateConfigForm(): boolean {
   return configs.value.every(validateConfig)
 }
 
+function setPolicy(nextPolicy: AppSecurityPolicyResponseSchema) {
+  policy.value = nextPolicy
+  maxFailedLoginAttempts.value = nextPolicy.maxFailedLoginAttempts
+  loginLockDuration.value = nextPolicy.loginLockDuration
+}
+
+function validatePolicyForm(): boolean {
+  const attempts = Number(maxFailedLoginAttempts.value)
+  maxFailedLoginAttemptsError.value = Number.isInteger(attempts) && attempts >= 1 && attempts <= 1000
+    ? null
+    : 'Enter a whole number between 1 and 1000.'
+
+  loginLockDurationError.value = durationPattern.test(loginLockDuration.value.trim())
+    ? null
+    : 'Use a value like 15m, 2h, or 7d.'
+
+  return !maxFailedLoginAttemptsError.value && !loginLockDurationError.value
+}
+
 async function loadConfigs() {
-  isLoading.value = true
+  isConfigLoading.value = true
   try {
     const response = await getSystemConfigs<true>()
     setConfigs(response.data.items, response.data.editable)
   }
   finally {
-    isLoading.value = false
+    isConfigLoading.value = false
+  }
+}
+
+async function loadPolicy() {
+  isPolicyLoading.value = true
+  try {
+    const response = await getAppSecurityPolicy<true>()
+    setPolicy(response.data)
+  }
+  finally {
+    isPolicyLoading.value = false
   }
 }
 
 async function saveConfigs() {
-  if (!canUpdate.value) {
-    if (disabledReason.value) {
-      toast.info(disabledReason.value)
+  if (!canUpdateConfig.value) {
+    if (configDisabledReason.value) {
+      toast.info(configDisabledReason.value)
     }
     return
   }
 
-  if (!validateForm()) {
+  if (!validateConfigForm()) {
     return
   }
 
@@ -102,7 +168,7 @@ async function saveConfigs() {
     })),
   }
 
-  isSaving.value = true
+  isConfigSaving.value = true
   try {
     const response = await putSystemConfigs<true>({ body: payload })
     setConfigs(response.data.items, response.data.editable)
@@ -110,31 +176,55 @@ async function saveConfigs() {
     toast.success('System config updated.')
   }
   finally {
-    isSaving.value = false
+    isConfigSaving.value = false
+  }
+}
+
+async function savePolicy() {
+  if (!canUpdatePolicy.value) {
+    if (policyDisabledReason.value) {
+      toast.info(policyDisabledReason.value)
+    }
+    return
+  }
+
+  if (!validatePolicyForm()) {
+    return
+  }
+
+  const payload: PutAppSecurityPolicyData['body'] = {
+    maxFailedLoginAttempts: Number(maxFailedLoginAttempts.value),
+    loginLockDuration: loginLockDuration.value.trim(),
+  }
+
+  isPolicySaving.value = true
+  try {
+    const response = await putAppSecurityPolicy<true>({
+      body: payload,
+    })
+    setPolicy(response.data)
+    toast.success('Security policy updated.')
+  }
+  finally {
+    isPolicySaving.value = false
   }
 }
 
 onMounted(() => {
   void loadConfigs()
+  void loadPolicy()
 })
 </script>
 
 <template>
   <div class="flex flex-1 flex-col gap-4 sm:gap-6">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight">
-          System Config
-        </h2>
-        <p class="text-muted-foreground">
-          Manage application display and table defaults.
-        </p>
-      </div>
-      <Badge :variant="editable ? 'default' : 'secondary'" class="h-6 gap-1.5">
-        <Settings2 v-if="editable" class="size-3.5" />
-        <LockKeyhole v-else class="size-3.5" />
-        {{ editable ? 'Editable' : 'Read only' }}
-      </Badge>
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight">
+        System Config
+      </h2>
+      <p class="text-muted-foreground">
+        Manage application defaults and login security policy.
+      </p>
     </div>
 
     <Card class="max-w-3xl rounded-lg">
@@ -143,10 +233,17 @@ onMounted(() => {
         <CardDescription>
           Values applied to the admin shell, login page, and data tables.
         </CardDescription>
+        <CardAction>
+          <Badge :variant="configEditable ? 'default' : 'secondary'" class="h-6 gap-1.5">
+            <Settings2 v-if="configEditable" class="size-3.5" />
+            <LockKeyhole v-else class="size-3.5" />
+            {{ configEditable ? 'Editable' : 'Read only' }}
+          </Badge>
+        </CardAction>
       </CardHeader>
 
       <CardContent class="space-y-5">
-        <template v-if="isLoading">
+        <template v-if="isConfigLoading">
           <div v-for="index in 3" :key="index" class="grid gap-2">
             <Skeleton class="h-4 w-40" />
             <Skeleton class="h-9" />
@@ -162,7 +259,7 @@ onMounted(() => {
             <Select
               v-if="item.options"
               v-model="values[item.key]"
-              :disabled="!canUpdate"
+              :disabled="!canUpdateConfig"
             >
               <SelectTrigger :id="item.key" class="h-9">
                 <SelectValue :placeholder="item.value" />
@@ -179,7 +276,7 @@ onMounted(() => {
               v-model="values[item.key]"
               :type="item.valueType === 'number' ? 'number' : 'text'"
               maxlength="100"
-              :disabled="!canUpdate"
+              :disabled="!canUpdateConfig"
               :aria-invalid="Boolean(errors[item.key])"
             />
             <p v-if="errors[item.key]" class="text-sm text-destructive">
@@ -193,8 +290,78 @@ onMounted(() => {
       </CardContent>
 
       <CardFooter class="flex flex-wrap justify-end gap-2">
-        <PermissionTooltip :message="disabledReason">
-          <Button type="button" :disabled="!canUpdate" @click="saveConfigs">
+        <PermissionTooltip :message="configDisabledReason">
+          <Button type="button" :disabled="!canUpdateConfig" @click="saveConfigs">
+            <Save class="size-4" />
+            Save
+          </Button>
+        </PermissionTooltip>
+      </CardFooter>
+    </Card>
+
+    <Card class="max-w-3xl rounded-lg">
+      <CardHeader>
+        <CardTitle>Login Lockout</CardTitle>
+        <CardDescription>
+          Failed password attempts and temporary account lock duration.
+        </CardDescription>
+        <CardAction>
+          <Badge :variant="policyEditable ? 'default' : 'secondary'" class="h-6 gap-1.5">
+            <ShieldCheck v-if="policyEditable" class="size-3.5" />
+            <LockKeyhole v-else class="size-3.5" />
+            {{ policyEditable ? 'Editable' : 'Read only' }}
+          </Badge>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent class="space-y-5">
+        <div class="grid gap-2">
+          <Label for="maxFailedLoginAttempts" class="gap-2">
+            <Hash class="size-4 text-muted-foreground" />
+            Max Failed Attempts
+          </Label>
+          <Skeleton v-if="isPolicyLoading" class="h-9" />
+          <Input
+            v-else
+            id="maxFailedLoginAttempts"
+            v-model="maxFailedLoginAttempts"
+            type="number"
+            min="1"
+            max="1000"
+            step="1"
+            :disabled="!canUpdatePolicy"
+            :aria-invalid="Boolean(maxFailedLoginAttemptsError)"
+          />
+          <p v-if="maxFailedLoginAttemptsError" class="text-sm text-destructive">
+            {{ maxFailedLoginAttemptsError }}
+          </p>
+        </div>
+
+        <div class="grid gap-2">
+          <Label for="loginLockDuration" class="gap-2">
+            <LockKeyhole class="size-4 text-muted-foreground" />
+            Login Lock Duration
+          </Label>
+          <Skeleton v-if="isPolicyLoading" class="h-9" />
+          <Input
+            v-else
+            id="loginLockDuration"
+            v-model="loginLockDuration"
+            type="text"
+            placeholder="15m"
+            maxlength="16"
+            :disabled="!canUpdatePolicy"
+            :aria-invalid="Boolean(loginLockDurationError)"
+          />
+          <p v-if="loginLockDurationError" class="text-sm text-destructive">
+            {{ loginLockDurationError }}
+          </p>
+        </div>
+      </CardContent>
+
+      <CardFooter class="flex flex-wrap justify-end gap-2">
+        <PermissionTooltip :message="policyDisabledReason">
+          <Button type="button" :disabled="!canUpdatePolicy" @click="savePolicy">
             <Save class="size-4" />
             Save
           </Button>

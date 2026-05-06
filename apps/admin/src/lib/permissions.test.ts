@@ -54,6 +54,24 @@ describe('permissions helpers', () => {
     })
   })
 
+  it('resolves an allowed action from a full action id on a merged menu', () => {
+    const permission = resolveActionPermission(
+      {
+        menuId: 'system.configs',
+        actions: [{ id: 'system.security-policy.edit', name: 'Edit Security Policy' }],
+      },
+      'system.security-policy.edit',
+      { subject: 'security policy' },
+    )
+
+    expect(permission).toEqual({
+      allowed: true,
+      actionId: 'system.security-policy.edit',
+      actionName: 'Edit Security Policy',
+      reason: null,
+    })
+  })
+
   it('returns a friendly denial message when the action is missing', () => {
     const permission = resolveActionPermission(
       {
