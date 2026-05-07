@@ -2,6 +2,7 @@ import { createRoute, z } from '@hono/zod-openapi'
 import { authMiddleware } from '@server/src/middleware/auth.middleware'
 import {
   AuditLogDetailResponseSchema,
+  AuditLogExportRequestSchema,
   AuditLogPaginationRequestSchema,
   AuditLogPaginationResponseSchema,
 } from '@server/src/modules/audit/audit.schema'
@@ -32,6 +33,30 @@ export const getAuditByIdRoute = createRoute({
   },
   responses: {
     200: { description: 'Audit log detail retrieved successfully', content: { 'application/json': { schema: AuditLogDetailResponseSchema } } },
+  },
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware],
+  tags: ['Audit'],
+})
+
+export const getAuditExportRoute = createRoute({
+  path: '/export',
+  method: 'get',
+  description: 'Export audit logs as CSV',
+  request: {
+    query: AuditLogExportRequestSchema,
+  },
+  responses: {
+    200: {
+      description: 'Audit logs exported successfully',
+      content: {
+        'text/csv': {
+          schema: z.string().openapi({
+            description: 'CSV file content',
+          }),
+        },
+      },
+    },
   },
   security: [{ Bearer: [] }],
   middleware: [authMiddleware],

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AuditLogListItemSchema, GetAuditPageData } from '@admin/client'
+import type { AuditLogListItemSchema, GetAuditExportData, GetAuditPageData } from '@admin/client'
 import type { DataTableFilterField } from '@admin/components/data-table'
 import type {
   ColumnFiltersState,
@@ -7,8 +7,11 @@ import type {
   SortingState,
   VisibilityState,
 } from '@tanstack/vue-table'
-import { getAuditPage } from '@admin/client'
+import { getAuditExport, getAuditPage } from '@admin/client'
 import { DataTableLoadingRows, DataTablePagination, DataTableToolbar } from '@admin/components/data-table'
+import { Button } from '@admin/components/ui/button'
+import { Input } from '@admin/components/ui/input'
+import { Label } from '@admin/components/ui/label'
 import {
   Table,
   TableBody,
@@ -22,7 +25,9 @@ import { cn } from '@admin/lib/utils'
 import { useAppConfigStore } from '@admin/stores/app-config'
 import { useDictionaryStore } from '@admin/stores/dictionaries'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
+import { Download, X } from 'lucide-vue-next'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import { getAuditColumns } from './audit-columns'
 import AuditViewDialog from './audit-view-dialog.vue'
 
@@ -33,10 +38,20 @@ const props = defineProps<{
 const appConfig = useAppConfigStore()
 const dictionaryStore = useDictionaryStore()
 const isLoginMode = computed(() => props.mode === 'login')
+const resultFilterOptions = [
+  { value: 'success', label: 'Success' },
+  { value: 'failure', label: 'Failure' },
+]
 
 const filters = computed<DataTableFilterField[]>(() => {
+  const resultFilter = {
+    columnId: 'result',
+    title: 'Result',
+    options: resultFilterOptions,
+  }
+
   if (isLoginMode.value) {
-    return []
+    return [resultFilter]
   }
 
   return [
@@ -45,6 +60,7 @@ const filters = computed<DataTableFilterField[]>(() => {
       title: 'Module',
       options: dictionaryStore.getOptions('audit_module'),
     },
+    resultFilter,
   ]
 })
 
@@ -63,9 +79,21 @@ const columnVisibility = ref<VisibilityState>({
   userAgent: false,
 })
 const globalFilter = ref('')
+const operatorFilter = ref('')
+const createdAtFrom = ref('')
+const createdAtTo = ref('')
+const failureReasonFilter = ref('')
 const isLoading = ref(true)
+const isExporting = ref(false)
 const selectedAuditId = ref<string | null>(null)
 const isDetailDialogOpen = ref(false)
+
+const hasAdvancedFilters = computed(() => {
+  return Boolean(operatorFilter.value)
+    || Boolean(createdAtFrom.value)
+    || Boolean(createdAtTo.value)
+    || Boolean(failureReasonFilter.value)
+})
 
 function handleView(row: AuditLogListItemSchema) {
   selectedAuditId.value = row.id
@@ -121,20 +149,49 @@ const table = useVueTable({
   getCoreRowModel: getCoreRowModel(),
 })
 
+function getColumnArrayFilter(columnId: string): string[] | undefined {
+  const value = columnFilters.value.find(filter => filter.id === columnId)?.value
+  return Array.isArray(value) && value.length > 0 ? value as string[] : undefined
+}
+
+function getResultFilter(): Array<'success' | 'failure'> | undefined {
+  const values = getColumnArrayFilter('result')?.filter((value): value is 'success' | 'failure' => {
+    return value === 'success' || value === 'failure'
+  })
+
+  return values && values.length > 0 ? values : undefined
+}
+
+function toIsoDateTime(value: string): string | undefined {
+  if (!value) {
+    return undefined
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
+}
+
+function getBaseAuditQuery(): NonNullable<GetAuditExportData['query']> {
+  return {
+    sort: sorting.value.map(item => `${item.id} ${item.desc ? 'desc' : 'asc'}`).join(',') || undefined,
+    search: globalFilter.value.trim() || undefined,
+    operator: operatorFilter.value.trim() || undefined,
+    categories: [props.mode],
+    modules: !isLoginMode.value ? getColumnArrayFilter('module') : undefined,
+    results: getResultFilter(),
+    createdAtFrom: toIsoDateTime(createdAtFrom.value),
+    createdAtTo: toIsoDateTime(createdAtTo.value),
+    failureReason: failureReasonFilter.value.trim() || undefined,
+  }
+}
+
 async function fetchAuditLogs() {
   isLoading.value = true
 
-  const modulesFilter = columnFilters.value.find(filter => filter.id === 'module')?.value
-
   const query: GetAuditPageData['query'] = {
+    ...getBaseAuditQuery(),
     page: pagination.value.pageIndex + 1,
     pageSize: pagination.value.pageSize,
-    sort: sorting.value.map(item => `${item.id} ${item.desc ? 'desc' : 'asc'}`).join(',') || undefined,
-    search: globalFilter.value.trim() || undefined,
-    categories: [props.mode],
-    modules: !isLoginMode.value && Array.isArray(modulesFilter) && modulesFilter.length > 0
-      ? modulesFilter as string[]
-      : undefined,
   }
 
   try {
@@ -155,6 +212,51 @@ async function fetchAuditLogs() {
   }
 }
 
+function resetAdvancedFilters() {
+  operatorFilter.value = ''
+  createdAtFrom.value = ''
+  createdAtTo.value = ''
+  failureReasonFilter.value = ''
+  pagination.value.pageIndex = 0
+}
+
+function getExportFilename() {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  return `audit-${props.mode}-${timestamp}.csv`
+}
+
+function downloadCsv(content: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = getExportFilename()
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+async function handleExport() {
+  isExporting.value = true
+
+  try {
+    const response = await getAuditExport<true>({
+      query: {
+        ...getBaseAuditQuery(),
+        limit: 5000,
+      },
+    })
+    downloadCsv(String(response.data ?? ''))
+  }
+  catch {
+    toast.error('Failed to export audit logs.')
+  }
+  finally {
+    isExporting.value = false
+  }
+}
+
 function getColumnMetaClass(column: ReturnType<typeof table.getAllLeafColumns>[number], key: 'className' | 'thClassName' | 'tdClassName') {
   const meta = column.columnDef.meta as Record<string, string> | undefined
   return meta?.[key]
@@ -162,7 +264,7 @@ function getColumnMetaClass(column: ReturnType<typeof table.getAllLeafColumns>[n
 
 let timer: number | undefined
 
-watch([pagination, sorting, columnFilters, globalFilter], () => {
+watch([pagination, sorting, columnFilters, globalFilter, operatorFilter, createdAtFrom, createdAtTo, failureReasonFilter], () => {
   if (timer) {
     window.clearTimeout(timer)
   }
@@ -189,6 +291,80 @@ onMounted(() => {
       :search-placeholder="searchPlaceholder"
       :filters="filters"
     />
+
+    <div class="flex flex-wrap items-end gap-2">
+      <div class="grid gap-1.5">
+        <Label :for="`audit-${props.mode}-operator`" class="text-xs text-muted-foreground">
+          Operator
+        </Label>
+        <Input
+          :id="`audit-${props.mode}-operator`"
+          v-model="operatorFilter"
+          placeholder="Username or name"
+          class="h-8 w-44"
+        />
+      </div>
+
+      <div class="grid gap-1.5">
+        <Label :for="`audit-${props.mode}-from`" class="text-xs text-muted-foreground">
+          From
+        </Label>
+        <Input
+          :id="`audit-${props.mode}-from`"
+          v-model="createdAtFrom"
+          type="datetime-local"
+          class="h-8 w-48"
+        />
+      </div>
+
+      <div class="grid gap-1.5">
+        <Label :for="`audit-${props.mode}-to`" class="text-xs text-muted-foreground">
+          To
+        </Label>
+        <Input
+          :id="`audit-${props.mode}-to`"
+          v-model="createdAtTo"
+          type="datetime-local"
+          class="h-8 w-48"
+        />
+      </div>
+
+      <div class="grid gap-1.5">
+        <Label :for="`audit-${props.mode}-failure-reason`" class="text-xs text-muted-foreground">
+          Failure Reason
+        </Label>
+        <Input
+          :id="`audit-${props.mode}-failure-reason`"
+          v-model="failureReasonFilter"
+          placeholder="Reason code"
+          class="h-8 w-48"
+        />
+      </div>
+
+      <Button
+        v-if="hasAdvancedFilters"
+        type="button"
+        variant="ghost"
+        size="sm"
+        class="h-8"
+        @click="resetAdvancedFilters"
+      >
+        Clear
+        <X class="size-4" />
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        class="ms-auto h-8"
+        :disabled="isExporting"
+        @click="handleExport"
+      >
+        <Download class="size-4" />
+        {{ isExporting ? 'Exporting...' : 'Export' }}
+      </Button>
+    </div>
 
     <div class="overflow-hidden rounded-md border">
       <Table>

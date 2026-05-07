@@ -60,6 +60,40 @@ export function getAuditColumns(onView: (row: AuditLogItem) => void): ColumnDef<
       cell: ({ row }) => h('span', { class: 'font-medium' }, formatAuditLabel(row.original.action)),
     },
     {
+      id: 'result',
+      accessorKey: 'result',
+      header: ({ column }) => renderColumnHeader(column, 'Result'),
+      enableSorting: true,
+      meta: {
+        label: 'Result',
+      },
+      cell: ({ row }) => {
+        if (!row.original.result) {
+          return h('span', { class: 'text-muted-foreground' }, '—')
+        }
+
+        return h(Badge, {
+          variant: 'outline',
+          class: row.original.result === 'failure'
+            ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300',
+        }, () => formatAuditLabel(row.original.result!))
+      },
+    },
+    {
+      id: 'failureReason',
+      accessorKey: 'failureReason',
+      header: ({ column }) => renderColumnHeader(column, 'Failure Reason'),
+      enableSorting: true,
+      meta: {
+        label: 'Failure Reason',
+        tdClassName: 'min-w-[180px] max-w-[260px]',
+      },
+      cell: ({ row }) => h('span', {
+        class: row.original.failureReason ? 'block truncate font-mono text-xs' : 'text-muted-foreground',
+      }, row.original.failureReason ? formatAuditLabel(row.original.failureReason) : '—'),
+    },
+    {
       id: 'operatorUsername',
       accessorKey: 'operatorUsername',
       header: ({ column }) => renderColumnHeader(column, 'Operator'),

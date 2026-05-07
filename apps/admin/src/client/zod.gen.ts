@@ -40,6 +40,14 @@ export const zAuditLogListItemSchema = z.object({
         z.string(),
         z.null()
     ]),
+    result: z.union([
+        z.string(),
+        z.null()
+    ]),
+    failureReason: z.union([
+        z.string(),
+        z.null()
+    ]),
     method: z.string().describe('HTTP method of the audited request'),
     path: z.string().describe('Request path of the audited request'),
     ip: z.union([
@@ -348,12 +356,32 @@ export const zGetAuditPageData = z.object({
             z.string().max(100),
             z.null()
         ]).optional().default(null),
+        operator: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
         categories: z.union([
             z.array(z.enum(['login', 'operation']).describe('Audit log category')),
             z.null()
         ]).optional().default(null),
         modules: z.union([
             z.array(z.string().min(1).max(64).describe('Audited module identifier')),
+            z.null()
+        ]).optional().default(null),
+        results: z.union([
+            z.array(z.enum(['success', 'failure']).describe('Recorded audit operation result')),
+            z.null()
+        ]).optional().default(null),
+        createdAtFrom: z.union([
+            z.string().min(1).max(64),
+            z.null()
+        ]).optional().default(null),
+        createdAtTo: z.union([
+            z.string().min(1).max(64),
+            z.null()
+        ]).optional().default(null),
+        failureReason: z.union([
+            z.string().max(100),
             z.null()
         ]).optional().default(null)
     })
@@ -366,6 +394,55 @@ export const zGetAuditPageResponse = z.object({
     items: z.array(zAuditLogListItemSchema).describe('List of items for the current page'),
     meta: zPaginationMetaSchema
 }).describe('Standard paginated response envelope');
+
+export const zGetAuditExportData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        search: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        operator: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        categories: z.union([
+            z.array(z.enum(['login', 'operation']).describe('Audit log category')),
+            z.null()
+        ]).optional().default(null),
+        modules: z.union([
+            z.array(z.string().min(1).max(64).describe('Audited module identifier')),
+            z.null()
+        ]).optional().default(null),
+        results: z.union([
+            z.array(z.enum(['success', 'failure']).describe('Recorded audit operation result')),
+            z.null()
+        ]).optional().default(null),
+        createdAtFrom: z.union([
+            z.string().min(1).max(64),
+            z.null()
+        ]).optional().default(null),
+        createdAtTo: z.union([
+            z.string().min(1).max(64),
+            z.null()
+        ]).optional().default(null),
+        failureReason: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null),
+        sort: z.union([
+            z.string(),
+            z.null()
+        ]).optional().default(null),
+        limit: z.number().int().gte(1).lte(10000).describe('Maximum number of audit log rows to export').optional().default(5000)
+    }).optional()
+});
+
+/**
+ * CSV file content
+ */
+export const zGetAuditExportResponse = z.string().describe('CSV file content');
 
 export const zGetAuditByIdData = z.object({
     body: z.never().optional(),

@@ -7,6 +7,7 @@ function emptyStringToUndefined(value: unknown) {
 
 export const AUDIT_MODULE_VALUES = ['auth', 'user', 'role', 'department'] as const
 export const AUDIT_CATEGORY_VALUES = ['login', 'operation'] as const
+export const AUDIT_RESULT_VALUES = ['success', 'failure'] as const
 
 export const AuditModuleSchema = z.string().trim().min(1).max(64).openapi({
   description: 'Audited module identifier',
@@ -20,6 +21,12 @@ export const AuditCategorySchema = z.enum(AUDIT_CATEGORY_VALUES).openapi({
 })
 export type AuditCategory = z.infer<typeof AuditCategorySchema>
 
+export const AuditResultSchema = z.enum(AUDIT_RESULT_VALUES).openapi({
+  description: 'Recorded audit operation result',
+  example: 'success',
+})
+export type AuditResult = z.infer<typeof AuditResultSchema>
+
 export const AuditLogListItemSchema = z.object({
   id: z.string().openapi({ description: 'Unique identifier of the audit log entry', example: '01HZY4QG2R1X0ABCDEF1234567' }),
   category: AuditCategorySchema,
@@ -28,6 +35,8 @@ export const AuditLogListItemSchema = z.object({
   operatorId: z.string().nullable().openapi({ description: 'ID of the operator who performed the action when available', example: '01HZY4QG2R1X0ABCDEF1234567' }),
   operatorUsername: z.string().openapi({ description: 'Username of the operator', example: 'admin' }),
   operatorDisplayName: z.string().nullable().openapi({ description: 'Display name of the operator when available', example: 'Administrator' }),
+  result: z.string().nullable().openapi({ description: 'Operation result when recorded in the audit snapshot', example: 'failure' }),
+  failureReason: z.string().nullable().openapi({ description: 'Failure reason code when the audited operation failed', example: 'current-password-incorrect' }),
   method: z.string().openapi({ description: 'HTTP method of the audited request', example: 'POST' }),
   path: z.string().openapi({ description: 'Request path of the audited request', example: '/api/v1/user' }),
   ip: z.string().nullable().openapi({ description: 'Client IP address', example: '127.0.0.1' }),
@@ -48,7 +57,29 @@ export const AuditLogDetailResponseSchema = AuditLogListItemSchema.extend({
 }).openapi('AuditLogDetailResponseSchema')
 export type AuditLogDetailResponse = z.infer<typeof AuditLogDetailResponseSchema>
 
-export const AuditLogPaginationRequestSchema = PaginationQuerySchema.extend({
+function stringArrayFilter<TSchema extends z.ZodTypeAny>(schema: TSchema) {
+  return z.preprocess(
+    (value) => {
+      if (value === '') {
+        return undefined
+      }
+
+      if (typeof value === 'string') {
+        return [value]
+      }
+
+      return value
+    },
+    z.array(schema).nullable().default(null),
+  )
+}
+
+const AuditDateTimeFilterSchema = z.preprocess(
+  emptyStringToUndefined,
+  z.string().trim().min(1).max(64).nullable().default(null),
+)
+
+export const AuditLogFilterRequestSchema = z.object({
   search: z.preprocess(
     emptyStringToUndefined,
     z.string().max(100).nullable().default(null),
@@ -56,42 +87,60 @@ export const AuditLogPaginationRequestSchema = PaginationQuerySchema.extend({
     description: 'Search audit logs by operator, action, path, request ID, or IP address',
     example: 'admin',
   }),
-  categories: z.preprocess(
-    (value) => {
-      if (value === '') {
-        return undefined
-      }
-
-      if (typeof value === 'string') {
-        return [value]
-      }
-
-      return value
-    },
-    z.array(AuditCategorySchema).nullable().default(null),
+  operator: z.preprocess(
+    emptyStringToUndefined,
+    z.string().max(100).nullable().default(null),
   ).openapi({
+    description: 'Filter audit logs by operator ID, username, or display name',
+    example: 'admin',
+  }),
+  categories: stringArrayFilter(AuditCategorySchema).openapi({
     description: 'Filter audit logs by one or more category identifiers',
     example: ['operation'],
   }),
-  modules: z.preprocess(
-    (value) => {
-      if (value === '') {
-        return undefined
-      }
-
-      if (typeof value === 'string') {
-        return [value]
-      }
-
-      return value
-    },
-    z.array(AuditModuleSchema).nullable().default(null),
-  ).openapi({
+  modules: stringArrayFilter(AuditModuleSchema).openapi({
     description: 'Filter audit logs by one or more module identifiers',
     example: ['user'],
   }),
+  results: stringArrayFilter(AuditResultSchema).openapi({
+    description: 'Filter audit logs by one or more operation results',
+    example: ['failure'],
+  }),
+  createdAtFrom: AuditDateTimeFilterSchema.openapi({
+    description: 'Filter audit logs created at or after this ISO timestamp',
+    example: '2024-01-01T00:00:00.000Z',
+  }),
+  createdAtTo: AuditDateTimeFilterSchema.openapi({
+    description: 'Filter audit logs created at or before this ISO timestamp',
+    example: '2024-01-31T23:59:59.999Z',
+  }),
+  failureReason: z.preprocess(
+    emptyStringToUndefined,
+    z.string().max(100).nullable().default(null),
+  ).openapi({
+    description: 'Filter failed audit logs by failure reason',
+    example: 'current-password-incorrect',
+  }),
 })
+export type AuditLogFilterRequest = z.infer<typeof AuditLogFilterRequestSchema>
+
+export const AuditLogPaginationRequestSchema = PaginationQuerySchema.merge(AuditLogFilterRequestSchema)
 export type AuditLogPaginationRequest = z.infer<typeof AuditLogPaginationRequestSchema>
 
 export const AuditLogPaginationResponseSchema = PaginatedResponseSchema(AuditLogListItemSchema)
 export type AuditLogPaginationResponse = z.infer<typeof AuditLogPaginationResponseSchema>
+
+export const AuditLogExportRequestSchema = AuditLogFilterRequestSchema.extend({
+  sort: z.preprocess(emptyStringToUndefined, z.string().nullable().default(null)).openapi({
+    description: 'Sorting criteria used for the export',
+    example: 'createdAt desc',
+  }),
+  limit: z.preprocess(
+    emptyStringToUndefined,
+    z.coerce.number().int().min(1).max(10000).default(5000),
+  ).openapi({
+    description: 'Maximum number of audit log rows to export',
+    example: 5000,
+  }),
+})
+export type AuditLogExportRequest = z.infer<typeof AuditLogExportRequestSchema>

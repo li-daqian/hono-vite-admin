@@ -203,6 +203,8 @@ model AuditLog {
   operatorId          String?       @map("operator_id")
   operatorUsername    String        @map("operator_username")
   operatorDisplayName String?       @map("operator_display_name")
+  result              String?
+  failureReason       String?       @map("failure_reason")
   method              String
   path                String
   ip                  String?
@@ -214,6 +216,8 @@ model AuditLog {
   @@index([category, createdAt])
   @@index([module, createdAt])
   @@index([operatorId])
+  @@index([result, createdAt])
+  @@index([failureReason])
   @@index([createdAt])
   @@map("audit_log")
 }

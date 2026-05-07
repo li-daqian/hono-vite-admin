@@ -3,11 +3,15 @@ import type { TransactionClient } from '@server/generated/prisma/internal/prisma
 import type {
   AuditCategory,
   AuditLogDetailResponse,
+  AuditLogExportRequest,
+  AuditLogFilterRequest,
   AuditLogListItem,
   AuditLogPaginationRequest,
   AuditLogPaginationResponse,
   AuditModule,
+  AuditResult,
 } from '@server/src/modules/audit/audit.schema'
+import type { AuditJsonValue } from '@server/src/modules/audit/audit.utils'
 import { Prisma } from '@server/generated/prisma/client'
 import { AuditCategory as PrismaAuditCategory } from '@server/generated/prisma/enums'
 import { BusinessError } from '@server/src/common/exception'
@@ -44,6 +48,67 @@ const apiAuditCategoryMap: Record<PrismaAuditCategory, AuditCategory> = {
   [PrismaAuditCategory.OPERATION]: 'operation',
 }
 
+const AUDIT_EXPORT_HEADERS = [
+  'Created At',
+  'Category',
+  'Module',
+  'Action',
+  'Result',
+  'Failure Reason',
+  'Operator Username',
+  'Operator Display Name',
+  'Method',
+  'Path',
+  'IP',
+  'User Agent',
+  'Request ID',
+  'Request Snapshot',
+]
+
+function isAuditRecord(value: AuditJsonValue | undefined): value is Record<string, AuditJsonValue> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function extractAuditSnapshotMetadata(requestSnapshot: AuditJsonValue | undefined): {
+  result: AuditResult | null
+  failureReason: string | null
+} {
+  if (!isAuditRecord(requestSnapshot)) {
+    return {
+      result: null,
+      failureReason: null,
+    }
+  }
+
+  const result = requestSnapshot.result === 'success' || requestSnapshot.result === 'failure'
+    ? requestSnapshot.result
+    : null
+  const failureReason = typeof requestSnapshot.reason === 'string' && requestSnapshot.reason.trim()
+    ? requestSnapshot.reason.trim()
+    : null
+
+  return {
+    result,
+    failureReason,
+  }
+}
+
+function csvCell(value: unknown): string {
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  const text = typeof value === 'object'
+    ? JSON.stringify(value)
+    : String(value)
+
+  return `"${text.replaceAll('"', '""')}"`
+}
+
+function csvRow(values: unknown[]): string {
+  return values.map(csvCell).join(',')
+}
+
 class AuditService {
   async record(client: AuditClient, input: CreateAuditLogInput): Promise<void> {
     if (getEnv().deployment.readOnlyMode) {
@@ -57,6 +122,7 @@ class AuditService {
     }
 
     const requestSnapshot = sanitizeAuditPayload(input.requestSnapshot)
+    const snapshotMetadata = extractAuditSnapshotMetadata(requestSnapshot)
     const operator = await this.resolveOperator(client, context, input.operator)
 
     await client.auditLog.create({
@@ -67,6 +133,8 @@ class AuditService {
         operatorId: operator.operatorId,
         operatorUsername: operator.operatorUsername,
         operatorDisplayName: operator.operatorDisplayName ?? null,
+        result: snapshotMetadata.result,
+        failureReason: snapshotMetadata.failureReason,
         method: context.req.method,
         path: context.req.path,
         ip: extractClientIp({
@@ -87,42 +155,13 @@ class AuditService {
   }
 
   async getAuditLogPage(query: AuditLogPaginationRequest): Promise<AuditLogPaginationResponse> {
-    const { page, pageSize, search, categories, modules, sort } = query
+    const { page, pageSize, sort } = query
     const skip = (page - 1) * pageSize
 
-    const where = {
-      ...(categories && categories.length > 0
-        ? {
-            category: {
-              in: categories.map(category => prismaAuditCategoryMap[category]),
-            },
-          }
-        : {}),
-      ...(modules && modules.length > 0
-        ? {
-            module: {
-              in: modules,
-            },
-          }
-        : {}),
-      ...(search
-        ? {
-            OR: [
-              { module: { contains: search, mode: 'insensitive' as const } },
-              { action: { contains: search, mode: 'insensitive' as const } },
-              { operatorUsername: { contains: search, mode: 'insensitive' as const } },
-              { operatorDisplayName: { contains: search, mode: 'insensitive' as const } },
-              { path: { contains: search, mode: 'insensitive' as const } },
-              { requestId: { contains: search, mode: 'insensitive' as const } },
-              { ip: { contains: search, mode: 'insensitive' as const } },
-            ],
-          }
-        : {}),
-    }
-
+    const where = this.buildAuditLogWhere(query)
     const orderBy = buildOrderBy(
       sort,
-      ['createdAt', 'category', 'module', 'action', 'operatorUsername'] as const,
+      ['createdAt', 'category', 'module', 'action', 'operatorUsername', 'result', 'failureReason'] as const,
       { createdAt: 'desc' },
     )
 
@@ -139,6 +178,41 @@ class AuditService {
     return paginate(auditLogs.map(log => this.mapAuditLogListItem(log)), total, query)
   }
 
+  async exportAuditLogs(query: AuditLogExportRequest): Promise<string> {
+    const where = this.buildAuditLogWhere(query)
+    const orderBy = buildOrderBy(
+      query.sort,
+      ['createdAt', 'category', 'module', 'action', 'operatorUsername', 'result', 'failureReason'] as const,
+      { createdAt: 'desc' },
+    )
+
+    const auditLogs = await prisma.auditLog.findMany({
+      where,
+      take: query.limit,
+      orderBy,
+    })
+
+    return [
+      csvRow(AUDIT_EXPORT_HEADERS),
+      ...auditLogs.map(log => csvRow([
+        log.createdAt.toISOString(),
+        apiAuditCategoryMap[log.category],
+        log.module,
+        log.action,
+        log.result,
+        log.failureReason,
+        log.operatorUsername,
+        log.operatorDisplayName,
+        log.method,
+        log.path,
+        log.ip,
+        log.userAgent,
+        log.requestId,
+        log.requestSnapshot,
+      ])),
+    ].join('\n')
+  }
+
   async getAuditLogById(id: string): Promise<AuditLogDetailResponse> {
     const auditLog = await prisma.auditLog.findUnique({
       where: { id },
@@ -151,6 +225,102 @@ class AuditService {
     return this.mapAuditLogDetail(auditLog)
   }
 
+  private buildAuditLogWhere(query: AuditLogFilterRequest): Prisma.AuditLogWhereInput {
+    const {
+      search,
+      operator,
+      categories,
+      modules,
+      results,
+      createdAtFrom,
+      createdAtTo,
+      failureReason,
+    } = query
+    const createdAtFromDate = this.parseDateFilter(createdAtFrom, 'createdAtFrom')
+    const createdAtToDate = this.parseDateFilter(createdAtTo, 'createdAtTo')
+
+    return {
+      ...(categories && categories.length > 0
+        ? {
+            category: {
+              in: categories.map(category => prismaAuditCategoryMap[category]),
+            },
+          }
+        : {}),
+      ...(modules && modules.length > 0
+        ? {
+            module: {
+              in: modules,
+            },
+          }
+        : {}),
+      ...(results && results.length > 0
+        ? {
+            result: {
+              in: results,
+            },
+          }
+        : {}),
+      ...(createdAtFromDate || createdAtToDate
+        ? {
+            createdAt: {
+              ...(createdAtFromDate ? { gte: createdAtFromDate } : {}),
+              ...(createdAtToDate ? { lte: createdAtToDate } : {}),
+            },
+          }
+        : {}),
+      ...(failureReason
+        ? {
+            failureReason: {
+              contains: failureReason,
+              mode: 'insensitive',
+            },
+          }
+        : {}),
+      ...(operator
+        ? {
+            AND: [
+              {
+                OR: [
+                  { operatorId: { contains: operator, mode: 'insensitive' } },
+                  { operatorUsername: { contains: operator, mode: 'insensitive' } },
+                  { operatorDisplayName: { contains: operator, mode: 'insensitive' } },
+                ],
+              },
+            ],
+          }
+        : {}),
+      ...(search
+        ? {
+            OR: [
+              { module: { contains: search, mode: 'insensitive' } },
+              { action: { contains: search, mode: 'insensitive' } },
+              { operatorUsername: { contains: search, mode: 'insensitive' } },
+              { operatorDisplayName: { contains: search, mode: 'insensitive' } },
+              { result: { contains: search, mode: 'insensitive' } },
+              { failureReason: { contains: search, mode: 'insensitive' } },
+              { path: { contains: search, mode: 'insensitive' } },
+              { requestId: { contains: search, mode: 'insensitive' } },
+              { ip: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    }
+  }
+
+  private parseDateFilter(value: string | null, field: string): Date | undefined {
+    if (!value) {
+      return undefined
+    }
+
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) {
+      throw BusinessError.BadRequest(`${field} must be a valid ISO datetime`, 'InvalidAuditDateFilter')
+    }
+
+    return date
+  }
+
   private mapAuditLogListItem(auditLog: {
     id: string
     category: PrismaAuditCategory
@@ -159,6 +329,8 @@ class AuditService {
     operatorId: string | null
     operatorUsername: string
     operatorDisplayName: string | null
+    result: string | null
+    failureReason: string | null
     method: string
     path: string
     ip: string | null
@@ -174,6 +346,8 @@ class AuditService {
       operatorId: auditLog.operatorId,
       operatorUsername: auditLog.operatorUsername,
       operatorDisplayName: auditLog.operatorDisplayName,
+      result: auditLog.result === 'success' || auditLog.result === 'failure' ? auditLog.result : null,
+      failureReason: auditLog.failureReason,
       method: auditLog.method,
       path: auditLog.path,
       ip: auditLog.ip,
@@ -191,6 +365,8 @@ class AuditService {
     operatorId: string | null
     operatorUsername: string
     operatorDisplayName: string | null
+    result: string | null
+    failureReason: string | null
     method: string
     path: string
     ip: string | null

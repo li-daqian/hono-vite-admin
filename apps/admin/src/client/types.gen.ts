@@ -85,6 +85,14 @@ export type AuditLogListItemSchema = {
      */
     operatorDisplayName: string | null;
     /**
+     * Operation result when recorded in the audit snapshot
+     */
+    result: string | null;
+    /**
+     * Failure reason code when the audited operation failed
+     */
+    failureReason: string | null;
+    /**
      * HTTP method of the audited request
      */
     method: string;
@@ -648,6 +656,10 @@ export type GetAuditPageData = {
          */
         search?: string | null;
         /**
+         * Filter audit logs by operator ID, username, or display name
+         */
+        operator?: string | null;
+        /**
          * Filter audit logs by one or more category identifiers
          */
         categories?: Array<'login' | 'operation'> | null;
@@ -655,6 +667,22 @@ export type GetAuditPageData = {
          * Filter audit logs by one or more module identifiers
          */
         modules?: Array<string> | null;
+        /**
+         * Filter audit logs by one or more operation results
+         */
+        results?: Array<'success' | 'failure'> | null;
+        /**
+         * Filter audit logs created at or after this ISO timestamp
+         */
+        createdAtFrom?: string | null;
+        /**
+         * Filter audit logs created at or before this ISO timestamp
+         */
+        createdAtTo?: string | null;
+        /**
+         * Filter failed audit logs by failure reason
+         */
+        failureReason?: string | null;
     };
     url: '/audit/page';
 };
@@ -673,6 +701,63 @@ export type GetAuditPageResponses = {
 };
 
 export type GetAuditPageResponse = GetAuditPageResponses[keyof GetAuditPageResponses];
+
+export type GetAuditExportData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Search audit logs by operator, action, path, request ID, or IP address
+         */
+        search?: string | null;
+        /**
+         * Filter audit logs by operator ID, username, or display name
+         */
+        operator?: string | null;
+        /**
+         * Filter audit logs by one or more category identifiers
+         */
+        categories?: Array<'login' | 'operation'> | null;
+        /**
+         * Filter audit logs by one or more module identifiers
+         */
+        modules?: Array<string> | null;
+        /**
+         * Filter audit logs by one or more operation results
+         */
+        results?: Array<'success' | 'failure'> | null;
+        /**
+         * Filter audit logs created at or after this ISO timestamp
+         */
+        createdAtFrom?: string | null;
+        /**
+         * Filter audit logs created at or before this ISO timestamp
+         */
+        createdAtTo?: string | null;
+        /**
+         * Filter failed audit logs by failure reason
+         */
+        failureReason?: string | null;
+        /**
+         * Sorting criteria used for the export
+         */
+        sort?: string | null;
+        /**
+         * Maximum number of audit log rows to export
+         */
+        limit?: number;
+    };
+    url: '/audit/export';
+};
+
+export type GetAuditExportResponses = {
+    /**
+     * CSV file content
+     */
+    200: string;
+};
+
+export type GetAuditExportResponse = GetAuditExportResponses[keyof GetAuditExportResponses];
 
 export type GetAuditByIdData = {
     body?: never;
