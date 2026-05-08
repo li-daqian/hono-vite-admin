@@ -10,6 +10,22 @@ const props = defineProps<{
   title: string
   class?: HTMLAttributes['class']
 }>()
+
+function toggleSorting() {
+  const sorted = props.column.getIsSorted()
+
+  if (sorted === 'asc') {
+    props.column.toggleSorting(true)
+    return
+  }
+
+  if (sorted === 'desc') {
+    props.column.clearSorting()
+    return
+  }
+
+  props.column.toggleSorting(false)
+}
 </script>
 
 <template>
@@ -24,7 +40,7 @@ const props = defineProps<{
       variant="ghost"
       size="sm"
       class="h-8 px-0 has-[>svg]:px-0"
-      @click="props.column.toggleSorting()"
+      @click="toggleSorting"
     >
       <span>{{ props.title }}</span>
       <ArrowDownIcon
