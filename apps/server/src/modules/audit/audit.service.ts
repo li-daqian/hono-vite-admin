@@ -83,14 +83,21 @@ function extractAuditSnapshotMetadata(requestSnapshot: AuditJsonValue | undefine
   const result = requestSnapshot.result === 'success' || requestSnapshot.result === 'failure'
     ? requestSnapshot.result
     : null
-  const failureReason = typeof requestSnapshot.reason === 'string' && requestSnapshot.reason.trim()
+  const snapshotFailureReason = typeof requestSnapshot.failureReason === 'string' && requestSnapshot.failureReason.trim()
+    ? requestSnapshot.failureReason.trim()
+    : null
+  const snapshotReason = typeof requestSnapshot.reason === 'string' && requestSnapshot.reason.trim()
     ? requestSnapshot.reason.trim()
     : null
 
   return {
     result,
-    failureReason,
+    failureReason: snapshotFailureReason ?? snapshotReason,
   }
+}
+
+function getDefaultAuditResult(category: NonNullable<CreateAuditLogInput['category']>): AuditResult | null {
+  return category === 'operation' ? 'success' : null
 }
 
 function csvCell(value: unknown): string {
@@ -122,18 +129,19 @@ class AuditService {
     }
 
     const requestSnapshot = sanitizeAuditPayload(input.requestSnapshot)
+    const category = input.category ?? 'operation'
     const snapshotMetadata = extractAuditSnapshotMetadata(requestSnapshot)
     const operator = await this.resolveOperator(client, context, input.operator)
 
     await client.auditLog.create({
       data: {
-        category: prismaAuditCategoryMap[input.category ?? 'operation'],
+        category: prismaAuditCategoryMap[category],
         module: input.module,
         action: input.action,
         operatorId: operator.operatorId,
         operatorUsername: operator.operatorUsername,
         operatorDisplayName: operator.operatorDisplayName ?? null,
-        result: snapshotMetadata.result,
+        result: snapshotMetadata.result ?? getDefaultAuditResult(category),
         failureReason: snapshotMetadata.failureReason,
         method: context.req.method,
         path: context.req.path,
@@ -394,7 +402,16 @@ class AuditService {
       }
     }
 
-    const { userId } = getLoginUser(context)
+    const authPayload = getLoginUser(context)
+    const userId = authPayload?.userId
+    if (!userId) {
+      return {
+        operatorId: null,
+        operatorUsername: 'anonymous',
+        operatorDisplayName: null,
+      }
+    }
+
     const user = await client.user.findUnique({
       where: { id: userId },
       select: {

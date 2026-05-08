@@ -18,6 +18,10 @@ export class BusinessError extends Error {
     return `BusinessError: ${this._httpStatus} - ${JSON.stringify(this._errorBody)}`
   }
 
+  public get errorCode(): string | undefined {
+    return this._errorBody.code
+  }
+
   public getErrorResponse(c: Context): Response {
     return c.json(this._errorBody, this._httpStatus)
   }

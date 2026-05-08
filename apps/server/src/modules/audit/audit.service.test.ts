@@ -77,4 +77,63 @@ describe('audit service', () => {
 
     expect(create).toHaveBeenCalledTimes(1)
   })
+
+  it('defaults operation audit result to success', async () => {
+    process.env.READ_ONLY_MODE = 'false'
+    let auditData: any
+    const create = mock(async (input: any) => {
+      auditData = input.data
+      return {}
+    })
+
+    await holdContext(createContext(), async () => {
+      await auditService.record({
+        auditLog: { create },
+      } as any, {
+        module: 'user',
+        action: 'create',
+        operator: {
+          operatorId: 'user-1',
+          operatorUsername: 'admin',
+          operatorDisplayName: 'Administrator',
+        },
+        requestSnapshot: {
+          username: 'alice',
+        },
+      })
+    })
+
+    expect(auditData.result).toBe('success')
+    expect(auditData.failureReason).toBeNull()
+  })
+
+  it('extracts operation failure metadata from audit snapshots', async () => {
+    process.env.READ_ONLY_MODE = 'false'
+    let auditData: any
+    const create = mock(async (input: any) => {
+      auditData = input.data
+      return {}
+    })
+
+    await holdContext(createContext(), async () => {
+      await auditService.record({
+        auditLog: { create },
+      } as any, {
+        module: 'user',
+        action: 'update',
+        operator: {
+          operatorId: 'user-1',
+          operatorUsername: 'admin',
+          operatorDisplayName: 'Administrator',
+        },
+        requestSnapshot: {
+          result: 'failure',
+          failureReason: 'UserNotFound',
+        },
+      })
+    })
+
+    expect(auditData.result).toBe('failure')
+    expect(auditData.failureReason).toBe('UserNotFound')
+  })
 })
