@@ -67,8 +67,8 @@ async function recordOperationFailure(error: BusinessError, c: Context): Promise
       action: getOperationAction(c.req.method),
       requestSnapshot: {
         result: 'failure',
-        failureReason: error.errorCode || error.name,
-        message: error.message,
+        errorCode: error.errorCode || error.name,
+        errorMessage: error.message,
       },
     })
   }

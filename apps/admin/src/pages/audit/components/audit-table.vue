@@ -336,7 +336,7 @@ onMounted(() => {
         <Input
           :id="`audit-${props.mode}-failure-reason`"
           v-model="failureReasonFilter"
-          placeholder="Reason code"
+          placeholder="Error message"
           class="h-8 w-48"
         />
       </div>

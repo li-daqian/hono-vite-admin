@@ -107,7 +107,7 @@ describe('audit service', () => {
     expect(auditData.failureReason).toBeNull()
   })
 
-  it('extracts operation failure metadata from audit snapshots', async () => {
+  it('extracts operation failure metadata from audit snapshot error messages', async () => {
     process.env.READ_ONLY_MODE = 'false'
     let auditData: any
     const create = mock(async (input: any) => {
@@ -128,12 +128,13 @@ describe('audit service', () => {
         },
         requestSnapshot: {
           result: 'failure',
+          errorMessage: 'User not found',
           failureReason: 'UserNotFound',
         },
       })
     })
 
     expect(auditData.result).toBe('failure')
-    expect(auditData.failureReason).toBe('UserNotFound')
+    expect(auditData.failureReason).toBe('User not found')
   })
 })

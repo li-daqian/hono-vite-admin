@@ -161,7 +161,9 @@ describe('auth service', () => {
       userId,
       result: 'failure',
       reason: 'current-password-incorrect',
+      errorMessage: 'Current password is incorrect',
     })
+    expect(auditLog?.failureReason).toBe('Current password is incorrect')
   })
 
   it('locks the account after repeated login failures and clears the lock after a successful login', async () => {
@@ -225,6 +227,14 @@ describe('auth service', () => {
       const refreshTokensWhileLocked = await prisma.refreshToken.count({
         where: { userId },
       })
+      const failureAuditLogs = await prisma.auditLog.findMany({
+        where: {
+          requestId,
+          action: 'login-failed',
+        },
+        orderBy: { id: 'asc' },
+      })
+      const failureReasons = failureAuditLogs.map(log => log.failureReason)
 
       expect(firstError).toBeInstanceOf(BusinessError)
       expect((firstError as BusinessError).toString()).toContain('UserOrPasswordIncorrect')
@@ -237,6 +247,10 @@ describe('auth service', () => {
       expect(lockedUser.lockedUntil).toBeInstanceOf(Date)
       expect(lockedUser.lockedUntil!.getTime()).toBeGreaterThan(Date.now())
       expect(refreshTokensWhileLocked).toBe(0)
+      expect(failureAuditLogs).toHaveLength(3)
+      expect(failureReasons[0]).toBe('User or password is incorrect. 1 attempt remains before this account is locked.')
+      expect(failureReasons[1]).toContain('Account is locked. Try again after ')
+      expect(failureReasons[2]).toContain('Account is locked. Try again after ')
 
       await prisma.user.update({
         where: { id: userId },

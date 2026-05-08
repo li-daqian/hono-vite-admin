@@ -83,16 +83,19 @@ function extractAuditSnapshotMetadata(requestSnapshot: AuditJsonValue | undefine
   const result = requestSnapshot.result === 'success' || requestSnapshot.result === 'failure'
     ? requestSnapshot.result
     : null
+  const snapshotErrorMessage = typeof requestSnapshot.errorMessage === 'string' && requestSnapshot.errorMessage.trim()
+    ? requestSnapshot.errorMessage.trim()
+    : null
   const snapshotFailureReason = typeof requestSnapshot.failureReason === 'string' && requestSnapshot.failureReason.trim()
     ? requestSnapshot.failureReason.trim()
     : null
-  const snapshotReason = typeof requestSnapshot.reason === 'string' && requestSnapshot.reason.trim()
-    ? requestSnapshot.reason.trim()
+  const snapshotMessage = typeof requestSnapshot.message === 'string' && requestSnapshot.message.trim()
+    ? requestSnapshot.message.trim()
     : null
 
   return {
     result,
-    failureReason: snapshotFailureReason ?? snapshotReason,
+    failureReason: snapshotErrorMessage ?? snapshotFailureReason ?? snapshotMessage,
   }
 }
 

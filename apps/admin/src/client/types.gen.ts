@@ -89,7 +89,7 @@ export type AuditLogListItemSchema = {
      */
     result: string | null;
     /**
-     * Failure reason code when the audited operation failed
+     * Failure error message when the audited operation failed
      */
     failureReason: string | null;
     /**

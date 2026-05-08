@@ -36,7 +36,7 @@ export const AuditLogListItemSchema = z.object({
   operatorUsername: z.string().openapi({ description: 'Username of the operator', example: 'admin' }),
   operatorDisplayName: z.string().nullable().openapi({ description: 'Display name of the operator when available', example: 'Administrator' }),
   result: z.string().nullable().openapi({ description: 'Operation result when recorded in the audit snapshot', example: 'failure' }),
-  failureReason: z.string().nullable().openapi({ description: 'Failure reason code when the audited operation failed', example: 'current-password-incorrect' }),
+  failureReason: z.string().nullable().openapi({ description: 'Failure error message when the audited operation failed', example: 'Current password is incorrect' }),
   method: z.string().openapi({ description: 'HTTP method of the audited request', example: 'POST' }),
   path: z.string().openapi({ description: 'Request path of the audited request', example: '/api/v1/user' }),
   ip: z.string().nullable().openapi({ description: 'Client IP address', example: '127.0.0.1' }),
@@ -119,7 +119,7 @@ export const AuditLogFilterRequestSchema = z.object({
     z.string().max(100).nullable().default(null),
   ).openapi({
     description: 'Filter failed audit logs by failure reason',
-    example: 'current-password-incorrect',
+    example: 'Current password is incorrect',
   }),
 })
 export type AuditLogFilterRequest = z.infer<typeof AuditLogFilterRequestSchema>

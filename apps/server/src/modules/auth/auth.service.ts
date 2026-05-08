@@ -44,6 +44,7 @@ class AuthService {
         operatorUsername: request.username,
         operatorDisplayName: null,
         reason: 'user-not-found',
+        errorMessage: 'User or password is incorrect',
         username: request.username,
       })
       throw BusinessError.UserOrPasswordIncorrect()
@@ -54,6 +55,7 @@ class AuthService {
         operatorUsername: user.username,
         operatorDisplayName: user.displayName,
         reason: 'user-account-disabled',
+        errorMessage: 'User account is disabled',
         username: user.username,
       })
       throw BusinessError.BadRequest('User account is disabled', 'UserAccountDisabled')
@@ -68,6 +70,7 @@ class AuthService {
         operatorUsername: user.username,
         operatorDisplayName: user.displayName,
         reason: 'account-locked',
+        errorMessage: this.getAccountLockedErrorMessage(activeLockedUntil),
         username: user.username,
         failedLoginAttempts: user.failedLoginAttempts,
         maxFailedLoginAttempts: securityPolicy.maxFailedLoginAttempts,
@@ -334,6 +337,24 @@ class AuthService {
     return remainingAttempts <= LOGIN_LOCK_WARNING_THRESHOLD ? remainingAttempts : undefined
   }
 
+  private getPasswordIncorrectErrorMessage(remainingAttempts: number): string {
+    const warningRemainingAttempts = this.getLoginFailureWarningRemainingAttempts(remainingAttempts)
+
+    if (warningRemainingAttempts === undefined) {
+      return 'User or password is incorrect'
+    }
+
+    if (warningRemainingAttempts === 1) {
+      return 'User or password is incorrect. 1 attempt remains before this account is locked.'
+    }
+
+    return `User or password is incorrect. ${warningRemainingAttempts} attempts remaining before this account is locked.`
+  }
+
+  private getAccountLockedErrorMessage(lockedUntil: Date): string {
+    return `Account is locked. Try again after ${lockedUntil.toISOString()}`
+  }
+
   private async recordPasswordLoginFailure(
     user: LoginUser,
     currentFailedLoginAttempts: number,
@@ -360,6 +381,9 @@ class AuthService {
         operatorUsername: user.username,
         operatorDisplayName: user.displayName,
         reason: lockedUntil ? 'account-locked' : 'password-incorrect',
+        errorMessage: lockedUntil
+          ? this.getAccountLockedErrorMessage(lockedUntil)
+          : this.getPasswordIncorrectErrorMessage(remainingAttempts),
         username: user.username,
         failedLoginAttempts,
         maxFailedLoginAttempts,
@@ -380,6 +404,7 @@ class AuthService {
     operatorUsername: string
     operatorDisplayName: string | null | undefined
     reason: string
+    errorMessage: string
     username: string
     failedLoginAttempts?: number
     maxFailedLoginAttempts?: number
@@ -399,6 +424,7 @@ class AuthService {
         username: input.username,
         result: 'failure',
         reason: input.reason,
+        errorMessage: input.errorMessage,
         ...(input.failedLoginAttempts !== undefined && { failedLoginAttempts: input.failedLoginAttempts }),
         ...(input.maxFailedLoginAttempts !== undefined && { maxFailedLoginAttempts: input.maxFailedLoginAttempts }),
         ...(input.remainingAttempts !== undefined && { remainingAttempts: input.remainingAttempts }),
@@ -415,6 +441,7 @@ class AuthService {
         userId,
         result: 'failure',
         reason,
+        errorMessage: reason === 'current-password-incorrect' ? 'Current password is incorrect' : reason,
       },
     })
   }
