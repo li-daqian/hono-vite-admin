@@ -58,6 +58,13 @@ const displayLabel = computed(() => {
 
 const hasValue = computed(() => Boolean(props.startValue || props.endValue))
 
+const presetRanges = [
+  { label: 'Last 7 days', days: 7 },
+  { label: 'Last 14 days', days: 14 },
+  { label: 'Last 30 days', days: 30 },
+  { label: 'Last 90 days', days: 90 },
+]
+
 function pad(value: number) {
   return String(value).padStart(2, '0')
 }
@@ -102,6 +109,19 @@ function formatDisplayValue(value: string) {
 
   const time = getTimeParts(value, '00:00')
   return `${date.year}-${pad(date.month)}-${pad(date.day)} ${time.hours}:${time.minutes}`
+}
+
+function toDatePart(date: Date) {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+function selectPresetRange(days: number) {
+  const endDateValue = new Date()
+  const startDateValue = new Date()
+  startDateValue.setDate(endDateValue.getDate() - days + 1)
+
+  emit('update:startValue', `${toDatePart(startDateValue)}T00:00`)
+  emit('update:endValue', `${toDatePart(endDateValue)}T23:59`)
 }
 
 function updateTime(boundary: 'start' | 'end', part: 'hours' | 'minutes', value: string | number) {
@@ -167,12 +187,28 @@ function clearValue(event?: Event) {
     </PopoverTrigger>
 
     <PopoverContent class="w-auto p-0" align="start">
-      <RangeCalendar
-        v-model="calendarValue"
-        :number-of-months="2"
-        initial-focus
-        class="pb-2"
-      />
+      <div class="flex flex-col sm:flex-row">
+        <div class="grid content-start gap-1 border-b p-2 sm:w-36 sm:border-b-0 sm:border-r">
+          <Button
+            v-for="preset in presetRanges"
+            :key="preset.days"
+            type="button"
+            variant="ghost"
+            size="sm"
+            class="justify-start"
+            @click="selectPresetRange(preset.days)"
+          >
+            {{ preset.label }}
+          </Button>
+        </div>
+
+        <RangeCalendar
+          v-model="calendarValue"
+          :number-of-months="2"
+          initial-focus
+          class="pb-2"
+        />
+      </div>
 
       <div class="grid gap-3 border-t p-3 sm:grid-cols-2">
         <div class="grid gap-1.5">
@@ -224,17 +260,6 @@ function clearValue(event?: Event) {
             />
           </div>
         </div>
-
-        <Button
-          v-if="hasValue"
-          type="button"
-          variant="ghost"
-          size="sm"
-          class="h-8 justify-self-start sm:col-span-2"
-          @click="clearValue"
-        >
-          Clear
-        </Button>
       </div>
     </PopoverContent>
   </Popover>
