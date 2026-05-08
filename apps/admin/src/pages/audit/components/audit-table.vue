@@ -29,6 +29,7 @@ import { Download, X } from 'lucide-vue-next'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { getAuditColumns } from './audit-columns'
+import AuditDateTimeRangePicker from './audit-date-time-range-picker.vue'
 import AuditViewDialog from './audit-view-dialog.vue'
 
 const props = defineProps<{
@@ -306,26 +307,13 @@ onMounted(() => {
       </div>
 
       <div class="grid gap-1.5">
-        <Label :for="`audit-${props.mode}-from`" class="text-xs text-muted-foreground">
-          From
+        <Label :for="`audit-${props.mode}-time-range`" class="text-xs text-muted-foreground">
+          Time Range
         </Label>
-        <Input
-          :id="`audit-${props.mode}-from`"
-          v-model="createdAtFrom"
-          type="datetime-local"
-          class="h-8 w-48"
-        />
-      </div>
-
-      <div class="grid gap-1.5">
-        <Label :for="`audit-${props.mode}-to`" class="text-xs text-muted-foreground">
-          To
-        </Label>
-        <Input
-          :id="`audit-${props.mode}-to`"
-          v-model="createdAtTo"
-          type="datetime-local"
-          class="h-8 w-48"
+        <AuditDateTimeRangePicker
+          :id="`audit-${props.mode}-time-range`"
+          v-model:start-value="createdAtFrom"
+          v-model:end-value="createdAtTo"
         />
       </div>
 

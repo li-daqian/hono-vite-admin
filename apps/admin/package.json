@@ -16,6 +16,7 @@
     "shadcn": "shadcn-vue"
   },
   "dependencies": {
+    "@internationalized/date": "^3.10.1",
     "@radix-icons/vue": "^1.0.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/vue-table": "^8.21.3",

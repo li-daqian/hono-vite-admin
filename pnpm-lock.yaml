@@ -32,6 +32,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@internationalized/date':
+        specifier: ^3.10.1
+        version: 3.10.1
       '@radix-icons/vue':
         specifier: ^1.0.0
         version: 1.0.0(vue@3.5.25(typescript@5.9.3))
