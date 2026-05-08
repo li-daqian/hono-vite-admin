@@ -125,7 +125,8 @@ function updateTime(boundary: 'start' | 'end', part: 'hours' | 'minutes', value:
   }
 }
 
-function clearValue(event?: MouseEvent) {
+function clearValue(event?: Event) {
+  event?.preventDefault()
   event?.stopPropagation()
   emit('update:startValue', '')
   emit('update:endValue', '')
@@ -149,11 +150,19 @@ function clearValue(event?: MouseEvent) {
         <span class="min-w-0 flex-1 truncate">
           {{ displayLabel }}
         </span>
-        <X
+        <span
           v-if="hasValue"
-          class="size-3.5 text-muted-foreground hover:text-foreground"
+          role="button"
+          tabindex="0"
+          aria-label="Clear time range"
+          class="-m-1 inline-flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           @click="clearValue"
-        />
+          @keydown.enter="clearValue"
+          @keydown.space="clearValue"
+          @pointerdown="clearValue"
+        >
+          <X class="size-3.5" />
+        </span>
       </Button>
     </PopoverTrigger>
 
