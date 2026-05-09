@@ -10,6 +10,63 @@ export function cn(...inputs: ClassValue[]) {
 
 export const isDark = useDark()
 
+function padDatePart(value: number) {
+  return String(value).padStart(2, '0')
+}
+
+function getDateTimeParts(value: Date, timeZone?: string) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      ...(timeZone ? { timeZone } : {}),
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      hourCycle: 'h23',
+    }).formatToParts(value)
+
+    const partMap = Object.fromEntries(parts.map(part => [part.type, part.value]))
+
+    return {
+      year: partMap.year,
+      month: partMap.month,
+      day: partMap.day,
+      hour: partMap.hour,
+      minute: partMap.minute,
+      second: partMap.second,
+    }
+  }
+  catch {
+    return {
+      year: String(value.getFullYear()),
+      month: padDatePart(value.getMonth() + 1),
+      day: padDatePart(value.getDate()),
+      hour: padDatePart(value.getHours()),
+      minute: padDatePart(value.getMinutes()),
+      second: padDatePart(value.getSeconds()),
+    }
+  }
+}
+
+export function formatDateTimeForFilename(value: Date, timeZone?: string) {
+  const parts = getDateTimeParts(value, timeZone)
+
+  return `${[
+    parts.year,
+    parts.month,
+    parts.day,
+  ].join('-')
+  }_${
+    [
+      parts.hour,
+      parts.minute,
+      parts.second,
+    ].join('-')}`
+}
+
 /**
  * Credit to [@hooray](https://github.com/hooray)
  * @see https://github.com/vuejs/vitepress/pull/2347

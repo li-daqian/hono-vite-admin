@@ -20,7 +20,7 @@ import { prisma } from '@server/src/lib/prisma'
 import { getLoginUser } from '@server/src/middleware/auth.middleware'
 import { getContext } from '@server/src/middleware/context.middleware'
 import { getRequestId } from '@server/src/middleware/requestId.middleware'
-import { extractClientIp, sanitizeAuditPayload } from '@server/src/modules/audit/audit.utils'
+import { extractClientIp, formatAuditExportDateTime, sanitizeAuditPayload } from '@server/src/modules/audit/audit.utils'
 import { buildOrderBy, paginate } from '@server/src/utils/pagination'
 
 export interface CreateAuditLogInput {
@@ -119,18 +119,6 @@ function csvRow(values: unknown[]): string {
   return values.map(csvCell).join(',')
 }
 
-function formatAuditExportDateTime(value: Date, query: AuditLogExportRequest): string {
-  const locale = query.exportLocale?.trim() || undefined
-  const timeZone = query.exportTimeZone?.trim() || undefined
-
-  try {
-    return value.toLocaleString(locale, timeZone ? { timeZone } : undefined)
-  }
-  catch {
-    return value.toLocaleString(locale)
-  }
-}
-
 class AuditService {
   async record(client: AuditClient, input: CreateAuditLogInput): Promise<void> {
     if (getEnv().deployment.readOnlyMode) {
@@ -218,7 +206,10 @@ class AuditService {
     return [
       csvRow(AUDIT_EXPORT_HEADERS),
       ...auditLogs.map(log => csvRow([
-        formatAuditExportDateTime(log.createdAt, query),
+        formatAuditExportDateTime(log.createdAt, {
+          locale: query.exportLocale,
+          timeZone: query.exportTimeZone,
+        }),
         apiAuditCategoryMap[log.category],
         log.module,
         log.action,

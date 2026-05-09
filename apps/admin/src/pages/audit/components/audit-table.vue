@@ -21,7 +21,7 @@ import {
   TableRow,
 } from '@admin/components/ui/table'
 import { valueUpdater } from '@admin/components/ui/table/utils'
-import { cn } from '@admin/lib/utils'
+import { cn, formatDateTimeForFilename } from '@admin/lib/utils'
 import { useAppConfigStore } from '@admin/stores/app-config'
 import { useDictionaryStore } from '@admin/stores/dictionaries'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
@@ -228,17 +228,17 @@ function resetAdvancedFilters() {
   pagination.value.pageIndex = 0
 }
 
-function getExportFilename() {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-  return `audit-${props.mode}-${timestamp}.csv`
+function getExportFilename(timeZone?: string) {
+  const prefix = isLoginMode.value ? 'login-logs' : 'operation-logs'
+  return `${prefix}-${formatDateTimeForFilename(new Date(), timeZone)}.csv`
 }
 
-function downloadCsv(content: string) {
+function downloadCsv(content: string, timeZone?: string) {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = getExportFilename()
+  link.download = getExportFilename(timeZone)
   document.body.appendChild(link)
   link.click()
   link.remove()
@@ -249,14 +249,15 @@ async function handleExport() {
   isExporting.value = true
 
   try {
+    const exportDateTimeQuery = getExportDateTimeQuery()
     const response = await getAuditExport<true>({
       query: {
         ...getBaseAuditQuery(),
-        ...getExportDateTimeQuery(),
+        ...exportDateTimeQuery,
         limit: 5000,
       },
     })
-    downloadCsv(String(response.data ?? ''))
+    downloadCsv(String(response.data ?? ''), exportDateTimeQuery.exportTimeZone)
   }
   catch {
     toast.error('Failed to export audit logs.')

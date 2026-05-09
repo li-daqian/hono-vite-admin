@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { getPageNumbers } from './utils'
+import { formatDateTimeForFilename, getPageNumbers } from './utils'
+
+describe('formatDateTimeForFilename', () => {
+  it('formats local date time without ISO separators or milliseconds', () => {
+    expect(formatDateTimeForFilename(new Date(2026, 4, 9, 7, 8, 9))).toBe('2026-05-09_07-08-09')
+  })
+
+  it('formats date time with the provided time zone', () => {
+    const value = new Date(Date.UTC(2026, 4, 9, 7, 8, 9))
+
+    expect(formatDateTimeForFilename(value, 'Asia/Singapore')).toBe('2026-05-09_15-08-09')
+    expect(formatDateTimeForFilename(value, 'UTC')).toBe('2026-05-09_07-08-09')
+  })
+})
 
 describe('getPageNumbers', () => {
   it('should return all pages when total pages <= 5', () => {

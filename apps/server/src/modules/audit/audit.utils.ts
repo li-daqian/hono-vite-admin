@@ -115,3 +115,34 @@ export function extractClientIp(headers: Record<string, string | null | undefine
 
   return normalizeClientIp(forwardedPart)
 }
+
+export interface AuditExportDateTimeFormatOptions {
+  locale?: string | null
+  timeZone?: string | null
+}
+
+export function formatAuditExportDateTime(value: Date, options: AuditExportDateTimeFormatOptions = {}): string {
+  const locale = options.locale?.trim() || 'en-US'
+  const timeZone = options.timeZone?.trim() || undefined
+
+  try {
+    const parts = new Intl.DateTimeFormat(locale, {
+      ...(timeZone ? { timeZone } : {}),
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      hourCycle: 'h23',
+    }).formatToParts(value)
+
+    const partMap = Object.fromEntries(parts.map(part => [part.type, part.value]))
+
+    return `${partMap.year}-${partMap.month}-${partMap.day} ${partMap.hour}:${partMap.minute}:${partMap.second}`
+  }
+  catch {
+    return formatAuditExportDateTime(value)
+  }
+}
