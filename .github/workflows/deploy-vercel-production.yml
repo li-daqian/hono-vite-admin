@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  VERCEL_CLI_VERSION: 47.0.5
+  VERCEL_CLI_VERSION: latest
 
 jobs:
   quality-gate:
