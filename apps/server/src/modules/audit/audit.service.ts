@@ -119,6 +119,18 @@ function csvRow(values: unknown[]): string {
   return values.map(csvCell).join(',')
 }
 
+function formatAuditExportDateTime(value: Date, query: AuditLogExportRequest): string {
+  const locale = query.exportLocale?.trim() || undefined
+  const timeZone = query.exportTimeZone?.trim() || undefined
+
+  try {
+    return value.toLocaleString(locale, timeZone ? { timeZone } : undefined)
+  }
+  catch {
+    return value.toLocaleString(locale)
+  }
+}
+
 class AuditService {
   async record(client: AuditClient, input: CreateAuditLogInput): Promise<void> {
     if (getEnv().deployment.readOnlyMode) {
@@ -206,7 +218,7 @@ class AuditService {
     return [
       csvRow(AUDIT_EXPORT_HEADERS),
       ...auditLogs.map(log => csvRow([
-        log.createdAt.toISOString(),
+        formatAuditExportDateTime(log.createdAt, query),
         apiAuditCategoryMap[log.category],
         log.module,
         log.action,

@@ -142,5 +142,19 @@ export const AuditLogExportRequestSchema = AuditLogFilterRequestSchema.extend({
     description: 'Maximum number of audit log rows to export',
     example: 5000,
   }),
+  exportLocale: z.preprocess(
+    emptyStringToUndefined,
+    z.string().max(64).nullable().default(null),
+  ).openapi({
+    description: 'Browser locale used to format exported timestamps',
+    example: 'en-US',
+  }),
+  exportTimeZone: z.preprocess(
+    emptyStringToUndefined,
+    z.string().max(100).nullable().default(null),
+  ).openapi({
+    description: 'Browser time zone used to format exported timestamps',
+    example: 'Asia/Singapore',
+  }),
 })
 export type AuditLogExportRequest = z.infer<typeof AuditLogExportRequestSchema>

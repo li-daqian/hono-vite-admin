@@ -186,6 +186,13 @@ function getBaseAuditQuery(): NonNullable<GetAuditExportData['query']> {
   }
 }
 
+function getExportDateTimeQuery() {
+  return {
+    exportLocale: navigator.language || undefined,
+    exportTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
+  }
+}
+
 async function fetchAuditLogs() {
   isLoading.value = true
 
@@ -245,6 +252,7 @@ async function handleExport() {
     const response = await getAuditExport<true>({
       query: {
         ...getBaseAuditQuery(),
+        ...getExportDateTimeQuery(),
         limit: 5000,
       },
     })

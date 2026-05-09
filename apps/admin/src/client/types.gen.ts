@@ -746,6 +746,14 @@ export type GetAuditExportData = {
          * Maximum number of audit log rows to export
          */
         limit?: number;
+        /**
+         * Browser locale used to format exported timestamps
+         */
+        exportLocale?: string | null;
+        /**
+         * Browser time zone used to format exported timestamps
+         */
+        exportTimeZone?: string | null;
     };
     url: '/audit/export';
 };

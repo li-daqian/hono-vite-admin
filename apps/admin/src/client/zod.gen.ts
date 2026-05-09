@@ -435,7 +435,15 @@ export const zGetAuditExportData = z.object({
             z.string(),
             z.null()
         ]).optional().default(null),
-        limit: z.number().int().gte(1).lte(10000).describe('Maximum number of audit log rows to export').optional().default(5000)
+        limit: z.number().int().gte(1).lte(10000).describe('Maximum number of audit log rows to export').optional().default(5000),
+        exportLocale: z.union([
+            z.string().max(64),
+            z.null()
+        ]).optional().default(null),
+        exportTimeZone: z.union([
+            z.string().max(100),
+            z.null()
+        ]).optional().default(null)
     }).optional()
 });
 
