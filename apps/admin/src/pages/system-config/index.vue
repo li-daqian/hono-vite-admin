@@ -16,10 +16,8 @@ import { Badge } from '@admin/components/ui/badge'
 import { Button } from '@admin/components/ui/button'
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@admin/components/ui/card'
@@ -218,155 +216,191 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-1 flex-col gap-4 sm:gap-6">
-    <div>
-      <h2 class="text-2xl font-bold tracking-tight">
-        System Config
-      </h2>
-      <p class="text-muted-foreground">
-        Manage application defaults and login security policy.
-      </p>
+    <div class="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight">
+          System Config
+        </h2>
+        <p class="text-muted-foreground">
+          Manage application defaults and login security policy.
+        </p>
+      </div>
     </div>
 
-    <Card class="max-w-3xl rounded-lg">
+    <Card class="rounded-lg">
       <CardHeader>
-        <CardTitle>Application Defaults</CardTitle>
+        <CardTitle>Configuration</CardTitle>
         <CardDescription>
-          Values applied to the admin shell, login page, and data tables.
+          Application defaults and login protection settings.
         </CardDescription>
-        <CardAction>
-          <Badge :variant="configEditable ? 'default' : 'secondary'" class="h-6 gap-1.5">
-            <Settings2 v-if="configEditable" class="size-3.5" />
-            <LockKeyhole v-else class="size-3.5" />
-            {{ configEditable ? 'Editable' : 'Read only' }}
-          </Badge>
-        </CardAction>
       </CardHeader>
 
-      <CardContent class="space-y-5">
-        <template v-if="isConfigLoading">
-          <div v-for="index in 3" :key="index" class="grid gap-2">
-            <Skeleton class="h-4 w-40" />
-            <Skeleton class="h-9" />
-          </div>
-        </template>
+      <CardContent>
+        <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
+          <section class="overflow-hidden rounded-lg border">
+            <div class="flex items-start justify-between gap-3 border-b bg-muted/30 px-4 py-3">
+              <div class="space-y-1">
+                <h3 class="text-sm font-medium leading-none">
+                  Application Defaults
+                </h3>
+                <p class="text-sm text-muted-foreground">
+                  Values applied to the admin shell, login page, and data tables.
+                </p>
+              </div>
+              <Badge :variant="configEditable ? 'default' : 'secondary'" class="h-6 shrink-0 gap-1.5">
+                <Settings2 v-if="configEditable" class="size-3.5" />
+                <LockKeyhole v-else class="size-3.5" />
+                {{ configEditable ? 'Editable' : 'Read only' }}
+              </Badge>
+            </div>
 
-        <template v-else>
-          <div v-for="item in configs" :key="item.key" class="grid gap-2">
-            <Label :for="item.key" class="gap-2">
-              <SlidersHorizontal class="size-4 text-muted-foreground" />
-              {{ item.label }}
-            </Label>
-            <Select
-              v-if="item.options"
-              v-model="values[item.key]"
-              :disabled="!canUpdateConfig"
-            >
-              <SelectTrigger :id="item.key" class="h-9">
-                <SelectValue :placeholder="item.value" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="option in item.options" :key="option" :value="option">
-                  {{ option }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              v-else
-              :id="item.key"
-              v-model="values[item.key]"
-              :type="item.valueType === 'number' ? 'number' : 'text'"
-              maxlength="100"
-              :disabled="!canUpdateConfig"
-              :aria-invalid="Boolean(errors[item.key])"
-            />
-            <p v-if="errors[item.key]" class="text-sm text-destructive">
-              {{ errors[item.key] }}
-            </p>
-            <p v-else class="text-sm text-muted-foreground">
-              {{ item.description }}
-            </p>
-          </div>
-        </template>
-      </CardContent>
+            <div class="divide-y">
+              <template v-if="isConfigLoading">
+                <div v-for="index in 3" :key="index" class="grid gap-3 p-4 md:grid-cols-[220px_minmax(0,1fr)]">
+                  <div class="space-y-2">
+                    <Skeleton class="h-4 w-36" />
+                    <Skeleton class="h-4 w-44" />
+                  </div>
+                  <Skeleton class="h-9" />
+                </div>
+              </template>
 
-      <CardFooter class="flex flex-wrap justify-end gap-2">
-        <PermissionTooltip :message="configDisabledReason">
-          <Button type="button" :disabled="!canUpdateConfig" @click="saveConfigs">
-            <Save class="size-4" />
-            Save
-          </Button>
-        </PermissionTooltip>
-      </CardFooter>
-    </Card>
+              <template v-else>
+                <div v-for="item in configs" :key="item.key" class="grid gap-3 p-4 md:grid-cols-[220px_minmax(0,1fr)]">
+                  <div class="space-y-1.5">
+                    <Label :for="item.key" class="gap-2">
+                      <SlidersHorizontal class="size-4 shrink-0 text-muted-foreground" />
+                      {{ item.label }}
+                    </Label>
+                    <p class="text-sm leading-5 text-muted-foreground">
+                      {{ item.description }}
+                    </p>
+                  </div>
+                  <div class="grid content-start gap-2">
+                    <Select
+                      v-if="item.options"
+                      v-model="values[item.key]"
+                      :disabled="!canUpdateConfig"
+                    >
+                      <SelectTrigger :id="item.key" class="h-9">
+                        <SelectValue :placeholder="item.value" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem v-for="option in item.options" :key="option" :value="option">
+                          {{ option }}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      v-else
+                      :id="item.key"
+                      v-model="values[item.key]"
+                      :type="item.valueType === 'number' ? 'number' : 'text'"
+                      maxlength="100"
+                      :disabled="!canUpdateConfig"
+                      :aria-invalid="Boolean(errors[item.key])"
+                    />
+                    <p v-if="errors[item.key]" class="text-sm text-destructive">
+                      {{ errors[item.key] }}
+                    </p>
+                  </div>
+                </div>
+              </template>
+            </div>
 
-    <Card class="max-w-3xl rounded-lg">
-      <CardHeader>
-        <CardTitle>Login Lockout</CardTitle>
-        <CardDescription>
-          Failed password attempts and temporary account lock duration.
-        </CardDescription>
-        <CardAction>
-          <Badge :variant="policyEditable ? 'default' : 'secondary'" class="h-6 gap-1.5">
-            <ShieldCheck v-if="policyEditable" class="size-3.5" />
-            <LockKeyhole v-else class="size-3.5" />
-            {{ policyEditable ? 'Editable' : 'Read only' }}
-          </Badge>
-        </CardAction>
-      </CardHeader>
+            <div class="flex justify-end border-t bg-muted/20 px-4 py-3">
+              <PermissionTooltip :message="configDisabledReason">
+                <Button type="button" :disabled="!canUpdateConfig" @click="saveConfigs">
+                  <Save class="size-4" />
+                  Save
+                </Button>
+              </PermissionTooltip>
+            </div>
+          </section>
 
-      <CardContent class="space-y-5">
-        <div class="grid gap-2">
-          <Label for="maxFailedLoginAttempts" class="gap-2">
-            <Hash class="size-4 text-muted-foreground" />
-            Max Failed Attempts
-          </Label>
-          <Skeleton v-if="isPolicyLoading" class="h-9" />
-          <Input
-            v-else
-            id="maxFailedLoginAttempts"
-            v-model="maxFailedLoginAttempts"
-            type="number"
-            min="1"
-            max="1000"
-            step="1"
-            :disabled="!canUpdatePolicy"
-            :aria-invalid="Boolean(maxFailedLoginAttemptsError)"
-          />
-          <p v-if="maxFailedLoginAttemptsError" class="text-sm text-destructive">
-            {{ maxFailedLoginAttemptsError }}
-          </p>
+          <section class="overflow-hidden rounded-lg border">
+            <div class="flex items-start justify-between gap-3 border-b bg-muted/30 px-4 py-3">
+              <div class="space-y-1">
+                <h3 class="text-sm font-medium leading-none">
+                  Login Lockout
+                </h3>
+                <p class="text-sm text-muted-foreground">
+                  Failed attempts and temporary lock duration.
+                </p>
+              </div>
+              <Badge :variant="policyEditable ? 'default' : 'secondary'" class="h-6 shrink-0 gap-1.5">
+                <ShieldCheck v-if="policyEditable" class="size-3.5" />
+                <LockKeyhole v-else class="size-3.5" />
+                {{ policyEditable ? 'Editable' : 'Read only' }}
+              </Badge>
+            </div>
+
+            <div class="divide-y">
+              <div class="grid gap-3 p-4">
+                <div class="space-y-1.5">
+                  <Label for="maxFailedLoginAttempts" class="gap-2">
+                    <Hash class="size-4 shrink-0 text-muted-foreground" />
+                    Max Failed Attempts
+                  </Label>
+                  <p class="text-sm leading-5 text-muted-foreground">
+                    Attempts allowed before locking the account.
+                  </p>
+                </div>
+                <Skeleton v-if="isPolicyLoading" class="h-9" />
+                <Input
+                  v-else
+                  id="maxFailedLoginAttempts"
+                  v-model="maxFailedLoginAttempts"
+                  type="number"
+                  min="1"
+                  max="1000"
+                  step="1"
+                  :disabled="!canUpdatePolicy"
+                  :aria-invalid="Boolean(maxFailedLoginAttemptsError)"
+                />
+                <p v-if="maxFailedLoginAttemptsError" class="text-sm text-destructive">
+                  {{ maxFailedLoginAttemptsError }}
+                </p>
+              </div>
+
+              <div class="grid gap-3 p-4">
+                <div class="space-y-1.5">
+                  <Label for="loginLockDuration" class="gap-2">
+                    <LockKeyhole class="size-4 shrink-0 text-muted-foreground" />
+                    Login Lock Duration
+                  </Label>
+                  <p class="text-sm leading-5 text-muted-foreground">
+                    How long a locked account stays blocked.
+                  </p>
+                </div>
+                <Skeleton v-if="isPolicyLoading" class="h-9" />
+                <Input
+                  v-else
+                  id="loginLockDuration"
+                  v-model="loginLockDuration"
+                  type="text"
+                  placeholder="15m"
+                  maxlength="16"
+                  :disabled="!canUpdatePolicy"
+                  :aria-invalid="Boolean(loginLockDurationError)"
+                />
+                <p v-if="loginLockDurationError" class="text-sm text-destructive">
+                  {{ loginLockDurationError }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex justify-end border-t bg-muted/20 px-4 py-3">
+              <PermissionTooltip :message="policyDisabledReason">
+                <Button type="button" :disabled="!canUpdatePolicy" @click="savePolicy">
+                  <Save class="size-4" />
+                  Save
+                </Button>
+              </PermissionTooltip>
+            </div>
+          </section>
         </div>
-
-        <div class="grid gap-2">
-          <Label for="loginLockDuration" class="gap-2">
-            <LockKeyhole class="size-4 text-muted-foreground" />
-            Login Lock Duration
-          </Label>
-          <Skeleton v-if="isPolicyLoading" class="h-9" />
-          <Input
-            v-else
-            id="loginLockDuration"
-            v-model="loginLockDuration"
-            type="text"
-            placeholder="15m"
-            maxlength="16"
-            :disabled="!canUpdatePolicy"
-            :aria-invalid="Boolean(loginLockDurationError)"
-          />
-          <p v-if="loginLockDurationError" class="text-sm text-destructive">
-            {{ loginLockDurationError }}
-          </p>
-        </div>
       </CardContent>
-
-      <CardFooter class="flex flex-wrap justify-end gap-2">
-        <PermissionTooltip :message="policyDisabledReason">
-          <Button type="button" :disabled="!canUpdatePolicy" @click="savePolicy">
-            <Save class="size-4" />
-            Save
-          </Button>
-        </PermissionTooltip>
-      </CardFooter>
     </Card>
   </div>
 </template>
