@@ -72,7 +72,6 @@ export const refreshTokenCookie = createRefreshTokenCookie(
         : {
             sameSite: 'Strict',
             secure: false,
-            domain: 'localhost',
           }),
     },
   },
