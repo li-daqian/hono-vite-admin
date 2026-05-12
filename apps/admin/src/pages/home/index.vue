@@ -14,14 +14,14 @@ const routerViewKey = computed(() => `${route.path}:${pageRefreshStore.refreshCo
 </script>
 
 <template>
-  <div class="[--header-height:calc(--spacing(14))]">
-    <SidebarProvider class="flex flex-col">
+  <div class="min-h-svh overflow-x-hidden [--header-height:calc(--spacing(14))]">
+    <SidebarProvider class="flex min-w-0 flex-col">
       <SiteHeader />
-      <div class="flex flex-1">
+      <div class="flex min-w-0 flex-1">
         <AppSidebar />
         <SidebarInset>
           <ReadOnlyBanner />
-          <div class="flex flex-1 flex-col p-4">
+          <div class="flex min-w-0 flex-1 flex-col p-4">
             <RouterView :key="routerViewKey" />
           </div>
         </SidebarInset>

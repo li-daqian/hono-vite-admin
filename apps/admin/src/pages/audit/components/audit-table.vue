@@ -293,7 +293,7 @@ onMounted(() => {
   <div
     :class="cn(
       'max-sm:has-[div[role=toolbar]]:mb-16',
-      'flex flex-1 flex-col gap-4',
+      'flex min-w-0 flex-1 flex-col gap-4',
     )"
   >
     <DataTableToolbar
@@ -302,7 +302,7 @@ onMounted(() => {
       :filters="filters"
     />
 
-    <div class="flex flex-wrap items-end gap-2">
+    <div class="flex min-w-0 flex-wrap items-end gap-2">
       <div class="grid gap-1.5">
         <Label :for="`audit-${props.mode}-operator`" class="text-xs text-muted-foreground">
           Operator
@@ -363,7 +363,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div class="overflow-hidden rounded-md border">
+    <div class="min-w-0 overflow-hidden rounded-md border">
       <Table>
         <TableHeader>
           <TableRow

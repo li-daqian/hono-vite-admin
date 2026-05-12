@@ -3,7 +3,7 @@ import AuditTable from '../components/audit-table.vue'
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col gap-4 sm:gap-6">
+  <div class="flex min-w-0 flex-1 flex-col gap-4 sm:gap-6">
     <div>
       <h2 class="text-2xl font-bold tracking-tight">
         Login Logs

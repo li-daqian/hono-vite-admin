@@ -32,14 +32,14 @@ function handleRouteRefresh() {
 </script>
 
 <template>
-  <div class="flex items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b shrink-0 text-nowrap">
+  <div class="flex min-w-0 items-center bg-background h-(--header-height) w-full sticky top-0 z-50 border-b shrink-0 text-nowrap">
     <div :style="{ width: `${logoAreaWidth}` }" class="flex shrink-0 items-center gap-4 pl-4">
       <div class="flex items-center justify-center gap-2">
         <AppLogo class="size-6" />
         <span class="text-lg font-semibold leading-none hidden md:block">{{ appConfig.siteName }}</span>
       </div>
     </div>
-    <div class="flex items-center gap-2 ml-4">
+    <div class="flex min-w-0 items-center gap-2 ml-4">
       <SidebarTrigger :size="18" class="rounded-lg cursor-pointer" />
       <DataTableRefreshButton
         class="rounded-lg cursor-pointer"
@@ -47,7 +47,7 @@ function handleRouteRefresh() {
         @refresh="handleRouteRefresh"
       />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
-      <AppBreadcrumb :items="breadcrumb" />
+      <AppBreadcrumb :items="breadcrumb" class="min-w-0" />
     </div>
     <div class="flex items-center gap-2 ml-auto px-4">
       <Button variant="ghost" size="icon" class="rounded-full cursor-pointer">

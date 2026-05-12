@@ -28,8 +28,8 @@ function resetFilters() {
 </script>
 
 <template>
-  <div class="flex items-center justify-between">
-    <div class="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
+  <div class="flex min-w-0 flex-wrap items-center justify-between gap-2">
+    <div class="flex min-w-0 flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
       <Input
         v-if="props.searchKey"
         :placeholder="props.searchPlaceholder ?? 'Filter...'"
@@ -46,7 +46,7 @@ function resetFilters() {
         @update:model-value="value => props.table.setGlobalFilter(value)"
       />
 
-      <div class="flex gap-x-2">
+      <div class="flex flex-wrap gap-2">
         <template v-for="filter in filters" :key="filter.columnId">
           <DataTableFacetedFilter
             v-if="props.table.getColumn(filter.columnId)"
