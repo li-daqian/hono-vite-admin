@@ -42,6 +42,7 @@ describe('department service', () => {
   let departmentId: string
   let requestId: string
   let userIds: string[] = []
+  let extraDepartmentIds: string[] = []
 
   beforeEach(async () => {
     requestId = `req-${randomUUID()}`
@@ -86,6 +87,7 @@ describe('department service', () => {
 
     operatorUserId = users[0]!.id
     userIds = users.slice(1).map(user => user.id)
+    extraDepartmentIds = []
 
     const department = await prisma.department.create({
       data: {
@@ -97,14 +99,24 @@ describe('department service', () => {
   })
 
   afterEach(async () => {
+    const departmentIds = [departmentId, ...extraDepartmentIds]
+
     await prisma.auditLog.deleteMany({
       where: { requestId },
+    })
+    await prisma.departmentLeader.deleteMany({
+      where: {
+        OR: [
+          { userId: { in: [operatorUserId, ...userIds] } },
+          { departmentId: { in: departmentIds } },
+        ],
+      },
     })
     await prisma.userDepartment.deleteMany({
       where: {
         OR: [
           { userId: { in: [operatorUserId, ...userIds] } },
-          { departmentId },
+          { departmentId: { in: departmentIds } },
         ],
       },
     })
@@ -114,8 +126,54 @@ describe('department service', () => {
       },
     })
     await prisma.department.deleteMany({
-      where: { id: departmentId },
+      where: { id: { in: departmentIds } },
     })
+  })
+
+  it('creates, replaces, searches, and clears department leaders', async () => {
+    let created: Awaited<ReturnType<typeof departmentService.createDepartment>> | undefined
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      created = await departmentService.createDepartment({
+        name: `Leader ${randomUUID()}`,
+        parentId: null,
+        phone: null,
+        email: null,
+        order: 1,
+        leaderIds: [userIds[1]!, userIds[0]!, userIds[1]!],
+      })
+    })
+    extraDepartmentIds.push(created!.id)
+
+    expect(created!.leaders.map(leader => leader.id).sort()).toEqual(userIds.slice(0, 2).sort())
+
+    let updated: Awaited<ReturnType<typeof departmentService.updateDepartment>> | undefined
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      updated = await departmentService.updateDepartment(departmentId, {
+        leaderIds: [userIds[2]!, userIds[2]!],
+      })
+    })
+
+    expect(updated!.leaders.map(leader => leader.id)).toEqual([userIds[2]!])
+
+    const matchingDepartments = await departmentService.getDepartmentTree({
+      search: 'Department User C',
+      status: null,
+    })
+
+    expect(matchingDepartments.map(department => department.id)).toContain(departmentId)
+
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      updated = await departmentService.updateDepartment(departmentId, {
+        leaderIds: [],
+      })
+    })
+
+    const remainingLeaders = await prisma.departmentLeader.count({
+      where: { departmentId },
+    })
+
+    expect(updated!.leaders).toEqual([])
+    expect(remainingLeaders).toBe(0)
   })
 
   it('lists users assigned to a department', async () => {
@@ -202,5 +260,28 @@ describe('department service', () => {
     expect(error).toBeInstanceOf(BusinessError)
     expect((error as BusinessError).toString()).toContain('UserNotFound')
     expect(remainingAssignments).toBe(0)
+  })
+
+  it('rejects assigning a missing department leader', async () => {
+    let error: unknown
+
+    await holdContext(createContext(operatorUserId, requestId), async () => {
+      try {
+        await departmentService.updateDepartment(departmentId, {
+          leaderIds: [randomUUID()],
+        })
+      }
+      catch (caughtError) {
+        error = caughtError
+      }
+    })
+
+    const remainingLeaders = await prisma.departmentLeader.count({
+      where: { departmentId },
+    })
+
+    expect(error).toBeInstanceOf(BusinessError)
+    expect((error as BusinessError).toString()).toContain('UserNotFound')
+    expect(remainingLeaders).toBe(0)
   })
 })

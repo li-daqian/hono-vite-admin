@@ -58,7 +58,11 @@ const filteredTree = computed(() => {
   return filterDepartmentTree(departmentTree.value, (department) => {
     const matchesSearch = !keyword
       || department.name.toLowerCase().includes(keyword)
-      || (department.leader?.toLowerCase().includes(keyword) ?? false)
+      || department.leaders.some(leader =>
+        leader.username.toLowerCase().includes(keyword)
+        || (leader.displayName?.toLowerCase().includes(keyword) ?? false)
+        || (leader.email?.toLowerCase().includes(keyword) ?? false),
+      )
       || (department.email?.toLowerCase().includes(keyword) ?? false)
 
     const matchesStatus = status.value === 'ALL' || department.status === status.value
@@ -267,7 +271,7 @@ watch(() => props.refreshKey, () => {
               Name
             </TableHead>
             <TableHead class="bg-background group-hover/row:bg-muted">
-              Leader
+              Leaders
             </TableHead>
             <TableHead class="bg-background group-hover/row:bg-muted">
               Contact

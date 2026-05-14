@@ -12,7 +12,7 @@ function emptyStringToNull(value: unknown) {
 export const DepartmentCreateRequestSchema = z.object({
   parentId: z.preprocess(emptyStringToNull, z.string().min(1).nullable().optional()).openapi({ description: 'Parent department ID', example: null }),
   name: z.string().trim().min(1).max(50).openapi({ description: 'Department name', example: 'Engineering' }),
-  leader: z.string().trim().max(50).nullable().optional().openapi({ description: 'Department leader name', example: 'Jane Doe' }),
+  leaderIds: z.array(z.string().min(1)).optional().openapi({ description: 'User IDs selected as department leaders', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
   phone: z.string().trim().max(20).nullable().optional().openapi({ description: 'Department contact phone', example: '+1234567890' }),
   email: z.email().nullable().optional().openapi({ description: 'Department contact email', example: 'engineering@example.com' }),
   order: z.number().int().min(0).default(0).openapi({ description: 'Display order', example: 1 }),
@@ -23,7 +23,7 @@ export type DepartmentCreateRequest = z.infer<typeof DepartmentCreateRequestSche
 export const DepartmentUpdateRequestSchema = z.object({
   parentId: z.preprocess(emptyStringToNull, z.string().min(1).nullable().optional()).openapi({ description: 'Parent department ID', example: null }),
   name: z.string().trim().min(1).max(50).optional().openapi({ description: 'Department name', example: 'Product Engineering' }),
-  leader: z.string().trim().max(50).nullable().optional().openapi({ description: 'Department leader name', example: 'Jane Doe' }),
+  leaderIds: z.array(z.string().min(1)).optional().openapi({ description: 'User IDs selected as department leaders', example: ['01HZY4QG2R1X0ABCDEF1234567'] }),
   phone: z.string().trim().max(20).nullable().optional().openapi({ description: 'Department contact phone', example: '+1234567890' }),
   email: z.email().nullable().optional().openapi({ description: 'Department contact email', example: 'engineering@example.com' }),
   order: z.number().int().min(0).optional().openapi({ description: 'Display order', example: 1 }),
@@ -66,6 +66,15 @@ export type DepartmentUserResponse = z.infer<typeof DepartmentUserResponseSchema
 export const DepartmentUsersResponseSchema = z.array(DepartmentUserResponseSchema).openapi('DepartmentUsersResponseSchema')
 export type DepartmentUsersResponse = z.infer<typeof DepartmentUsersResponseSchema>
 
+export const DepartmentLeaderResponseSchema = z.object({
+  id: z.string().openapi({ description: 'User ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
+  username: z.string().openapi({ description: 'Username', example: 'johndoe' }),
+  displayName: z.string().nullable().openapi({ description: 'Display name of the user', example: 'John Doe' }),
+  email: z.email().nullable().openapi({ description: 'Email address of the user', example: 'johndoe@example.com' }),
+  status: z.enum(Object.values(UserStatus)).openapi({ description: 'Status of the user account', example: UserStatus.ACTIVE }),
+}).openapi('DepartmentLeaderResponseSchema')
+export type DepartmentLeaderResponse = z.infer<typeof DepartmentLeaderResponseSchema>
+
 export const DepartmentAssignUsersResponseSchema = z.object({
   updatedCount: z.number().int().nonnegative().openapi({ description: 'Number of users assigned to this department', example: 3 }),
   users: z.array(DepartmentUserResponseSchema).openapi({ description: 'Users assigned to this department' }),
@@ -73,7 +82,7 @@ export const DepartmentAssignUsersResponseSchema = z.object({
 export type DepartmentAssignUsersResponse = z.infer<typeof DepartmentAssignUsersResponseSchema>
 
 export const DepartmentListRequestSchema = z.object({
-  search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering departments by name', example: 'Engineering' }),
+  search: z.preprocess(emptyStringToUndefined, z.string().max(100).nullable().default(null)).openapi({ description: 'Search term for filtering departments by name or leader', example: 'Engineering' }),
   status: z.preprocess(
     (value) => {
       if (value === '')
@@ -91,7 +100,7 @@ export const DepartmentProfileResponseSchema = z.object({
   id: z.string().openapi({ description: 'Department ID', example: '01HZY4QG2R1X0ABCDEF1234567' }),
   parentId: z.string().nullable().openapi({ description: 'Parent department ID', example: null }),
   name: z.string().openapi({ description: 'Department name', example: 'Engineering' }),
-  leader: z.string().nullable().openapi({ description: 'Department leader name', example: 'Jane Doe' }),
+  leaders: z.array(DepartmentLeaderResponseSchema).openapi({ description: 'Users selected as department leaders' }),
   phone: z.string().nullable().openapi({ description: 'Department contact phone', example: '+1234567890' }),
   email: z.email().nullable().openapi({ description: 'Department contact email', example: 'engineering@example.com' }),
   order: z.number().int().openapi({ description: 'Display order', example: 1 }),

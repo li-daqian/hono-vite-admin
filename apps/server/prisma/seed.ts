@@ -111,7 +111,7 @@ const demoDepartments = [
     id: 'dept.company',
     parentId: null,
     name: 'Acme Operations',
-    leader: 'Lydia Chen',
+    leaderUsernames: [],
     phone: '+12025550100',
     email: 'operations@example.com',
     order: 1,
@@ -121,7 +121,7 @@ const demoDepartments = [
     id: 'dept.product',
     parentId: 'dept.company',
     name: 'Product',
-    leader: 'Maya Patel',
+    leaderUsernames: ['demo.maya'],
     phone: '+12025550110',
     email: 'product@example.com',
     order: 1,
@@ -131,7 +131,7 @@ const demoDepartments = [
     id: 'dept.engineering',
     parentId: 'dept.product',
     name: 'Engineering',
-    leader: 'Alex Chen',
+    leaderUsernames: ['demo.alex'],
     phone: '+12025550120',
     email: 'engineering@example.com',
     order: 1,
@@ -141,7 +141,7 @@ const demoDepartments = [
     id: 'dept.design',
     parentId: 'dept.product',
     name: 'Design',
-    leader: 'Nina Ross',
+    leaderUsernames: ['demo.nina'],
     phone: '+12025550130',
     email: 'design@example.com',
     order: 2,
@@ -151,7 +151,7 @@ const demoDepartments = [
     id: 'dept.sales',
     parentId: 'dept.company',
     name: 'Sales',
-    leader: 'Owen Brooks',
+    leaderUsernames: ['demo.owen'],
     phone: '+12025550140',
     email: 'sales@example.com',
     order: 2,
@@ -161,7 +161,7 @@ const demoDepartments = [
     id: 'dept.customer-success',
     parentId: 'dept.sales',
     name: 'Customer Success',
-    leader: 'Zoe Kim',
+    leaderUsernames: ['demo.zoe'],
     phone: '+12025550150',
     email: 'success@example.com',
     order: 1,
@@ -171,7 +171,7 @@ const demoDepartments = [
     id: 'dept.finance',
     parentId: 'dept.company',
     name: 'Finance',
-    leader: 'Victor Lee',
+    leaderUsernames: [],
     phone: '+12025550160',
     email: 'finance@example.com',
     order: 3,
@@ -420,18 +420,18 @@ async function seedDemoOrganization(adminUser: User) {
 
   await prisma.$transaction(async (tx) => {
     for (const department of demoDepartments) {
+      const { leaderUsernames, ...departmentData } = department
       await tx.department.upsert({
-        where: { id: department.id },
+        where: { id: departmentData.id },
         update: {
-          parentId: department.parentId,
-          name: department.name,
-          leader: department.leader,
-          phone: department.phone,
-          email: department.email,
-          order: department.order,
-          status: department.status,
+          parentId: departmentData.parentId,
+          name: departmentData.name,
+          phone: departmentData.phone,
+          email: departmentData.email,
+          order: departmentData.order,
+          status: departmentData.status,
         },
-        create: department,
+        create: departmentData,
       })
     }
 
@@ -456,6 +456,12 @@ async function seedDemoOrganization(adminUser: User) {
     })))
 
     const userIdsByUsername = new Map(users.map(user => [user.username, user.id]))
+    const departmentLeaderAssignments = demoDepartments.flatMap(department =>
+      department.leaderUsernames.map(username => ({
+        departmentId: department.id,
+        userId: userIdsByUsername.get(username)!,
+      })),
+    )
     const assignments = [
       { userId: adminUser.id, departmentId: 'dept.company' },
       { userId: adminUser.id, departmentId: 'dept.engineering' },
@@ -471,6 +477,17 @@ async function seedDemoOrganization(adminUser: User) {
       data: assignments,
       skipDuplicates: true,
     })
+
+    await tx.departmentLeader.deleteMany({
+      where: { departmentId: { in: demoDepartments.map(department => department.id) } },
+    })
+
+    if (departmentLeaderAssignments.length > 0) {
+      await tx.departmentLeader.createMany({
+        data: departmentLeaderAssignments,
+        skipDuplicates: true,
+      })
+    }
   })
 }
 

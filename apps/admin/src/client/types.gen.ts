@@ -198,6 +198,29 @@ export type AuthMenuSchema = {
     actions: Array<AuthActionSchema>;
 };
 
+export type DepartmentLeaderResponseSchema = {
+    /**
+     * User ID
+     */
+    id: string;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Display name of the user
+     */
+    displayName: string | null;
+    /**
+     * Email address of the user
+     */
+    email: string | null;
+    /**
+     * Status of the user account
+     */
+    status: 'ACTIVE' | 'DISABLED';
+};
+
 export type DepartmentProfileResponseSchema = {
     /**
      * Department ID
@@ -212,9 +235,9 @@ export type DepartmentProfileResponseSchema = {
      */
     name: string;
     /**
-     * Department leader name
+     * Users selected as department leaders
      */
-    leader: string | null;
+    leaders: Array<DepartmentLeaderResponseSchema>;
     /**
      * Department contact phone
      */
@@ -955,7 +978,7 @@ export type GetDepartmentData = {
     path?: never;
     query?: {
         /**
-         * Search term for filtering departments by name
+         * Search term for filtering departments by name or leader
          */
         search?: string | null;
         /**
@@ -986,9 +1009,9 @@ export type PostDepartmentData = {
          */
         name: string;
         /**
-         * Department leader name
+         * User IDs selected as department leaders
          */
-        leader?: string | null;
+        leaderIds?: Array<string>;
         /**
          * Department contact phone
          */
@@ -1078,9 +1101,9 @@ export type PutDepartmentByIdData = {
          */
         name?: string;
         /**
-         * Department leader name
+         * User IDs selected as department leaders
          */
-        leader?: string | null;
+        leaderIds?: Array<string>;
         /**
          * Department contact phone
          */

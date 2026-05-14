@@ -103,6 +103,20 @@ export const zAuthMenuSchema: z.AnyZodObject = z.object({
     actions: z.array(zAuthActionSchema).describe('Menu actions')
 });
 
+export const zDepartmentLeaderResponseSchema = z.object({
+    id: z.string().describe('User ID'),
+    username: z.string().describe('Username'),
+    displayName: z.union([
+        z.string(),
+        z.null()
+    ]),
+    email: z.union([
+        z.string().email(),
+        z.null()
+    ]),
+    status: z.enum(['ACTIVE', 'DISABLED']).describe('Status of the user account')
+});
+
 export const zDepartmentProfileResponseSchema = z.object({
     id: z.string().describe('Department ID'),
     parentId: z.union([
@@ -110,10 +124,7 @@ export const zDepartmentProfileResponseSchema = z.object({
         z.null()
     ]),
     name: z.string().describe('Department name'),
-    leader: z.union([
-        z.string(),
-        z.null()
-    ]),
+    leaders: z.array(zDepartmentLeaderResponseSchema).describe('Users selected as department leaders'),
     phone: z.union([
         z.string(),
         z.null()
@@ -581,10 +592,7 @@ export const zPostDepartmentData = z.object({
             z.null()
         ]).optional(),
         name: z.string().min(1).max(50).describe('Department name'),
-        leader: z.union([
-            z.string().max(50),
-            z.null()
-        ]).optional(),
+        leaderIds: z.array(z.string().min(1)).describe('User IDs selected as department leaders').optional(),
         phone: z.union([
             z.string().max(20),
             z.null()
@@ -640,10 +648,7 @@ export const zPutDepartmentByIdData = z.object({
             z.null()
         ]).optional(),
         name: z.string().min(1).max(50).describe('Department name').optional(),
-        leader: z.union([
-            z.string().max(50),
-            z.null()
-        ]).optional(),
+        leaderIds: z.array(z.string().min(1)).describe('User IDs selected as department leaders').optional(),
         phone: z.union([
             z.string().max(20),
             z.null()

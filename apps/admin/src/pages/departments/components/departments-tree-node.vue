@@ -116,6 +116,10 @@ function handleDrop(event: DragEvent) {
   event.preventDefault()
   emit('drop', { id: props.node.id, position: getDropPosition(event) }, event)
 }
+
+function getLeaderLabel(leader: DepartmentTreeItemSchema['leaders'][number]) {
+  return leader.displayName ? `${leader.displayName} (${leader.username})` : leader.username
+}
 </script>
 
 <template>
@@ -173,7 +177,17 @@ function handleDrop(event: DragEvent) {
       </div>
     </TableCell>
     <TableCell class="bg-background group-hover/row:bg-muted">
-      {{ node.leader ?? '-' }}
+      <div v-if="node.leaders.length > 0" class="flex max-w-[260px] flex-wrap gap-1">
+        <Badge
+          v-for="leader in node.leaders"
+          :key="leader.id"
+          variant="outline"
+          class="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-foreground"
+        >
+          {{ getLeaderLabel(leader) }}
+        </Badge>
+      </div>
+      <span v-else>-</span>
     </TableCell>
     <TableCell class="bg-background group-hover/row:bg-muted">
       <div class="max-w-[240px] space-y-1 text-sm">

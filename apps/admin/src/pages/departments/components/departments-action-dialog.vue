@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PostDepartmentData, PutDepartmentByIdData } from '@admin/client'
+import type { DepartmentLeaderResponseSchema, PostDepartmentData, PutDepartmentByIdData } from '@admin/client'
 import { getDepartmentById, postDepartment, putDepartmentById } from '@admin/client'
 import { Button } from '@admin/components/ui/button'
 import {
@@ -34,6 +34,7 @@ import z from 'zod'
 import DepartmentTreeSelect from './department-tree-select.vue'
 import { collectDepartmentAndDescendantIds, getNextDepartmentOrder } from './department-utils'
 import { useDepartments } from './departments-provider.vue'
+import UserMultiSelect from './user-multi-select.vue'
 
 const props = defineProps<{
   open: boolean
@@ -50,7 +51,6 @@ const NO_PARENT_VALUE = '__none__'
 
 const validationSchema = computed(() => toTypedSchema(z.object({
   name: z.string().trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters'),
-  leader: z.string().trim().max(50, 'Leader must be at most 50 characters').or(z.literal('')).optional(),
   phone: z.string().trim().max(20, 'Phone must be at most 20 characters').or(z.literal('')).optional(),
   email: z.string().trim().email('Invalid email address').or(z.literal('')),
   status: z.enum(['ACTIVE', 'DISABLED']),
@@ -58,7 +58,6 @@ const validationSchema = computed(() => toTypedSchema(z.object({
 
 const initialValues = {
   name: '',
-  leader: '',
   phone: '',
   email: '',
   status: 'ACTIVE' as const,
@@ -67,6 +66,8 @@ const initialValues = {
 const isPrefilling = ref(props.mode === 'edit')
 const parentId = ref(NO_PARENT_VALUE)
 const originalParentId = ref(NO_PARENT_VALUE)
+const selectedLeaderIds = ref<string[]>([])
+const selectedLeaders = ref<DepartmentLeaderResponseSchema[]>([])
 const { departmentTree } = useDepartments()
 const excludedDepartmentIds = computed(() => {
   if (props.mode !== 'edit' || !props.id) {
@@ -105,11 +106,12 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
       const response = await getDepartmentById<true>({ path: { id: props.id } })
       setValues({
         name: response.data.name,
-        leader: response.data.leader ?? '',
         phone: response.data.phone ?? '',
         email: response.data.email ?? '',
         status: response.data.status,
       })
+      selectedLeaders.value = response.data.leaders
+      selectedLeaderIds.value = response.data.leaders.map(leader => leader.id)
       parentId.value = response.data.parentId ?? NO_PARENT_VALUE
       originalParentId.value = parentId.value
     }
@@ -121,6 +123,8 @@ async function onVueMounted(setValues: (values: Record<string, any>) => void) {
   }
 
   setValues(initialValues)
+  selectedLeaders.value = []
+  selectedLeaderIds.value = []
   parentId.value = NO_PARENT_VALUE
   originalParentId.value = NO_PARENT_VALUE
   isPrefilling.value = false
@@ -133,7 +137,7 @@ async function handleSubmit(values: Record<string, any>) {
     const payload: PostDepartmentData['body'] = {
       parentId: nextParentId,
       name: values.name.trim(),
-      leader: toNullable(values.leader ?? ''),
+      leaderIds: selectedLeaderIds.value,
       phone: toNullable(values.phone ?? ''),
       email: toNullable(values.email ?? ''),
       order: getAppendOrder(nextParentId),
@@ -154,7 +158,7 @@ async function handleSubmit(values: Record<string, any>) {
   const payload: PutDepartmentByIdData['body'] = {
     parentId: nextParentId,
     name: values.name.trim(),
-    leader: toNullable(values.leader ?? ''),
+    leaderIds: selectedLeaderIds.value,
     phone: toNullable(values.phone ?? ''),
     email: toNullable(values.email ?? ''),
     status: values.status,
@@ -243,16 +247,17 @@ async function handleSubmit(values: Record<string, any>) {
               </FormItem>
             </FormField>
 
-            <FormField v-slot="{ componentField }" name="leader">
-              <FormItem>
-                <FormLabel>Leader</FormLabel>
-                <FormControl class="h-9">
-                  <Skeleton v-if="isPrefilling" />
-                  <Input v-else v-bind="componentField" type="text" placeholder="Jane Doe" maxlength="50" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            </FormField>
+            <div class="grid gap-2">
+              <label class="text-sm leading-none font-medium">Leaders</label>
+              <Skeleton v-if="isPrefilling" class="h-9" />
+              <UserMultiSelect
+                v-else
+                v-model="selectedLeaderIds"
+                :selected-users="selectedLeaders"
+                placeholder="Select leaders"
+                search-placeholder="Search users"
+              />
+            </div>
 
             <FormField v-slot="{ componentField }" name="phone">
               <FormItem>

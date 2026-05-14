@@ -4,6 +4,7 @@ import type {
   DepartmentAssignUsersResponse,
   DepartmentCreateRequest,
   DepartmentDeleteResponse,
+  DepartmentLeaderResponse,
   DepartmentListRequest,
   DepartmentProfileResponse,
   DepartmentReorderRequest,
@@ -24,24 +25,51 @@ type DepartmentWithUserCount = Department & {
   }
 }
 
+type DepartmentWithRelations = DepartmentWithUserCount & {
+  leaders: Array<{ user: DepartmentLeaderResponse }>
+}
+
 class DepartmentService {
+  private readonly departmentLeaderSelection = {
+    user: {
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        email: true,
+        status: true,
+      },
+    },
+  } as const
+
   async createDepartment(request: DepartmentCreateRequest): Promise<DepartmentProfileResponse> {
     await this.assertValidParent(request.parentId ?? null)
+    const leaderIds = this.getUniqueIds(request.leaderIds)
+    await this.ensureUsersExist(leaderIds)
 
     const department = await prisma.$transaction(async (tx) => {
       const createdDepartment = await tx.department.create({
         data: {
           parentId: request.parentId ?? null,
           name: request.name,
-          leader: request.leader ?? null,
           phone: request.phone ?? null,
           email: request.email ?? null,
           order: request.order,
           status: request.status,
+          ...(leaderIds.length > 0 && {
+            leaders: {
+              create: leaderIds.map(userId => ({
+                user: { connect: { id: userId } },
+              })),
+            },
+          }),
         },
         include: {
           _count: {
             select: { users: true },
+          },
+          leaders: {
+            select: this.departmentLeaderSelection,
           },
         },
       })
@@ -49,7 +77,10 @@ class DepartmentService {
       await auditService.record(tx, {
         module: 'department',
         action: 'create',
-        requestSnapshot: request,
+        requestSnapshot: {
+          ...request,
+          leaderIds,
+        },
       })
 
       return createdDepartment
@@ -66,6 +97,19 @@ class DepartmentService {
           ? {
               OR: [
                 { name: { contains: query.search, mode: 'insensitive' as const } },
+                {
+                  leaders: {
+                    some: {
+                      user: {
+                        OR: [
+                          { username: { contains: query.search, mode: 'insensitive' as const } },
+                          { displayName: { contains: query.search, mode: 'insensitive' as const } },
+                          { email: { contains: query.search, mode: 'insensitive' as const } },
+                        ],
+                      },
+                    },
+                  },
+                },
               ],
             }
           : {}),
@@ -73,6 +117,9 @@ class DepartmentService {
       include: {
         _count: {
           select: { users: true },
+        },
+        leaders: {
+          select: this.departmentLeaderSelection,
         },
       },
       orderBy: [
@@ -90,6 +137,9 @@ class DepartmentService {
       include: {
         _count: {
           select: { users: true },
+        },
+        leaders: {
+          select: this.departmentLeaderSelection,
         },
       },
     })
@@ -114,21 +164,40 @@ class DepartmentService {
       await this.assertValidParent(request.parentId, departmentId)
     }
 
+    const leaderIds = request.leaderIds === undefined
+      ? undefined
+      : this.getUniqueIds(request.leaderIds)
+    if (leaderIds !== undefined) {
+      await this.ensureUsersExist(leaderIds)
+    }
+
     const updatedDepartment = await prisma.$transaction(async (tx) => {
       const nextDepartment = await tx.department.update({
         where: { id: departmentId },
         data: {
           parentId: request.parentId,
           name: request.name,
-          leader: request.leader,
           phone: request.phone,
           email: request.email,
           order: request.order,
           status: request.status,
+          ...(leaderIds !== undefined && {
+            leaders: {
+              deleteMany: {},
+              ...(leaderIds.length > 0 && {
+                create: leaderIds.map(userId => ({
+                  user: { connect: { id: userId } },
+                })),
+              }),
+            },
+          }),
         },
         include: {
           _count: {
             select: { users: true },
+          },
+          leaders: {
+            select: this.departmentLeaderSelection,
           },
         },
       })
@@ -139,6 +208,7 @@ class DepartmentService {
         requestSnapshot: {
           id: departmentId,
           ...request,
+          ...(leaderIds !== undefined && { leaderIds }),
         },
       })
 
@@ -299,7 +369,7 @@ class DepartmentService {
     return { deletedCount: 1 }
   }
 
-  private buildDepartmentTree(departments: DepartmentWithUserCount[]): DepartmentTreeResponse {
+  private buildDepartmentTree(departments: DepartmentWithRelations[]): DepartmentTreeResponse {
     const nodes = departments.map(department => ({
       ...this.mapDepartment(department),
       children: [],
@@ -321,12 +391,14 @@ class DepartmentService {
     return buildNode('')
   }
 
-  private mapDepartment(department: DepartmentWithUserCount): DepartmentProfileResponse {
+  private mapDepartment(department: DepartmentWithRelations): DepartmentProfileResponse {
     return {
       id: department.id,
       parentId: department.parentId,
       name: department.name,
-      leader: department.leader,
+      leaders: department.leaders
+        .map(leader => this.mapDepartmentLeader(leader.user))
+        .sort((a, b) => a.username.localeCompare(b.username)),
       phone: department.phone,
       email: department.email,
       order: department.order,
@@ -334,6 +406,16 @@ class DepartmentService {
       userCount: department._count.users,
       createdAt: department.createdAt.toISOString(),
       updatedAt: department.updatedAt.toISOString(),
+    }
+  }
+
+  private mapDepartmentLeader(user: DepartmentLeaderResponse): DepartmentLeaderResponse {
+    return {
+      id: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      email: user.email,
+      status: user.status,
     }
   }
 
