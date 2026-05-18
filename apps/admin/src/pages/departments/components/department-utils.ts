@@ -18,6 +18,19 @@ export interface DepartmentSiblingContext {
   parentId: string | null
 }
 
+export interface DepartmentTreeIndexes {
+  nodeById: Map<string, DepartmentTreeItemSchema>
+  siblingContextById: Map<string, DepartmentSiblingContext>
+}
+
+export interface DepartmentSiblingReorderResult {
+  parentId: string | null
+  previousSiblings: DepartmentTreeItemSchema[]
+  nextSiblings: DepartmentTreeItemSchema[]
+}
+
+export type DepartmentDropPosition = 'before' | 'after'
+
 export function mapDepartmentTreeItem(
   department: DepartmentTreeItemSchema,
 ): DepartmentProfileResponseSchema {
@@ -126,29 +139,32 @@ export function findDepartmentById(
   return null
 }
 
-export function findDepartmentSiblingContext(
+export function buildDepartmentTreeIndexes(
   departments: DepartmentTreeItemSchema[],
-  departmentId: string,
   parentId: string | null = null,
-): DepartmentSiblingContext | null {
-  const index = departments.findIndex(department => department.id === departmentId)
-  if (index >= 0) {
-    return {
-      department: departments[index]!,
-      siblings: departments,
-      index,
-      parentId,
-    }
+): DepartmentTreeIndexes {
+  const nodeById = new Map<string, DepartmentTreeItemSchema>()
+  const siblingContextById = new Map<string, DepartmentSiblingContext>()
+
+  function visit(nodes: DepartmentTreeItemSchema[], currentParentId: string | null) {
+    nodes.forEach((node, index) => {
+      nodeById.set(node.id, node)
+      siblingContextById.set(node.id, {
+        department: node,
+        siblings: nodes,
+        index,
+        parentId: currentParentId,
+      })
+      visit(node.children, node.id)
+    })
   }
 
-  for (const department of departments) {
-    const childContext = findDepartmentSiblingContext(department.children, departmentId, department.id)
-    if (childContext) {
-      return childContext
-    }
-  }
+  visit(departments, parentId)
 
-  return null
+  return {
+    nodeById,
+    siblingContextById,
+  }
 }
 
 export function getDepartmentSiblings(
@@ -181,6 +197,89 @@ export function getNextDepartmentOrder(
 
 export function countDepartmentTree(departments: DepartmentTreeItemSchema[]): number {
   return departments.reduce((count, department) => count + 1 + countDepartmentTree(department.children), 0)
+}
+
+export function applyDepartmentSiblingOrder(siblings: DepartmentTreeItemSchema[]): DepartmentTreeItemSchema[] {
+  return siblings.map((department, index) => ({
+    ...department,
+    order: index + 1,
+  }))
+}
+
+export function buildDepartmentSiblingReorder(
+  siblingContextById: Map<string, DepartmentSiblingContext>,
+  sourceId: string,
+  targetId: string,
+  position: DepartmentDropPosition,
+): DepartmentSiblingReorderResult | null {
+  const sourceContext = siblingContextById.get(sourceId)
+  const targetContext = siblingContextById.get(targetId)
+
+  if (!sourceContext || !targetContext || sourceContext.parentId !== targetContext.parentId) {
+    return null
+  }
+
+  const nextSiblings = [...sourceContext.siblings]
+  const [movedDepartment] = nextSiblings.splice(sourceContext.index, 1)
+  if (!movedDepartment) {
+    return null
+  }
+
+  let insertIndex = targetContext.index + (position === 'after' ? 1 : 0)
+  if (sourceContext.index < insertIndex) {
+    insertIndex -= 1
+  }
+
+  nextSiblings.splice(insertIndex, 0, movedDepartment)
+
+  return {
+    parentId: sourceContext.parentId,
+    previousSiblings: sourceContext.siblings,
+    nextSiblings: applyDepartmentSiblingOrder(nextSiblings),
+  }
+}
+
+export function replaceDepartmentSiblings(
+  departments: DepartmentTreeItemSchema[],
+  parentId: string | null,
+  siblings: DepartmentTreeItemSchema[],
+): DepartmentTreeItemSchema[] {
+  if (!parentId) {
+    return siblings
+  }
+
+  for (let index = 0; index < departments.length; index += 1) {
+    const department = departments[index]!
+
+    if (department.id === parentId) {
+      if (department.children === siblings) {
+        return departments
+      }
+
+      return [
+        ...departments.slice(0, index),
+        {
+          ...department,
+          children: siblings,
+        },
+        ...departments.slice(index + 1),
+      ]
+    }
+
+    const nextChildren = replaceDepartmentSiblings(department.children, parentId, siblings)
+    if (nextChildren !== department.children) {
+      return [
+        ...departments.slice(0, index),
+        {
+          ...department,
+          children: nextChildren,
+        },
+        ...departments.slice(index + 1),
+      ]
+    }
+  }
+
+  return departments
 }
 
 export function flattenDepartmentOptions(

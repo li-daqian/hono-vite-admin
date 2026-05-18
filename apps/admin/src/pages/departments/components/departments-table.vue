@@ -23,14 +23,19 @@ import { usePageActionPermissions } from '@admin/lib/permissions'
 import { Search, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
-import { countDepartmentTree, filterDepartmentTree, findDepartmentSiblingContext } from './department-utils'
+import {
+  buildDepartmentSiblingReorder,
+  buildDepartmentTreeIndexes,
+  countDepartmentTree,
+  filterDepartmentTree,
+  replaceDepartmentSiblings,
+} from './department-utils'
 import { useDepartments } from './departments-provider.vue'
 import DepartmentsTreeNode from './departments-tree-node.vue'
 
-type DropPosition = 'before' | 'after'
 interface DropPayload {
   id: string
-  position: DropPosition
+  position: 'before' | 'after'
 }
 type ReorderItem = PatchDepartmentReorderData['body']['items'][number]
 
@@ -51,6 +56,7 @@ const editPermission = computed(() => permissions.resolve('edit', { subject: 'de
 
 const hasFilters = computed(() => search.value.trim().length > 0 || status.value !== 'ALL')
 const canReorderDepartments = computed(() => editPermission.value.allowed && !hasFilters.value && !isReordering.value)
+const departmentTreeIndexes = computed(() => buildDepartmentTreeIndexes(departmentTree.value))
 
 const filteredTree = computed(() => {
   const keyword = search.value.trim().toLowerCase()
@@ -81,68 +87,9 @@ function canDropOnNode(node: DepartmentTreeItemSchema) {
     return false
   }
 
-  const sourceContext = findDepartmentSiblingContext(departmentTree.value, draggedDepartmentId.value)
-  const targetContext = findDepartmentSiblingContext(departmentTree.value, node.id)
+  const sourceContext = departmentTreeIndexes.value.siblingContextById.get(draggedDepartmentId.value)
+  const targetContext = departmentTreeIndexes.value.siblingContextById.get(node.id)
   return Boolean(sourceContext && targetContext && sourceContext.parentId === targetContext.parentId)
-}
-
-function applySiblingOrder(siblings: DepartmentTreeItemSchema[]) {
-  return siblings.map((department, index) => ({
-    ...department,
-    order: index + 1,
-  }))
-}
-
-function replaceDepartmentSiblings(
-  departments: DepartmentTreeItemSchema[],
-  parentId: string | null,
-  siblings: DepartmentTreeItemSchema[],
-): DepartmentTreeItemSchema[] {
-  if (!parentId) {
-    return siblings
-  }
-
-  return departments.map((department) => {
-    if (department.id === parentId) {
-      return {
-        ...department,
-        children: siblings,
-      }
-    }
-
-    return {
-      ...department,
-      children: replaceDepartmentSiblings(department.children, parentId, siblings),
-    }
-  })
-}
-
-function buildReorderedSiblings(sourceId: string, targetId: string, position: DropPosition) {
-  const sourceContext = findDepartmentSiblingContext(departmentTree.value, sourceId)
-  const targetContext = findDepartmentSiblingContext(departmentTree.value, targetId)
-
-  if (!sourceContext || !targetContext || sourceContext.parentId !== targetContext.parentId) {
-    return null
-  }
-
-  const nextSiblings = [...sourceContext.siblings]
-  const [movedDepartment] = nextSiblings.splice(sourceContext.index, 1)
-  if (!movedDepartment) {
-    return null
-  }
-
-  let insertIndex = targetContext.index + (position === 'after' ? 1 : 0)
-  if (sourceContext.index < insertIndex) {
-    insertIndex -= 1
-  }
-
-  nextSiblings.splice(insertIndex, 0, movedDepartment)
-
-  return {
-    parentId: sourceContext.parentId,
-    previousSiblings: sourceContext.siblings,
-    nextSiblings: applySiblingOrder(nextSiblings),
-  }
 }
 
 function handleDragStart(departmentId: string) {
@@ -154,8 +101,8 @@ function handleDragStart(departmentId: string) {
 }
 
 function handleDragOver(payload: DropPayload) {
-  const targetContext = findDepartmentSiblingContext(departmentTree.value, payload.id)
-  if (!targetContext || !canDropOnNode(targetContext.department)) {
+  const targetNode = departmentTreeIndexes.value.nodeById.get(payload.id)
+  if (!targetNode || !canDropOnNode(targetNode)) {
     dropTarget.value = null
     return
   }
@@ -181,22 +128,27 @@ async function handleDrop(payload: DropPayload) {
     return
   }
 
-  const reorderResult = buildReorderedSiblings(sourceId, payload.id, payload.position)
+  const reorderResult = buildDepartmentSiblingReorder(
+    departmentTreeIndexes.value.siblingContextById,
+    sourceId,
+    payload.id,
+    payload.position,
+  )
   if (!reorderResult) {
     toast.info('Departments can only be reordered within the same parent.')
     handleDragEnd()
     return
   }
 
+  const previousOrderById = new Map(
+    reorderResult.previousSiblings.map(department => [department.id, department.order]),
+  )
   const items = reorderResult.nextSiblings
     .map((department): ReorderItem => ({
       id: department.id,
       order: department.order,
     }))
-    .filter((item) => {
-      const previousDepartment = reorderResult.previousSiblings.find(department => department.id === item.id)
-      return previousDepartment?.order !== item.order
-    })
+    .filter(item => previousOrderById.get(item.id) !== item.order)
 
   if (items.length === 0) {
     handleDragEnd()
