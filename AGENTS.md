@@ -1,5 +1,54 @@
 # Repository Guidelines
 
+## Instruction Priority & Scope
+
+These guidelines are written for AI coding agents first and remain useful to human contributors.
+
+When instructions conflict, follow this order:
+
+- The user's current explicit request
+- This `AGENTS.md`
+- Other repository documentation, inline code comments, and established local patterns
+- Default tool or model behavior
+
+Preserve repository-specific constraints over generic habits. Do not import assumptions from other projects into this monorepo.
+
+## Working Modes
+
+- Treat requests such as analysis, design, evaluation, code review, and troubleshooting as read-only unless the user explicitly asks for implementation.
+- Treat explicit requests to change files, implement a plan, fix a bug, or add a feature as permission to edit within the requested scope.
+- Before broad multi-file or cross-app changes, provide a short implementation plan that names the affected areas and intended validation.
+- Do not do unrelated refactors, formatting-only passes, dependency churn, or config cleanup outside the task.
+
+## Validation Before Change
+
+- Verify current behavior from repository truth before editing. Inspect mounted routes, schemas, generated clients, scripts, tests, and nearby implementations instead of assuming.
+- Do not invent files, commands, endpoints, generated types, environment variables, or runtime behavior.
+- When API contracts change, update the server Zod/OpenAPI definitions first, regenerate `apps/admin/src/client`, and then adapt frontend callers to the generated output.
+- When touching menus, permissions, or read-only behavior, trace the backend seed/auth contract and the frontend route/store wiring before changing code.
+- Prefer the narrowest validation that proves the change: `pnpm lint`, `pnpm check-types`, targeted app tests, or `pnpm openapi-ts` when contract generation is involved.
+
+## Decision & Communication Rules
+
+- Do not guess through unclear requirements when scope, acceptance criteria, or constraints would materially change the implementation.
+- If the user asks for a path that is clearly weaker than an available alternative, explain the better option and its tradeoffs before proceeding.
+- Prefer root-cause fixes over surface patches that only hide symptoms.
+- Keep status updates and final summaries high signal: what changed, why it changed, how it was validated, what remains unverified, and any follow-up risk.
+- Do not auto-commit, push, or open a pull request unless the user explicitly asks for it.
+
+## Definition of Done
+
+A task is not complete until the response includes, when applicable:
+
+- The files changed
+- The core behavior or constraint that changed, and why
+- The commands run for validation, or a clear note that validation was skipped
+- Any required regeneration, migrations, seed changes, or environment/config updates
+- Runtime or manual verification guidance for API, admin UI, permissions, or read-only behavior changes
+- Remaining risks, assumptions, or follow-up work
+
+Use only commands that exist in this repository when describing validation steps.
+
 ## Project Structure & Module Organization
 
 This is a pnpm/Turbo monorepo with two main apps:
