@@ -47,22 +47,20 @@ describe('user service', () => {
   beforeEach(async () => {
     requestId = `req-${randomUUID()}`
     createdUserIds = []
-    const { hashedPassword, salt } = await createPasswordHash('OldPassword123!')
+    const passwordHash = await createPasswordHash('OldPassword123!')
 
     const [operatorUser, targetUser] = await Promise.all([
       prisma.user.create({
         data: {
           username: `operator-${randomUUID()}`,
-          password: hashedPassword,
-          salt,
+          passwordHash,
           displayName: 'Password Operator',
         },
       }),
       prisma.user.create({
         data: {
           username: `target-${randomUUID()}`,
-          password: hashedPassword,
-          salt,
+          passwordHash,
           displayName: 'Password Target',
         },
       }),
@@ -230,10 +228,9 @@ describe('user service', () => {
       },
     })
 
-    expect(updatedUser.password).not.toBe(previousUser.password)
-    expect(updatedUser.salt).not.toBe(previousUser.salt)
-    expect(await verifyPassword('OldPassword123!', updatedUser.password, updatedUser.salt)).toBe(false)
-    expect(await verifyPassword('NewPassword123!', updatedUser.password, updatedUser.salt)).toBe(true)
+    expect(updatedUser.passwordHash).not.toBe(previousUser.passwordHash)
+    expect(await verifyPassword('OldPassword123!', updatedUser.passwordHash)).toBe(false)
+    expect(await verifyPassword('NewPassword123!', updatedUser.passwordHash)).toBe(true)
     expect(remainingRefreshTokens).toBe(0)
     expect(auditLog?.requestSnapshot).toEqual({
       targetUserId,

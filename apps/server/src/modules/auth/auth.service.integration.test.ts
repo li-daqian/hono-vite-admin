@@ -55,13 +55,12 @@ describe('auth service', () => {
       },
     })
 
-    const { hashedPassword, salt } = await createPasswordHash('OldPassword123!')
+    const passwordHash = await createPasswordHash('OldPassword123!')
     username = `auth-${randomUUID()}`
     const user = await prisma.user.create({
       data: {
         username,
-        password: hashedPassword,
-        salt,
+        passwordHash,
         displayName: 'Password Test User',
       },
     })
@@ -111,10 +110,9 @@ describe('auth service', () => {
       },
     })
 
-    expect(updatedUser.password).not.toBe(previousUser.password)
-    expect(updatedUser.salt).not.toBe(previousUser.salt)
-    expect(await verifyPassword('OldPassword123!', updatedUser.password, updatedUser.salt)).toBe(false)
-    expect(await verifyPassword('NewPassword123!', updatedUser.password, updatedUser.salt)).toBe(true)
+    expect(updatedUser.passwordHash).not.toBe(previousUser.passwordHash)
+    expect(await verifyPassword('OldPassword123!', updatedUser.passwordHash)).toBe(false)
+    expect(await verifyPassword('NewPassword123!', updatedUser.passwordHash)).toBe(true)
     expect(auditLog?.requestSnapshot).toEqual({
       userId,
       result: 'success',
@@ -153,10 +151,9 @@ describe('auth service', () => {
 
     expect(error).toBeInstanceOf(BusinessError)
     expect((error as BusinessError).toString()).toContain('CurrentPasswordIncorrect')
-    expect(unchangedUser.password).toBe(previousUser.password)
-    expect(unchangedUser.salt).toBe(previousUser.salt)
-    expect(await verifyPassword('OldPassword123!', unchangedUser.password, unchangedUser.salt)).toBe(true)
-    expect(await verifyPassword('NewPassword123!', unchangedUser.password, unchangedUser.salt)).toBe(false)
+    expect(unchangedUser.passwordHash).toBe(previousUser.passwordHash)
+    expect(await verifyPassword('OldPassword123!', unchangedUser.passwordHash)).toBe(true)
+    expect(await verifyPassword('NewPassword123!', unchangedUser.passwordHash)).toBe(false)
     expect(auditLog?.requestSnapshot).toEqual({
       userId,
       result: 'failure',

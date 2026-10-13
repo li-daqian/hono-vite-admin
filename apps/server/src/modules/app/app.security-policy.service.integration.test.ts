@@ -59,12 +59,11 @@ describe('app security policy service', () => {
     process.env.NODE_ENV = 'development'
 
     requestId = `req-${randomUUID()}`
-    const { hashedPassword, salt } = await createPasswordHash('Password123!')
+    const passwordHash = await createPasswordHash('Password123!')
     const user = await prisma.user.create({
       data: {
         username: `security-policy-${randomUUID()}`,
-        password: hashedPassword,
-        salt,
+        passwordHash,
         displayName: 'Security Policy Test User',
       },
     })

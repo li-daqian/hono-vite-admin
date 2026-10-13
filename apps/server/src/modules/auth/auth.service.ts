@@ -22,7 +22,7 @@ import { auditService } from '@server/src/modules/audit/audit.service'
 import { parseTimeDuration } from '@server/src/utils/date'
 
 type AuditClient = PrismaClient | TransactionClient
-type LoginUser = Pick<User, 'id' | 'username' | 'password' | 'salt' | 'displayName' | 'status' | 'failedLoginAttempts' | 'lockedUntil'>
+type LoginUser = Pick<User, 'id' | 'username' | 'passwordHash' | 'displayName' | 'status' | 'failedLoginAttempts' | 'lockedUntil'>
 
 const LOGIN_LOCK_WARNING_THRESHOLD = 2
 
@@ -79,7 +79,7 @@ class AuthService {
       throw BusinessError.UserAccountLocked(activeLockedUntil)
     }
 
-    const isPasswordValid = await verifyPassword(request.password, user.password, user.salt)
+    const isPasswordValid = await verifyPassword(request.password, user.passwordHash)
     if (!isPasswordValid) {
       const failure = await this.recordPasswordLoginFailure(user, this.getCurrentFailedLoginAttempts(user, now), securityPolicy)
       if (failure.lockedUntil) {
@@ -185,20 +185,19 @@ class AuthService {
       throw BusinessError.NotFound('User not found')
     }
 
-    const isCurrentPasswordValid = await verifyPassword(request.currentPassword, user.password, user.salt)
+    const isCurrentPasswordValid = await verifyPassword(request.currentPassword, user.passwordHash)
     if (!isCurrentPasswordValid) {
       await this.recordPasswordChangeFailure(userId, 'current-password-incorrect')
       throw BusinessError.BadRequest('Current password is incorrect', 'CurrentPasswordIncorrect')
     }
 
-    const { hashedPassword, salt } = await createPasswordHash(request.newPassword)
+    const newPasswordHash = await createPasswordHash(request.newPassword)
 
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
         data: {
-          password: hashedPassword,
-          salt,
+          passwordHash: newPasswordHash,
         },
       })
 

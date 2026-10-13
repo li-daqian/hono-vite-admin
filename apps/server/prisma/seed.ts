@@ -399,15 +399,14 @@ async function seedMenus(
 
 async function ensureAdminUser(): Promise<User> {
   const adminUsername = getEnv().admin.username
-  const { hashedPassword, salt } = await createPasswordHash(getEnv().admin.password)
+  const passwordHash = await createPasswordHash(getEnv().admin.password)
 
   return prisma.user.upsert({
     where: { username: adminUsername },
     update: {},
     create: {
       username: adminUsername,
-      password: hashedPassword,
-      salt,
+      passwordHash,
       displayName: 'Administrator',
       email: getEnv().admin.email,
       status: UserStatus.ACTIVE,
@@ -416,7 +415,7 @@ async function ensureAdminUser(): Promise<User> {
 }
 
 async function seedDemoOrganization(adminUser: User) {
-  const { hashedPassword, salt } = await createPasswordHash(randomUUID())
+  const passwordHash = await createPasswordHash(randomUUID())
 
   await prisma.$transaction(async (tx) => {
     for (const department of demoDepartments) {
@@ -446,8 +445,7 @@ async function seedDemoOrganization(adminUser: User) {
       create: {
         id: user.id,
         username: user.username,
-        password: hashedPassword,
-        salt,
+        passwordHash,
         email: user.email,
         phone: user.phone,
         displayName: user.displayName,

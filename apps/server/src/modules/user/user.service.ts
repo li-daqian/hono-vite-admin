@@ -68,16 +68,15 @@ class UserService {
     const departmentIds = this.getUniqueIds(request.departmentIds)
     await this.ensureDepartmentsExist(departmentIds)
 
-    // Generate salt and hash password
-    const { hashedPassword, salt } = await createPasswordHash(request.password)
+    // Hash password
+    const newPasswordHash = await createPasswordHash(request.password)
 
     // Create user in DB
     const user = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
           username: request.username,
-          password: hashedPassword,
-          salt,
+          passwordHash: newPasswordHash,
           email: request.email,
           phone: request.phone,
           displayName: request.displayName,
@@ -116,7 +115,7 @@ class UserService {
     })
 
     // Remove sensitive info before returning
-    const { password, salt: userSalt, ...safeUser } = user
+    const { passwordHash, ...safeUser } = user
     return this.mapUser(safeUser)
   }
 
@@ -136,7 +135,7 @@ class UserService {
       throw BusinessError.NotFound('User not found')
     }
 
-    const { password, salt, ...safeUser } = user
+    const { passwordHash, ...safeUser } = user
     return this.mapUser(safeUser)
   }
 
@@ -273,7 +272,7 @@ class UserService {
       return nextUser
     })
 
-    const { password, salt, ...safeUser } = updatedUser
+    const { passwordHash, ...safeUser } = updatedUser
     return this.mapUser(safeUser)
   }
 
@@ -286,14 +285,13 @@ class UserService {
       throw BusinessError.NotFound('User not found')
     }
 
-    const { hashedPassword, salt } = await createPasswordHash(request.newPassword)
+    const newPasswordHash = await createPasswordHash(request.newPassword)
 
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
         data: {
-          password: hashedPassword,
-          salt,
+          passwordHash: newPasswordHash,
         },
       })
 

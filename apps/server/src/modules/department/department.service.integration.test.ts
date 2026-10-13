@@ -46,22 +46,20 @@ describe('department service', () => {
 
   beforeEach(async () => {
     requestId = `req-${randomUUID()}`
-    const { hashedPassword, salt } = await createPasswordHash('Password123!')
+    const passwordHash = await createPasswordHash('Password123!')
 
     const users = await Promise.all([
       prisma.user.create({
         data: {
           username: `department-operator-${randomUUID()}`,
-          password: hashedPassword,
-          salt,
+          passwordHash,
           displayName: 'Department Operator',
         },
       }),
       prisma.user.create({
         data: {
           username: `department-user-a-${randomUUID()}`,
-          password: hashedPassword,
-          salt,
+          passwordHash,
           displayName: 'Department User A',
           email: 'department-user-a@example.com',
         },
@@ -69,8 +67,7 @@ describe('department service', () => {
       prisma.user.create({
         data: {
           username: `department-user-b-${randomUUID()}`,
-          password: hashedPassword,
-          salt,
+          passwordHash,
           displayName: 'Department User B',
           email: 'department-user-b@example.com',
         },
@@ -78,8 +75,7 @@ describe('department service', () => {
       prisma.user.create({
         data: {
           username: `department-user-c-${randomUUID()}`,
-          password: hashedPassword,
-          salt,
+          passwordHash,
           displayName: 'Department User C',
         },
       }),

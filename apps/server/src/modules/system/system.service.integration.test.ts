@@ -53,12 +53,11 @@ describe('system service', () => {
     codePrefix = `test_${randomUUID().replace(/-/g, '_')}`
     requestIds = []
 
-    const { hashedPassword, salt } = await createPasswordHash('Password123!')
+    const passwordHash = await createPasswordHash('Password123!')
     const user = await prisma.user.create({
       data: {
         username: `system-operator-${randomUUID()}`,
-        password: hashedPassword,
-        salt,
+        passwordHash,
         displayName: 'System Operator',
       },
     })
